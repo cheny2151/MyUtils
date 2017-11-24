@@ -113,10 +113,6 @@ public class HttpClientUtils {
             responseEntity = response.getEntity();
             Map<String, Object> map = JsonUtils.toObject(EntityUtils.toString(responseEntity), Map.class);
             EntityUtils.consume(responseEntity);
-            //请求失败抛出自定义异常，controller处理
-            if (map == null || (Integer) map.get("code") != 0) {
-                throw new CloudPosRequestException("Request Error");
-            }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
