@@ -21,8 +21,6 @@ import java.util.Map;
 
 public class HttpClientUtils {
 
-    private static HttpClientBuilder httpClientBuilder;
-
     private HttpClientUtils() {
     }
 
@@ -130,13 +128,14 @@ public class HttpClientUtils {
     }
 
     /**
-     * 获取client
+     * 获取client(懒加载builder 内部类方式实现)
      */
     private static CloseableHttpClient getCloseableHttpClient() {
-        if (httpClientBuilder == null) {
-            httpClientBuilder = HttpClientBuilder.create();
-        }
-        return httpClientBuilder.build();
+        return ClientHolder.httpClientBuilder.build();
+    }
+
+    private static class ClientHolder {
+        private final static HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
     }
 
 }
