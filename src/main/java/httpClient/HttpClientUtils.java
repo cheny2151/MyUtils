@@ -1,12 +1,14 @@
 package httpClient;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import jsonUtils.JsonUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -19,6 +21,11 @@ import java.util.Map;
 
 public class HttpClientUtils {
 
+    private static HttpClientBuilder httpClientBuilder;
+
+    private HttpClientUtils() {
+    }
+
     /**
      * post一般请求
      *
@@ -28,8 +35,7 @@ public class HttpClientUtils {
      */
     public static String sendPost(Map<String, Object> params, Map<String, String> header, String url, String encoding, boolean isJson) {
 
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-        CloseableHttpClient client = httpClientBuilder.build();
+        CloseableHttpClient client = getCloseableHttpClient();
         HttpPost httpPost = new HttpPost(url);
         if (header != null) {
             for (Map.Entry<String, String> entry : header.entrySet()) {
@@ -92,38 +98,45 @@ public class HttpClientUtils {
     /**
      * Multipart请求
      */
-    public static void sendMultipartPost(String content, String deviceNo) throws CloudPosRequestException {
+    public static String sendMultipartPost(String url, Map<String, String> stringParam, String deviceNo) {
 
-        String reqTime = String.valueOf(System.currentTimeMillis());
-        String securityCode = DigestUtils.md5Hex(MEMBER_CODE + DEVICE_NO + "" + reqTime + KEY);
-
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-        CloseableHttpClient client = httpClientBuilder.build();
-        HttpPost httpPost = new HttpPost(URL);
-        HttpEntity responseEntity = null;
-
+        CloseableHttpClient client = getCloseableHttpClient();
+        HttpPost httpPost = new HttpPost(url);
 
         try {
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-            multipartEntityBuilder.addPart("reqTime", new StringBody(reqTime, ContentType.create("multipart/form-data", "utf-8"))).addPart("securityCode", new StringBody(securityCode, ContentType.create("multipart/form-data", "utf-8"))).addPart("memberCode", new StringBody(MEMBER_CODE, ContentType.create("multipart/form-data", "utf-8"))).addPart("deviceNo", new StringBody(deviceNo, ContentType.create("multipart/form-data", "utf-8")))
-                    .addPart("mode", new StringBody(MODE, ContentType.create("multipart/form-data", "utf-8"))).addPart("msgDetail", new StringBody(content, ContentType.create("multipart/form-data", "utf-8")));
+            for (Map.Entry<String, String> entry : stringParam.entrySet()) {
+                multipartEntityBuilder.addPart(entry.getKey(), new StringBody(entry.getValue(), ContentType.create("multipart/form-data", "utf-8")));
+            }
             HttpEntity entity = multipartEntityBuilder.build();
             httpPost.setEntity(entity);
             CloseableHttpResponse response = client.execute(httpPost);
-            responseEntity = response.getEntity();
-            Map<String, Object> map = JsonUtils.toObject(EntityUtils.toString(responseEntity), Map.class);
+            HttpEntity responseEntity = response.getEntity();
+            String toString = EntityUtils.toString(responseEntity);
             EntityUtils.consume(responseEntity);
+            return toString;
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (responseEntity != null) {
+            if (client != null) {
                 try {
-                    EntityUtils.consume(responseEntity);
+                    client.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
+        return null;
+    }
+
+    /**
+     * 获取client
+     */
+    private static CloseableHttpClient getCloseableHttpClient() {
+        if (httpClientBuilder == null) {
+            httpClientBuilder = HttpClientBuilder.create();
+        }
+        return httpClientBuilder.build();
     }
 
 }
