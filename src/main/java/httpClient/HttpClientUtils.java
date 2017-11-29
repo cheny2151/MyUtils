@@ -13,7 +13,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -131,7 +130,7 @@ public class HttpClientUtils {
     /**
      * 获取client(懒加载builder 内部类方式实现)
      */
-    public static CloseableHttpClient getCloseableHttpClient() {
+    private static CloseableHttpClient getCloseableHttpClient() {
         return ClientHolder.httpClientBuilder.build();
     }
 

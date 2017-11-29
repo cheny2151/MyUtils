@@ -8,9 +8,25 @@ import java.util.Map;
 
 public class JsonUtils {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper;
 
-    private JsonUtils() {
+    private static int count = 0;
+
+    //懒加载同步锁方式
+    private static ObjectMapper getObjectMapper() {
+        if (objectMapper == null) {
+            initObjectMapper();
+        }
+        return objectMapper;
+    }
+
+    private synchronized static void initObjectMapper() {
+        if (objectMapper == null) {
+            objectMapper = new ObjectMapper();
+        }
+    }
+
+    public JsonUtils() {
     }
 
     /**
@@ -18,7 +34,7 @@ public class JsonUtils {
      */
     public static String toJson(Object object) {
         try {
-            return objectMapper.writeValueAsString(object);
+            return getObjectMapper().writeValueAsString(object);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -30,7 +46,7 @@ public class JsonUtils {
      */
     public static <T> T toJavaBean(String json, Class<T> type) {
         try {
-            objectMapper.readValue(json, type);
+            getObjectMapper().readValue(json, type);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -42,12 +58,11 @@ public class JsonUtils {
      */
     public static <T> T toMap(String json) {
         try {
-            objectMapper.readValue(json, Map.class);
+            getObjectMapper().readValue(json, Map.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
-
 
 }
