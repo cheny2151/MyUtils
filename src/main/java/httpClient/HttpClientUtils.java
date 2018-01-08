@@ -13,6 +13,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 public class HttpClientUtils {
 
-    private HttpClientUtils() {
+    public HttpClientUtils() {
     }
 
     /**
@@ -129,6 +130,8 @@ public class HttpClientUtils {
 
     /**
      * 获取client(懒加载builder 内部类方式实现)
+     * 详解:为什么静态内部类单例可以实现延迟加载？实际上是外部类被加载时内部类并不需要立即加载内部类，内部类不被加载则不需要进行类初始化，因此单例对象在外部类被加载了以后不占用内存。
+     * 详见:<a href="http://blog.csdn.net/reliveit/article/details/52874833"></a>
      */
     private static CloseableHttpClient getCloseableHttpClient() {
         return ClientHolder.httpClientBuilder.build();
@@ -136,6 +139,17 @@ public class HttpClientUtils {
 
     private static class ClientHolder {
         private final static HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+
+        static {
+            System.out.println("加载内部类");
+        }
+    }
+
+    @Test
+    public void test() throws InterruptedException {
+        System.out.println(new HttpClientUtils());
+        Thread.sleep(5000);
+        getCloseableHttpClient();
     }
 
 }
