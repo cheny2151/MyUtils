@@ -61,7 +61,7 @@ public class WorkBookReader {
      * @param targetClass
      * @return
      */
-    public Map<Integer, ReadProperty> analyAnnotation(Class targetClass) throws WorkBookReadException {
+    public <T> Map<Integer, ReadProperty> analyAnnotation(Class<T> targetClass) throws WorkBookReadException {
         //遍历所有含有@ExcelData的字段
         Map<Integer, ReadProperty> readPropertyMap = new HashMap<>();
         for (Field field : targetClass.getDeclaredFields()) {
@@ -69,7 +69,7 @@ public class WorkBookReader {
             if (annotation != null) {
                 //存放字段信息
                 readPropertyMap.put(annotation.column()
-                        , new ReadProperty(field.getName(), field.getType(), field, BeanUtils.getWriterMethod(targetClass, field.getName(), field.getType()))
+                        , new ReadProperty<T>(field.getName(), field.getType(), field, BeanUtils.getWriterMethod(targetClass, field.getName(), field.getType()))
                 );
             }
         }

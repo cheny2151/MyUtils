@@ -41,10 +41,7 @@ public class ReadProperty<T> {
     }
 
     public synchronized void writerUnkownTypeValue(T t, Object value) throws InvocationTargetException, IllegalAccessException {
-        if (this.propertyClass.equals(String.class)) {
-            value = value.toString();
-        }
-//        if ()
+
         this.getWriterMethod().invoke(t, value);
     }
 
