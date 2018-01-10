@@ -33,7 +33,7 @@ public class Student implements HomeWorkListener {
     }
 
     @Override
-    public void SubmitHomework() {
+    public void submitHomework() {
         for (Homework homework : this.homework) {
             if (homework.isComplete()) {
                 System.out.println(id + "completed" + homework.getHomeWorkContent() + ",so submit...");

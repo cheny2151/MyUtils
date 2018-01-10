@@ -19,10 +19,10 @@ public class Main {
                 e.printStackTrace();
             }
             teacher.publishHomework("数学作业");
+        teacher.comeBackHomework();
         }).start();
 
 
-        teacher.comeBackHomework();
 
     }
 

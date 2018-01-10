@@ -24,7 +24,7 @@ public class Teacher {
 
     public void comeBackHomework() {
         for (HomeWorkListener homeWorkListener : homeWorkListeners) {
-            homeWorkListener.SubmitHomework();
+            homeWorkListener.submitHomework();
         }
     }
 

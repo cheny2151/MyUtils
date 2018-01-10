@@ -10,5 +10,5 @@ public interface HomeWorkListener extends EventListener {
 
     void doHomework(Homework homework);
 
-    void SubmitHomework();
+    void submitHomework();
 }
