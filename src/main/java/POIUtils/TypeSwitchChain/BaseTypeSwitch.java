@@ -11,7 +11,7 @@ public abstract class BaseTypeSwitch {
         this.next = next;
     }
 
-    public abstract Object transform(Class target,Object value);
+    public abstract <T> T transform(Class<T> target,Object value);
 
     public BaseTypeSwitch getNext() {
         return next;

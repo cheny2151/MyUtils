@@ -1,7 +1,9 @@
 package POIUtils.demo;
 
 import POIUtils.PoiUtils;
+import POIUtils.TypeSwitchChain.TypeSwitchChain;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.junit.Test;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,6 +32,12 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void test() {
+        Double aDouble = TypeSwitchChain.getTypeSwitchChain().startTransform(Double.class, "9.9");
+        System.out.println(aDouble);
     }
 
 }

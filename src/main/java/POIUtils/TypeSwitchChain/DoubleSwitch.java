@@ -1,25 +1,24 @@
 package POIUtils.TypeSwitchChain;
 
-import POIUtils.ReadProperty;
-import org.junit.Test;
-
 /**
- * Created by cheny on 2018/1/10.
+ * Double类型转换器
  */
 public class DoubleSwitch extends BaseTypeSwitch {
 
-    @Override
-    public Object transform(Class target, Object value) {
-        if (Double.class.isAssignableFrom(target)) {
-            return Double.valueOf(value.toString());
-        }
-        return hasNext() ? getNext().transform(target, value) : null;
+    public DoubleSwitch() {
     }
 
-    @Test
-    public void test(){
+    public DoubleSwitch(BaseTypeSwitch next) {
+        super(next);
+    }
 
-
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T transform(Class<T> target, Object value) {
+        if (Double.class.isAssignableFrom(target)) {
+            return (T) Double.valueOf(value.toString());
+        }
+        return hasNext() ? getNext().transform(target, value) : null;
     }
 
 }
