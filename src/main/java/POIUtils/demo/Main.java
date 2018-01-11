@@ -2,12 +2,15 @@ package POIUtils.demo;
 
 import POIUtils.PoiUtils;
 import POIUtils.TypeSwitchChain.TypeSwitchChain;
+import POIUtils.WorkBookReader;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -36,8 +39,11 @@ public class Main {
 
     @Test
     public void test() {
-        Double aDouble = TypeSwitchChain.getTypeSwitchChain().startTransform(Double.class, "9.9");
-        System.out.println(aDouble);
+        File file = new File("C://360Downloads//test.xls");
+        List<MemberVoPOI> memberVoPOIS = PoiUtils.readFormFile(file, MemberVoPOI.class);
+        for (MemberVoPOI memberVoPOI:memberVoPOIS){
+            System.out.println(memberVoPOI);
+        }
     }
 
 }

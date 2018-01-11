@@ -1,5 +1,7 @@
 package POIUtils;
 
+import POIUtils.TypeSwitchChain.TypeSwitchChain;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -40,8 +42,8 @@ public class ReadProperty<T> {
         return writerMethod;
     }
 
-    public synchronized void writerUnkownTypeValue(T t, Object value) throws InvocationTargetException, IllegalAccessException {
-
+    public synchronized void writerUnknownTypeValue(T t, Object value) throws InvocationTargetException, IllegalAccessException {
+        value = TypeSwitchChain.getTypeSwitchChain().startTransform(this.getPropertyClass(), value);
         this.getWriterMethod().invoke(t, value);
     }
 

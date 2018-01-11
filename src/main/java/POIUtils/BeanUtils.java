@@ -36,7 +36,7 @@ public class BeanUtils {
 
     public static Method getWriterMethod(Class<?> clazz, String property, Class<?> propertyType) {
         try {
-            return StringUtils.isNotEmpty(property) ? clazz.getMethod(property, propertyType) : null;
+            return StringUtils.isNotEmpty(property) ? clazz.getMethod("set" + toUpperFirstLetter(property), propertyType) : null;
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
             return null;

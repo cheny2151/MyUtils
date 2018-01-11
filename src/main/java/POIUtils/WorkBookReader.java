@@ -1,5 +1,6 @@
 package POIUtils;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -7,7 +8,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,21 +23,34 @@ public class WorkBookReader {
 
     public <T> List<T> reader(File file, Class<T> targetClass) throws WorkBookReadException {
         try {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            Workbook workbook = judgeWorkBook(file.getName());
+            Workbook workbook = judgeWorkBook(file);
             Map<Integer, ReadProperty> readPropertyMap = analyAnnotation(targetClass);
-            Sheet sheet = workbook.getSheetAt(1);
+            Sheet sheet = workbook.getSheetAt(0);
             //默认数据都从第二行开始
-            for (int i = 2; i <= sheet.getLastRowNum(); i++) {
+            List<T> results = new ArrayList<>();
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 T t = createTarget(targetClass, readPropertyMap, sheet.getRow(i));
+                results.add(t);
             }
-            return null;
+            return results;
         } catch (Exception e) {
             throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
         }
     }
 
-    private <T> T createTarget(Class<T> targetClass, Map<Integer, ReadProperty> readPropertyMap, Row row) throws IllegalAccessException, InstantiationException {
+    /**
+     * 根据每一行创建一个实体
+     *
+     * @param targetClass     目标class
+     * @param readPropertyMap 字段信息集合
+     * @param row             行
+     * @param <T>             目标泛型
+     * @return
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws InvocationTargetException
+     */
+    private <T> T createTarget(Class<T> targetClass, Map<Integer, ReadProperty> readPropertyMap, Row row) throws IllegalAccessException, InstantiationException, InvocationTargetException {
         T t = targetClass.newInstance();
         for (Map.Entry<Integer, ReadProperty> entry : readPropertyMap.entrySet()) {
             ReadProperty readProperty = entry.getValue();
@@ -43,16 +60,17 @@ public class WorkBookReader {
                 value = cell.getNumericCellValue();
             } else if (cell.getCellTypeEnum().equals(STRING)) {
                 value = cell.getStringCellValue();
+            } else {
+                value = null;
             }
-//            BeanUtils.writerUnkownTypeProperty(t,);
-//            readProperty.getPropertyClass()
+            readProperty.writerUnknownTypeValue(t, value);
         }
-        return null;
+        return t;
     }
 
 
-    private Workbook judgeWorkBook(String name) {
-        return null;
+    private Workbook judgeWorkBook(File file) throws IOException {
+        return new HSSFWorkbook(new FileInputStream(file));
     }
 
     /**

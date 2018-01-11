@@ -1,10 +1,9 @@
 package POIUtils.demo;
 
 import POIUtils.ExcelCell;
+import POIUtils.ExcelData;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by hboxs011 on 2017/8/21.
@@ -12,38 +11,22 @@ import java.util.List;
 public class MemberVoPOI implements Serializable {
 
     private static final long serialVersionUID = 5312112449334866041L;
-    @ExcelCell(name = "微信xxxxxxxxxx")
+
+    @ExcelData(column = 0)
+    @ExcelCell(name = "微信微信微信")
     private String wechat;
-    @ExcelCell(name = "姓名aaaaaaaaa")
+
+    @ExcelData(column = 1)
+    @ExcelCell(name = "姓名姓名姓名")
     private String name;
-//    @ExcelCell(name = "high",isList = true,wight = 10000)
-    private List<String> high = new ArrayList<>();
-    @ExcelCell(name = "xaaxaxaxaxa地址")
+
+    @ExcelData(column = 2)
+    @ExcelCell(name = "地址地址地址")
     private String address;
+
+    @ExcelData(column = 3)
     @ExcelCell(name = "电话号码")
     private String phone;
-//    @ExcelCell(name = "内容",isList = true,wight = 10000)
-    private List<String> text = new ArrayList<>();
-    private String memberRank;
-    private Boolean isExpired;
-    private String membercard;
-    private String type;
-
-    public List<String> getHigh() {
-        return high;
-    }
-
-    public void setHigh(List<String> high) {
-        this.high = high;
-    }
-
-    public List<String> getText() {
-        return text;
-    }
-
-    public void setText(List<String> text) {
-        this.text = text;
-    }
 
     public String getWechat() {
         return wechat;
@@ -77,35 +60,13 @@ public class MemberVoPOI implements Serializable {
         this.phone = phone;
     }
 
-    public String getMemberRank() {
-        return memberRank;
-    }
-
-    public void setMemberRank(String memberRank) {
-        this.memberRank = memberRank;
-    }
-
-    public String getMembercard() {
-        return membercard;
-    }
-
-    public Boolean getIsExpired() {
-        return isExpired;
-    }
-
-    public void setIsExpired(Boolean expired) {
-        isExpired = expired;
-    }
-
-    public void setMembercard(String membercard) {
-        this.membercard = membercard;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+    @Override
+    public String toString() {
+        return "MemberVoPOI{" +
+                "wechat='" + wechat + '\'' +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", phone='" + phone + '\'' +
+                '}';
     }
 }
