@@ -28,7 +28,7 @@ public class TypeSwitchChain {
     }
 
     /**
-     * 获取
+     * 获取单例
      *
      * @return
      */
@@ -47,7 +47,7 @@ public class TypeSwitchChain {
     }
 
     public <T> T startTransform(Class<T> target, Object value) {
-        return getStartSwitch().transform(target, value);
+        return value != null ? getStartSwitch().transform(target, value) : null;
     }
 
     private BaseTypeSwitch getStartSwitch() {

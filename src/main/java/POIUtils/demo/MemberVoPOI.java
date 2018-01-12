@@ -1,7 +1,7 @@
 package POIUtils.demo;
 
-import POIUtils.ExcelCell;
-import POIUtils.ExcelData;
+import POIUtils.annotation.ExcelCell;
+import POIUtils.annotation.ExcelData;
 
 import java.io.Serializable;
 

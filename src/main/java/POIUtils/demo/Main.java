@@ -1,8 +1,7 @@
 package POIUtils.demo;
 
 import POIUtils.PoiUtils;
-import POIUtils.TypeSwitchChain.TypeSwitchChain;
-import POIUtils.WorkBookReader;
+import com.sun.istack.internal.NotNull;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.junit.Test;
 
@@ -41,8 +40,19 @@ public class Main {
     public void test() {
         File file = new File("C://360Downloads//test.xls");
         List<MemberVoPOI> memberVoPOIS = PoiUtils.readFormFile(file, MemberVoPOI.class);
-        for (MemberVoPOI memberVoPOI:memberVoPOIS){
+        for (MemberVoPOI memberVoPOI : memberVoPOIS) {
             System.out.println(memberVoPOI);
+        }
+    }
+
+    @Test
+    public void test2() {
+        HSSFWorkbook workbook = PoiUtils.createEmptySheet(MemberVoPOI.class);
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream("C://360Downloads//test.xls");
+            workbook.write(fileOutputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

@@ -1,4 +1,4 @@
-package POIUtils;
+package POIUtils.utils;
 
 import org.apache.commons.lang.StringUtils;
 

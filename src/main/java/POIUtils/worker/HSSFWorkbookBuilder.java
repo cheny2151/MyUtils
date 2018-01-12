@@ -1,5 +1,7 @@
-package POIUtils;
+package POIUtils.worker;
 
+import POIUtils.annotation.ExcelCell;
+import POIUtils.utils.BeanUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -12,10 +14,31 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * excel表创建者
+ */
 public class HSSFWorkbookBuilder {
 
     private final static String KEY = "LIST_FIELD";
 
+    /**
+     * 创建空表格
+     *
+     * @param targetClass
+     * @return
+     */
+    public HSSFWorkbook createHead(Class<?> targetClass) {
+        HSSFWorkbook workbook = new HSSFWorkbook();
+        createHead(workbook, targetClass);
+        return workbook;
+    }
+
+    /**
+     * 导出表格
+     *
+     * @param data
+     * @return
+     */
     public HSSFWorkbook createSheet(List<?> data) {
 
         if (data == null || data.get(0) == null) {
@@ -23,7 +46,6 @@ public class HSSFWorkbookBuilder {
         }
         Class<?> entityType = data.get(0).getClass();
         HSSFWorkbook workbook = new HSSFWorkbook();
-        workbook.createSheet("sheet1");
         Map<String, Object> head = createHead(workbook, entityType);
         createCount(workbook, data, head);
         return workbook;
@@ -33,9 +55,10 @@ public class HSSFWorkbookBuilder {
     /**
      * 设置表头
      */
-    public Map<String, Object> createHead(HSSFWorkbook workbook, Class<?> targetClass) {
+    private Map<String, Object> createHead(HSSFWorkbook workbook, Class<?> targetClass) {
 
-        HSSFSheet sheet = workbook.getSheet("sheet1");
+        workbook.createSheet("sheet");
+        HSSFSheet sheet = workbook.getSheetAt(0);
         int column = 0;
         Map<String, Object> headInfo = new LinkedHashMap<>();
         headInfo.put(KEY, null);
@@ -70,9 +93,9 @@ public class HSSFWorkbookBuilder {
      * 设置表内容
      */
     @SuppressWarnings("unchecked")
-    public void createCount(HSSFWorkbook workbook, List<?> data, Map<String, Object> headInfo) {
+    private void createCount(HSSFWorkbook workbook, List<?> data, Map<String, Object> headInfo) {
 
-        HSSFSheet sheet = workbook.getSheet("sheet1");
+        HSSFSheet sheet = workbook.getSheetAt(0);
         String listField = (String) headInfo.remove(KEY);
         int row = 1;
         for (Object object : data) {

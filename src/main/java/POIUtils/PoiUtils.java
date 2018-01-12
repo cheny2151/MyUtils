@@ -1,5 +1,7 @@
 package POIUtils;
 
+import POIUtils.worker.HSSFWorkbookBuilder;
+import POIUtils.worker.WorkBookReader;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 import java.io.File;
@@ -36,6 +38,10 @@ public class PoiUtils {
 
     public static HSSFWorkbook createSheet(List<?> data) {
         return getHSSFWorkbookBuilder().createSheet(data);
+    }
+
+    public static HSSFWorkbook createEmptySheet(Class<?> targetClass) {
+        return getHSSFWorkbookBuilder().createHead(targetClass);
     }
 
     public static <T> List<T> readFormFile(File file, Class<T> targetClass) {

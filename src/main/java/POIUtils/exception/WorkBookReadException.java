@@ -1,4 +1,4 @@
-package POIUtils;
+package POIUtils.exception;
 
 public class WorkBookReadException extends RuntimeException {
 

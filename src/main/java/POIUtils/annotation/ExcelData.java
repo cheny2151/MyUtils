@@ -1,4 +1,4 @@
-package POIUtils;
+package POIUtils.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,12 +7,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ExcelCell {
+public @interface ExcelData {
 
-    String name();
-
-    int wight() default -1;
-
-    boolean isList() default false;
+    int column();
 
 }

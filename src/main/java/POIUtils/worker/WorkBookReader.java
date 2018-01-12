@@ -1,5 +1,9 @@
-package POIUtils;
+package POIUtils.worker;
 
+import POIUtils.ReadProperty;
+import POIUtils.annotation.ExcelData;
+import POIUtils.exception.WorkBookReadException;
+import POIUtils.utils.BeanUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -19,6 +23,9 @@ import java.util.Map;
 import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 import static org.apache.poi.ss.usermodel.CellType.STRING;
 
+/**
+ * excel表读取者
+ */
 public class WorkBookReader {
 
     public <T> List<T> reader(File file, Class<T> targetClass) throws WorkBookReadException {
@@ -55,6 +62,9 @@ public class WorkBookReader {
         for (Map.Entry<Integer, ReadProperty> entry : readPropertyMap.entrySet()) {
             ReadProperty readProperty = entry.getValue();
             Cell cell = row.getCell(entry.getKey());
+            if (cell == null) {
+                return null;
+            }
             Object value;
             if (cell.getCellTypeEnum().equals(NUMERIC)) {
                 value = cell.getNumericCellValue();
