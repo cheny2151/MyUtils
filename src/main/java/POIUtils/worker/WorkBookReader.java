@@ -2,6 +2,7 @@ package POIUtils.worker;
 
 import POIUtils.ReadProperty;
 import POIUtils.annotation.ExcelData;
+import POIUtils.annotation.ExcelHead;
 import POIUtils.exception.WorkBookReadException;
 import POIUtils.utils.BeanUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -33,9 +34,14 @@ public class WorkBookReader {
             Workbook workbook = judgeWorkBook(file);
             Map<Integer, ReadProperty> readPropertyMap = analyAnnotation(targetClass);
             Sheet sheet = workbook.getSheetAt(0);
-            //默认数据都从第二行开始
+            //数据出现行数,从0开始算
+            ExcelHead excelHead = targetClass.getAnnotation(ExcelHead.class);
+            int startRowNumber = 1;
+            if (excelHead != null && !"".equals(excelHead.title())) {
+                startRowNumber++;
+            }
             List<T> results = new ArrayList<>();
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (int i = startRowNumber; i <= sheet.getLastRowNum(); i++) {
                 T t = createTarget(targetClass, readPropertyMap, sheet.getRow(i));
                 results.add(t);
             }

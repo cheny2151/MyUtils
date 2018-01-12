@@ -1,6 +1,7 @@
 package POIUtils.worker;
 
 import POIUtils.annotation.ExcelCell;
+import POIUtils.annotation.ExcelHead;
 import POIUtils.utils.BeanUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -19,7 +20,9 @@ import java.util.Map;
  */
 public class HSSFWorkbookBuilder {
 
-    private final static String KEY = "LIST_FIELD";
+    private final static String LIST_FIELD = "LIST_FIELD";
+
+    private final static String TITLE = "HAS_TITLE";
 
     /**
      * 创建空表格
@@ -57,36 +60,61 @@ public class HSSFWorkbookBuilder {
      */
     private Map<String, Object> createHead(HSSFWorkbook workbook, Class<?> targetClass) {
 
-        workbook.createSheet("sheet");
+        ExcelHead excelHead = targetClass.getAnnotation(ExcelHead.class);
+        workbook.createSheet(excelHead != null ? excelHead.sheetName() : "sheet");
+        //若有标题则第一行用于放标题
+        String title = null;
+        int startRowNumber = 0;
+        if (excelHead != null && !"".equals(excelHead.title())) {
+            title = excelHead.title();
+            startRowNumber++;
+        }
+
         HSSFSheet sheet = workbook.getSheetAt(0);
         int column = 0;
         Map<String, Object> headInfo = new LinkedHashMap<>();
-        headInfo.put(KEY, null);
-        Field[] fields = targetClass.getDeclaredFields();
-        HSSFRow row_0 = sheet.createRow(0);
-        for (Field field : fields) {
+        headInfo.put(LIST_FIELD, null);
+        HSSFRow startRow = sheet.createRow(startRowNumber);
+        for (Field field : targetClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(ExcelCell.class)) {
                 ExcelCell cellAnnotation = field.getAnnotation(ExcelCell.class);
                 //行高
-                row_0.setHeight((short) 500);
+                startRow.setHeight((short) 500);
                 //列宽
                 if (cellAnnotation.wight() > 0) {
                     sheet.setColumnWidth(column, cellAnnotation.wight() * 1024);
                 } else {
                     sheet.setColumnWidth(column, cellAnnotation.name().getBytes().length * 500);
                 }
-                HSSFCell cell = row_0.createCell(column++);
+                HSSFCell cell = startRow.createCell(column++);
                 setHeadStyle(workbook, cell);
                 cell.setCellValue(cellAnnotation.name());
                 boolean isList = cellAnnotation.isList();
-                if (headInfo.get(KEY) == null && isList) {
-                    headInfo.put(KEY, field.getName());
+                if (headInfo.get(LIST_FIELD) == null && isList) {
+                    headInfo.put(LIST_FIELD, field.getName());
                 }
                 headInfo.put(field.getName(), cellAnnotation.isList());
             }
         }
+
+        if (title != null) {
+            headInfo.put(TITLE, title);
+            HSSFCell cell = createTitle(sheet, title, headInfo.size() - 2);
+            cell.getRow().setHeight((short) 800);
+            setHeadStyle(workbook, cell);
+        }
+
+
         return headInfo;
 
+    }
+
+    private HSSFCell createTitle(HSSFSheet sheet, String title, int column) {
+        HSSFCell hssfCell = setValue(sheet, 0, 0, title);
+        CellRangeAddress cellRangeAddress = new CellRangeAddress(0, 0, 0, column);
+        sheet.addMergedRegion(cellRangeAddress);
+        setRegionBorder(cellRangeAddress, sheet);
+        return hssfCell;
     }
 
     /**
@@ -96,8 +124,11 @@ public class HSSFWorkbookBuilder {
     private void createCount(HSSFWorkbook workbook, List<?> data, Map<String, Object> headInfo) {
 
         HSSFSheet sheet = workbook.getSheetAt(0);
-        String listField = (String) headInfo.remove(KEY);
+        String listField = (String) headInfo.remove(LIST_FIELD);
         int row = 1;
+        if (headInfo.remove(TITLE) != null) {
+            row++;
+        }
         for (Object object : data) {
             int column = 0;
             Integer size = null;

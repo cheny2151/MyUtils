@@ -2,12 +2,14 @@ package POIUtils.demo;
 
 import POIUtils.annotation.ExcelCell;
 import POIUtils.annotation.ExcelData;
+import POIUtils.annotation.ExcelHead;
 
 import java.io.Serializable;
 
 /**
  * Created by hboxs011 on 2017/8/21.
  */
+@ExcelHead(title = "这是一个标题")
 public class MemberVoPOI implements Serializable {
 
     private static final long serialVersionUID = 5312112449334866041L;
