@@ -36,14 +36,34 @@ public class PoiUtils {
         return HSSFWorkbookBuilderHolder.HSSF_WORKBOOK_BUILDERK_BUILDER;
     }
 
+    /**
+     * 创建一张含有数据的表
+     *
+     * @param data 数据
+     * @return
+     */
     public static HSSFWorkbook createSheet(List<?> data) {
         return getHSSFWorkbookBuilder().createSheet(data);
     }
 
+    /**
+     * 创建一张表头
+     *
+     * @param targetClass 目标类型
+     * @return
+     */
     public static HSSFWorkbook createEmptySheet(Class<?> targetClass) {
         return getHSSFWorkbookBuilder().createHead(targetClass);
     }
 
+    /**
+     * 读取数据
+     *
+     * @param file        文件
+     * @param targetClass 目标类型
+     * @param <T>         类型
+     * @return
+     */
     public static <T> List<T> readFormFile(File file, Class<T> targetClass) {
         return getWorkBookReader().reader(file, targetClass);
     }

@@ -98,10 +98,10 @@ public class HSSFWorkbookBuilder {
         }
 
         if (title != null) {
-            headInfo.put(TITLE, title);
             HSSFCell cell = createTitle(sheet, title, headInfo.size() - 2);
             cell.getRow().setHeight((short) 800);
             setHeadStyle(workbook, cell);
+            headInfo.put(TITLE, title);
         }
 
 
