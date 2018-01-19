@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.ss.util.RegionUtil;
 
 import java.lang.reflect.Field;
@@ -85,6 +86,10 @@ public class HSSFWorkbookBuilder {
                     sheet.setColumnWidth(column, cellAnnotation.wight() * 1024);
                 } else {
                     sheet.setColumnWidth(column, cellAnnotation.name().getBytes().length * 500);
+                }
+                //为布尔型的单元格初始化下拉框
+                if (Boolean.class.isAssignableFrom(field.getType()) || boolean.class.isAssignableFrom(field.getType())) {
+                    sheet.addValidationData(initSeller(new String[]{"是", "否"}, startRowNumber + 1, column));
                 }
                 HSSFCell cell = startRow.createCell(column++);
                 setHeadStyle(workbook, cell);
@@ -261,6 +266,19 @@ public class HSSFWorkbookBuilder {
         cell.setCellValue(value);
         return cell;
 
+    }
+
+    /**
+     * 初始化下拉框
+     *
+     * @param values   下拉框值
+     * @param startRow 下拉框开始行
+     * @param column   下拉框列
+     */
+    private HSSFDataValidation initSeller(String[] values, int startRow, int column) {
+        DVConstraint constraint = DVConstraint.createExplicitListConstraint(values);
+        CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(startRow, 1000, column, column);
+        return new HSSFDataValidation(cellRangeAddressList, constraint);
     }
 
 }
