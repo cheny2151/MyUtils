@@ -19,7 +19,11 @@ public class IntegerSwitch extends BaseTypeSwitch {
     @Override
     public <T> T transform(Class<T> target, Object value) {
         if (Integer.class.isAssignableFrom(target)) {
-            return (T) Integer.valueOf(value.toString());
+            String transform = value.toString();
+            if (transform.contains(".")) {
+                transform = transform.substring(0, transform.indexOf("."));
+            }
+            return (T) Integer.valueOf(transform);
         }
         return hasNext() ? getNext().transform(target, value) : null;
     }
