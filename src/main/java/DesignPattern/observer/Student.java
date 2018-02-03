@@ -1,5 +1,6 @@
 package DesignPattern.observer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,7 @@ import java.util.List;
  * 观察者模式：监听器模式
  * Listener 监听器实现类
  */
-public class Student implements HomeWorkListener {
+public class Student implements HomeWorkListener,Serializable {
 
     private String id;
 

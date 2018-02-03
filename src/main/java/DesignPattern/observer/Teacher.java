@@ -1,12 +1,13 @@
 package DesignPattern.observer;
 
+import java.io.Serializable;
 import java.util.Vector;
 
 /**
  * 观察者模式：监听器模式
  * source 事件源
  */
-public class Teacher {
+public class Teacher implements Serializable {
 
     private Vector<HomeWorkListener> homeWorkListeners = new Vector<>();
 
