@@ -22,7 +22,7 @@ public class TypeSwitchChain {
             TYPE_SWITCH_CHAIN = new TypeSwitchChain();
             DoubleSwitch end = new DoubleSwitch();
             TYPE_SWITCH_CHAIN.end = end;
-            TYPE_SWITCH_CHAIN.start = new StringSwitch(new IntegerSwitch(new BooleanSwitch(end)));
+            TYPE_SWITCH_CHAIN.start = new StringSwitch(new IntegerSwitch(new BooleanSwitch(new DateTypeSwitch(end))));
         }
 
     }

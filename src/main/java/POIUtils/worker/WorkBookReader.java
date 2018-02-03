@@ -5,6 +5,7 @@ import POIUtils.annotation.ExcelData;
 import POIUtils.annotation.ExcelHead;
 import POIUtils.exception.WorkBookReadException;
 import POIUtils.utils.BeanUtils;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -20,9 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
-import static org.apache.poi.ss.usermodel.CellType.STRING;
 
 /**
  * excel表读取者
@@ -71,17 +69,39 @@ public class WorkBookReader {
             if (cell == null) {
                 return null;
             }
-            Object value;
-            if (cell.getCellTypeEnum().equals(NUMERIC)) {
-                value = cell.getNumericCellValue();
-            } else if (cell.getCellTypeEnum().equals(STRING)) {
-                value = cell.getStringCellValue();
-            } else {
-                value = null;
-            }
+            Object value = getCellValue(cell);
             readProperty.writerUnknownTypeValue(t, value);
         }
         return t;
+    }
+
+    /**
+     * 获取单元格数据(只处理Number和String)
+     * Date属于Number
+     *
+     * @param cell
+     * @return
+     */
+    private Object getCellValue(Cell cell) {
+        Object value;
+        switch (cell.getCellTypeEnum()) {
+            case STRING: {
+                value = cell.getStringCellValue();
+                break;
+            }
+            case NUMERIC: {
+                if (HSSFDateUtil.isCellDateFormatted(cell)) {
+                    value = cell.getDateCellValue();
+                } else {
+                    value = cell.getNumericCellValue();
+                }
+                break;
+            }
+            default: {
+                value = null;
+            }
+        }
+        return value;
     }
 
 
