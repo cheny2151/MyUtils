@@ -36,26 +36,14 @@ public class Observable<T> {
         void call(AbstractSubscriber<T> subscriber);
     }
 
-    /**
-     * 转换流
-     *
-     * @param transformer
-     * @param <R>
-     * @return
-     */
     public <R> Observable<R> map1(Transformer<T, R> transformer) {
-        return new Observable<>(new OnSubscribe<R>() {
+        return new Observable<R>(new OnSubscribe<R>() {
             @Override
             public void call(AbstractSubscriber<R> subscriber) {
                 Observable.this.onSubscribe.call(new AbstractSubscriber<T>() {
                     @Override
-                    public void onStart() {
-                        subscriber.onStart();
-                    }
-
-                    @Override
-                    public void onCompleted() {
-                        subscriber.onCompleted();
+                    public void onExecute(T var1) {
+                        subscriber.onExecute(transformer.transformer(var1));
                     }
 
                     @Override
@@ -64,15 +52,27 @@ public class Observable<T> {
                     }
 
                     @Override
-                    public void onExecute(T var1) {
-                        subscriber.onExecute(transformer.transformer(var1));
+                    public void onCompleted() {
+                        subscriber.onCompleted();
+                    }
+
+                    @Override
+                    public void onStart() {
+                        subscriber.onStart();
                     }
                 });
             }
-        }
-        );
+        });
+
     }
 
+    /**
+     * 转换流
+     *
+     * @param transformer
+     * @param <R>
+     * @return
+     */
     public <R> Observable<R> map(Transformer<T, R> transformer) {
         return new Observable<>(MapOnSubscribe.create(this.onSubscribe, transformer));
     }
@@ -88,7 +88,7 @@ public class Observable<T> {
     }
 
     /**
-     * 转换流
+     * 转换OnSubscribe实现类
      *
      * @param <T>
      * @param <R>
@@ -129,7 +129,6 @@ public class Observable<T> {
 
                 @Override
                 public void onExecute(T var1) {
-                    System.out.println(subscriber);
                     subscriber.onExecute(transformer.transformer(var1));
                 }
 

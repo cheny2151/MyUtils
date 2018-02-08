@@ -6,11 +6,14 @@ public class Main {
 
     @Test
     public void test() {
-        Observable.create((Observable.OnSubscribe<Integer>) subscriber -> {
-            for (int i = 0; i < 10; i++) {
-                subscriber.onExecute(1);
+        Observable.create(new Observable.OnSubscribe<Integer>() {
+            @Override
+            public void call(AbstractSubscriber<Integer> subscriber) {
+                for (int i = 0; i < 10; i++) {
+                    subscriber.onExecute(i);
+                }
             }
-        }).map1(String::valueOf).subscribe(new AbstractSubscriber<String>() {
+        }).map(from -> from+"after").subscribe(new AbstractSubscriber<String>() {
             @Override
             public void onExecute(String var1) {
                 System.out.println(var1);
