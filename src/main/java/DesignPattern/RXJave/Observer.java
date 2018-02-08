@@ -7,10 +7,12 @@ package DesignPattern.RXJave;
  */
 public interface Observer<T> {
 
-    void onNext(T var1);
+    void onStart();
 
     void onCompleted();
 
     void onError(Throwable t);
+
+    void onExecute(T var1);
 
 }

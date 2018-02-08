@@ -1,10 +1,15 @@
 package DesignPattern.RXJave;
 
+/**
+ * 订阅源
+ *
+ * @param <T>
+ */
 public class Observable<T> {
 
     private OnSubscribe<T> onSubscribe;
 
-    public Observable(OnSubscribe<T> onSubscribe) {
+    private Observable(OnSubscribe<T> onSubscribe) {
         this.onSubscribe = onSubscribe;
     }
 
@@ -31,4 +36,105 @@ public class Observable<T> {
         void call(AbstractSubscriber<T> subscriber);
     }
 
+    /**
+     * 转换流
+     *
+     * @param transformer
+     * @param <R>
+     * @return
+     */
+    public <R> Observable<R> map1(Transformer<T, R> transformer) {
+        return new Observable<>(new OnSubscribe<R>() {
+            @Override
+            public void call(AbstractSubscriber<R> subscriber) {
+                Observable.this.onSubscribe.call(new AbstractSubscriber<T>() {
+                    @Override
+                    public void onStart() {
+                        subscriber.onStart();
+                    }
+
+                    @Override
+                    public void onCompleted() {
+                        subscriber.onCompleted();
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        subscriber.onError(t);
+                    }
+
+                    @Override
+                    public void onExecute(T var1) {
+                        subscriber.onExecute(transformer.transformer(var1));
+                    }
+                });
+            }
+        }
+        );
+    }
+
+    public <R> Observable<R> map(Transformer<T, R> transformer) {
+        return new Observable<>(MapOnSubscribe.create(this.onSubscribe, transformer));
+    }
+
+    /**
+     * 转换器
+     *
+     * @param <T>
+     * @param <R>
+     */
+    public interface Transformer<T, R> {
+        R transformer(T from);
+    }
+
+    /**
+     * 转换流
+     *
+     * @param <T>
+     * @param <R>
+     */
+    private static class MapOnSubscribe<T, R> implements OnSubscribe<R> {
+
+        private OnSubscribe<T> onSubscribe;
+
+        private Transformer<T, R> transformer;
+
+        private MapOnSubscribe(OnSubscribe<T> onSubscribe, Transformer<T, R> transformer) {
+            this.onSubscribe = onSubscribe;
+            this.transformer = transformer;
+        }
+
+        private static <T, R> MapOnSubscribe<T, R> create(OnSubscribe<T> onSubscribe, Transformer<T, R> transformer) {
+            return new MapOnSubscribe<>(onSubscribe, transformer);
+        }
+
+        @Override
+        public void call(AbstractSubscriber<R> subscriber) {
+            onSubscribe.call(new AbstractSubscriber<T>() {
+
+                @Override
+                public void onError(Throwable t) {
+                    subscriber.onError(t);
+                }
+
+                @Override
+                public void onCompleted() {
+                    subscriber.onCompleted();
+                }
+
+                @Override
+                public void onStart() {
+                    subscriber.onStart();
+                }
+
+                @Override
+                public void onExecute(T var1) {
+                    System.out.println(subscriber);
+                    subscriber.onExecute(transformer.transformer(var1));
+                }
+
+            });
+        }
+
+    }
 }

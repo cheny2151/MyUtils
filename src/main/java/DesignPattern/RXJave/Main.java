@@ -1,6 +1,5 @@
 package DesignPattern.RXJave;
 
-import jdk.nashorn.internal.objects.annotations.Where;
 import org.junit.Test;
 
 public class Main {
@@ -9,32 +8,15 @@ public class Main {
     public void test() {
         Observable.create((Observable.OnSubscribe<Integer>) subscriber -> {
             for (int i = 0; i < 10; i++) {
-                subscriber.onNext(i);
+                subscriber.onExecute(1);
             }
-        }).subscribe(new AbstractSubscriber<Integer>() {
+        }).map1(String::valueOf).subscribe(new AbstractSubscriber<String>() {
             @Override
-            void onStart() {
-                System.out.println("start");
-            }
-
-            @Override
-            public void onNext(Integer var1) {
+            public void onExecute(String var1) {
                 System.out.println(var1);
-                if (var1==8){
-                    throw new RuntimeException("...");
-                }
-            }
-
-            @Override
-            public void onCompleted() {
-                System.out.println("文勇吃屎");
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                System.out.println("error");
             }
         });
     }
+
 
 }

@@ -7,6 +7,15 @@ package DesignPattern.RXJave;
  */
 public abstract class AbstractSubscriber<T> implements Observer<T> {
 
-    abstract void onStart();
+    public void onError(Throwable t) {
+        t.printStackTrace();
+    }
+
+    public void onCompleted() {
+    }
+
+    @Override
+    public void onStart() {
+    }
 
 }
