@@ -1,4 +1,4 @@
-package DesignPattern.RXJave;
+package DesignPattern.observer.RXJave;
 
 /**
  * 订阅源
@@ -34,36 +34,6 @@ public class Observable<T> {
      */
     public interface OnSubscribe<T> {
         void call(AbstractSubscriber<T> subscriber);
-    }
-
-    public <R> Observable<R> map1(Transformer<T, R> transformer) {
-        return new Observable<R>(new OnSubscribe<R>() {
-            @Override
-            public void call(AbstractSubscriber<R> subscriber) {
-                Observable.this.onSubscribe.call(new AbstractSubscriber<T>() {
-                    @Override
-                    public void onExecute(T var1) {
-                        subscriber.onExecute(transformer.transformer(var1));
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        subscriber.onError(t);
-                    }
-
-                    @Override
-                    public void onCompleted() {
-                        subscriber.onCompleted();
-                    }
-
-                    @Override
-                    public void onStart() {
-                        subscriber.onStart();
-                    }
-                });
-            }
-        });
-
     }
 
     /**

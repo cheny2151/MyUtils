@@ -1,4 +1,4 @@
-package DesignPattern.observer;
+package DesignPattern.observer.single;
 
 public class Main {
     public static void main(String[] args) {

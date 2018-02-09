@@ -1,4 +1,4 @@
-package DesignPattern.RXJave;
+package DesignPattern.observer.RXJave;
 
 /**
  * 观察者抽象类

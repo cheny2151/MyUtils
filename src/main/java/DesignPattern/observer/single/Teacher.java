@@ -1,4 +1,4 @@
-package DesignPattern.observer;
+package DesignPattern.observer.single;
 
 import java.io.Serializable;
 import java.util.Vector;
