@@ -35,6 +35,13 @@ public class Observable<T> {
         executor = Executors.newSingleThreadExecutor();
     }
 
+    /**
+     * 创建实例
+     *
+     * @param action 资源任务
+     * @param <T>
+     * @return
+     */
     public static <T> Observable<T> create(Action<T> action) {
         Observable<T> observable = new Observable<>(action);
         action.setObservable(observable);
