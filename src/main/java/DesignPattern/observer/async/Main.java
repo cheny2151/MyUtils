@@ -17,7 +17,7 @@ public class Main {
         observable.asyncAction();
         observable.subscribe(System.out::println);
         observable.subscribe((future) -> System.out.println("second" + future));
-        Thread.sleep(1100);
+        Thread.sleep(2000);
         observable.subscribe((future) -> System.out.println("three" + future));
         Thread.sleep(100);
     }
