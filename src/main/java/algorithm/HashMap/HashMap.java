@@ -76,7 +76,10 @@ public class HashMap<K, V> {
         this.capacity = tableSizeFor(initCapacity);
     }
 
-    public static int tableSizeFor(int initCapacity) {
+    /**
+     * 取最接近且大于入参的2的次幂的值
+     */
+    private static int tableSizeFor(int initCapacity) {
         initCapacity--;
         initCapacity |= initCapacity >>> 1;
         initCapacity |= initCapacity >>> 2;
@@ -84,6 +87,10 @@ public class HashMap<K, V> {
         initCapacity |= initCapacity >>> 8;
         initCapacity |= initCapacity >>> 16;
         return initCapacity < 0 ? 1 : initCapacity > MAX_CAPACITY ? MAX_CAPACITY : initCapacity + 1;
+    }
+
+    private static int hash(Object key) {
+        return 0;
     }
 
     static class Node<K, V> {
