@@ -45,6 +45,11 @@ public class HashMap<K, V> {
     int capacity;
 
     /**
+     * 临界值
+     */
+    int threshold;
+
+    /**
      * 负载因子
      */
     final float loadFactor;
@@ -52,6 +57,7 @@ public class HashMap<K, V> {
     public HashMap() {
         this.capacity = DEFAULT_CAPACITY;
         this.loadFactor = DEFAULT_LOAD_FACTOR;
+        synchThreshold();
     }
 
     public HashMap(float loadFactor) {
@@ -60,6 +66,7 @@ public class HashMap<K, V> {
             throw new IllegalArgumentException("illegal load factor:" + loadFactor);
         }
         this.loadFactor = loadFactor;
+        synchThreshold();
     }
 
     public HashMap(int initCapacity, float loadFactor) {
@@ -74,6 +81,14 @@ public class HashMap<K, V> {
             this.capacity = MAX_CAPACITY;
         }
         this.capacity = tableSizeFor(initCapacity);
+        synchThreshold();
+    }
+
+    /**
+     * 同步临界值threshold
+     */
+    private void synchThreshold() {
+        this.threshold = (int) (this.capacity * this.loadFactor);
     }
 
     /**
@@ -90,9 +105,20 @@ public class HashMap<K, V> {
     }
 
     private static int hash(Object key) {
-        return 0;
+        int h;
+        return key == null ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
 
+    private int tableIndexFor(int hash) {
+        return hash & (capacity - 1);
+    }
+
+    /**
+     * 内部类：节点，存放数据
+     *
+     * @param <K>
+     * @param <V>
+     */
     static class Node<K, V> {
         final int hash;
         final K key;
@@ -139,5 +165,26 @@ public class HashMap<K, V> {
             return Objects.hashCode(this.key) ^ Objects.hashCode(this.value);
         }
     }
+
+    public void put(K key, V value) {
+        putVal(hash(key), key, value);
+    }
+
+    final V putVal(int hash, K key, V value) {
+        Node<K, V> tarNode;
+        if (table == null) {
+            table = (Node<K, V>[]) new Node[capacity];
+        }
+        if ((tarNode = table[tableIndexFor(hash)]) != null) {
+            while (tarNode.next != null) {
+                tarNode = tarNode.next;
+            }
+            tarNode.next = new Node<>(hash, key, value, null);
+        }else {
+            tarNode = new Node<>(hash, key, value, null);
+        }
+        return null;
+    }
+
 
 }
