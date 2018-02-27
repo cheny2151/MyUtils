@@ -172,16 +172,21 @@ public class HashMap<K, V> {
 
     final V putVal(int hash, K key, V value) {
         Node<K, V> tarNode;
+        int index;
         if (table == null) {
             table = (Node<K, V>[]) new Node[capacity];
         }
-        if ((tarNode = table[tableIndexFor(hash)]) != null) {
+        if ((tarNode = table[(index=tableIndexFor(hash))]) != null) {
             while (tarNode.next != null) {
                 tarNode = tarNode.next;
             }
             tarNode.next = new Node<>(hash, key, value, null);
         }else {
-            tarNode = new Node<>(hash, key, value, null);
+            table[index] = new Node<>(hash, key, value, null);
+        }
+        size++;
+        if (size>this.loadFactor){
+
         }
         return null;
     }
