@@ -171,24 +171,128 @@ public class HashMap<K, V> {
     }
 
     final V putVal(int hash, K key, V value) {
-        Node<K, V> tarNode;
+        Node<K, V> tarNode, oldNode = null;
         int index;
         if (table == null) {
             table = (Node<K, V>[]) new Node[capacity];
         }
-        if ((tarNode = table[(index=tableIndexFor(hash))]) != null) {
-            while (tarNode.next != null) {
+        if ((tarNode = table[(index = tableIndexFor(hash))]) != null) {
+            while (true) {
+                //如果key已经存在,则记录该节点
+                if (tarNode.key.equals(key) && tarNode.hash == hash) {
+                    oldNode = tarNode;
+                    break;
+                }
+                //如果下个节点不存在，则退出循环
+                if (tarNode.next == null) break;
                 tarNode = tarNode.next;
             }
+            //如果key已经存在，则重新赋值并立刻放回oldVal
+            if (oldNode != null) {
+                V oldVal = oldNode.value;
+                oldNode.setValue(value);
+                return oldVal;
+            }
+            //执行此语句的条件:key不存在且桶上已经存在节点,将新节点放入next
             tarNode.next = new Node<>(hash, key, value, null);
-        }else {
+        } else {
+            //执行此语句的条件:索引桶上不存在节点
             table[index] = new Node<>(hash, key, value, null);
         }
         size++;
-        if (size>this.loadFactor){
-
+        if (size > this.threshold) {
+            resize();
         }
         return null;
+    }
+
+    /**
+     * 重置桶数量和位置
+     * 由于我们使用2的幂来扩容，则每个bin元素要么还是在原来的bucket中，要么在2的幂中。
+     * 实现细节:假设oldCap = 16 -> 10000,oldCap&hash==0则还是在原来的bucket中，==1则在2的幂中（原位置i+oldCap）
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    final void resize() {
+        Node<K, V>[] oldTab = table;
+        Node<K, V> current, next;
+        int oldCap = capacity;
+        if (oldCap >= MAX_CAPACITY) return;
+        capacity = capacity << 2;
+        synchThreshold();
+        table = (Node<K, V>[]) new Node[capacity];
+        for (int i = 0; i < oldCap; i++) {
+            if ((next = oldTab[i]) != null) {
+                Node<K, V> hiNode = null, loNode = null;
+                do {
+                    current = next;
+                    next = next.next;
+                    current.next = null;
+                    if ((current.hash & oldCap) == 0) {
+                        //低位
+                        if (loNode == null) {
+                            loNode = current;
+                        } else {
+                            loNode.next = current;
+                        }
+                    } else {
+                        //高位
+                        if (hiNode == null) {
+                            hiNode = current;
+                        } else {
+                            hiNode.next = current;
+                        }
+                    }
+                } while (next != null);
+                if (loNode != null) {
+                    table[i] = loNode;
+                }
+                if (hiNode != null) {
+                    table[i + oldCap] = hiNode;
+                }
+                //next GC
+                oldTab[i] = null;
+            }
+        }
+    }
+
+    /**
+     * 重置桶数量和位置
+     * 图解：
+     * node链:
+     * --O------O-----O--
+     * current next
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    final void resize_my() {
+        Node<K, V>[] oldTable = this.table;
+        Node<K, V> newNode, current;
+        int tempIndex;
+        this.capacity <<= 2;
+        synchThreshold();
+        this.table = (Node<K, V>[]) new Node[capacity];
+        for (Node<K, V> next : oldTable) {
+            if (next == null) continue;
+            while (true) {
+                //--------------------------------------------------------------------------------
+                // temp引用桶的第一个节点,将node移动至下一个节点,然后切断temp（头节点）与下个节点的引用
+                //--------------------------------------------------------------------------------
+                current = next;
+                next = next.next;
+                current.next = null;
+                //--------------------------------------------------------------------------------
+                //                                  end
+                //--------------------------------------------------------------------------------
+                if ((newNode = this.table[tempIndex = tableIndexFor(current.hash)]) != null) {
+                    while (newNode.next != null) {
+                        newNode = newNode.next;
+                    }
+                    newNode.next = current;
+                } else {
+                    this.table[tempIndex] = current;
+                }
+                if (next == null) break;
+            }
+        }
     }
 
 
