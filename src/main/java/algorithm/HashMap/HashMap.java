@@ -312,28 +312,4 @@ public class HashMap<K, V> {
         return null;
     }
 
-    public int test() {
-        Node<K, V>[] tab = table;
-        int combo = 0;
-        for (Node node : tab) {
-            while (node != null) {
-                combo++;
-                node = node.next;
-            }
-        }
-        return combo;
-    }
-
-    public int test2() {
-        Node<K, V>[] tab = table;
-        int combo = 0;
-        for (Node node : tab) {
-            while (node != null && node.next != null) {
-                combo++;
-                node = node.next;
-            }
-        }
-        return combo;
-    }
-
 }
