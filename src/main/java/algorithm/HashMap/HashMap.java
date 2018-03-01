@@ -190,7 +190,7 @@ public class HashMap<K, V> {
             //如果key已经存在，则重新赋值并立刻放回oldVal
             if (oldNode != null) {
                 V oldVal = oldNode.value;
-                oldNode.setValue(value);
+                oldNode.value = value;
                 return oldVal;
             }
             //执行此语句的条件:key不存在且桶上已经存在节点,将新节点放入next
@@ -209,7 +209,7 @@ public class HashMap<K, V> {
     /**
      * 重置桶数量和位置
      * 由于我们使用2的幂来扩容，则每个bin元素要么还是在原来的bucket中，要么在2的幂中。
-     * 实现细节:假设oldCap = 16 -> 10000,oldCap&hash==0则还是在原来的bucket中，==1则在2的幂中（原位置i+oldCap）
+     * 实现细节:假设oldCap = 16 -> 10000,oldCap&hash==0则还是在原来的bucket中，==1则在原来位置的基础上加2的4次幂中（即原位置i+oldCap）
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     final void resize() {
@@ -217,9 +217,10 @@ public class HashMap<K, V> {
         Node<K, V> current, next;
         int oldCap = capacity;
         if (oldCap >= MAX_CAPACITY) return;
-        capacity = capacity << 2;
+        capacity = capacity << 1;
         synchThreshold();
-        table = (Node<K, V>[]) new Node[capacity];
+        Node<K, V>[] newTab = (Node<K, V>[]) new Node[capacity];
+        table = newTab;
         for (int i = 0; i < oldCap; i++) {
             if ((next = oldTab[i]) != null) {
                 Node<K, V> hiNode = null, loNode = null;
@@ -231,24 +232,24 @@ public class HashMap<K, V> {
                         //低位
                         if (loNode == null) {
                             loNode = current;
+                            //使新的低位桶指向loNode的头地址(因为后面的loNode = current会使loNode永久丢失对头的引用)
+                            newTab[i] = current;
                         } else {
                             loNode.next = current;
+                            loNode = current;
                         }
                     } else {
                         //高位
                         if (hiNode == null) {
                             hiNode = current;
+                            //使新的高位桶指向hiNode的头地址
+                            newTab[i + oldCap] = current;
                         } else {
                             hiNode.next = current;
+                            hiNode = current;
                         }
                     }
                 } while (next != null);
-                if (loNode != null) {
-                    table[i] = loNode;
-                }
-                if (hiNode != null) {
-                    table[i + oldCap] = hiNode;
-                }
                 //next GC
                 oldTab[i] = null;
             }
@@ -295,5 +296,44 @@ public class HashMap<K, V> {
         }
     }
 
+    public V get(K k) {
+        return getVal(hash(k), k);
+    }
+
+    final V getVal(int hash, K k) {
+        Node<K, V> target;
+        int i = tableIndexFor(hash);
+        if (table != null && (target = table[i]) != null) {
+            do {
+                if (target.hash == hash && target.key.equals(k))
+                    return target.value;
+            } while ((target = target.next) != null);
+        }
+        return null;
+    }
+
+    public int test() {
+        Node<K, V>[] tab = table;
+        int combo = 0;
+        for (Node node : tab) {
+            while (node != null) {
+                combo++;
+                node = node.next;
+            }
+        }
+        return combo;
+    }
+
+    public int test2() {
+        Node<K, V>[] tab = table;
+        int combo = 0;
+        for (Node node : tab) {
+            while (node != null && node.next != null) {
+                combo++;
+                node = node.next;
+            }
+        }
+        return combo;
+    }
 
 }
