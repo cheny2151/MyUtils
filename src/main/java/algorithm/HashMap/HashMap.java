@@ -92,7 +92,9 @@ public class HashMap<K, V> {
     }
 
     /**
-     * 取最接近且大于入参的2的次幂的值
+     * 算法要点2:取最接近且大于入参的2的次幂的值
+     * 要求的2^N,只需要将2进制的Nbit位后方的所有位都污染为1，再+1就可以算出2^N
+     * 例子: 求10000: 01xxx ->01111 +1->10000(若要求的结果为10000，则入参的第4个bit位一定为1,即01xxx)
      */
     private static int tableSizeFor(int initCapacity) {
         initCapacity--;
@@ -104,11 +106,24 @@ public class HashMap<K, V> {
         return initCapacity < 0 ? 1 : initCapacity > MAX_CAPACITY ? MAX_CAPACITY : initCapacity + 1;
     }
 
+    /**
+     * 算法要点4:扰动函数,增加bit位的随机性
+     *
+     * @param key
+     * @return
+     */
     private static int hash(Object key) {
         int h;
         return key == null ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
 
+    /**
+     * 算法要点1:求索引
+     * hash%cap ==hash&(cap-1)(大前提cap=2^N)
+     *
+     * @param hash key的hash
+     * @return
+     */
     private int tableIndexFor(int hash) {
         return hash & (capacity - 1);
     }
@@ -207,7 +222,7 @@ public class HashMap<K, V> {
     }
 
     /**
-     * 重置桶数量和位置
+     * 算法要点3:重置桶数量和位置
      * 由于我们使用2的幂来扩容，则每个bin元素要么还是在原来的bucket中，要么在2的幂中。
      * 实现细节:假设oldCap = 16 -> 10000,oldCap&hash==0则还是在原来的bucket中，==1则在原来位置的基础上加2的4次幂中（即原位置i+oldCap）
      */

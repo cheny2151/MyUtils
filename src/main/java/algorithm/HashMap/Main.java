@@ -8,10 +8,10 @@ public class Main {
     public void test() {
         long before = System.currentTimeMillis();
         HashMap<String, Integer> map = new HashMap<>();
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 10000000; i++) {
             map.put("" + i, i);
         }
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 10000000; i++) {
             System.out.println(map.get("" + i));
         }
         System.out.println(System.currentTimeMillis() - before);
