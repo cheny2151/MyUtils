@@ -1,4 +1,4 @@
-package POIUtils.TypeSwitchChain;
+package DesignPattern.TypeSwitchChain;
 
 public class BooleanSwitch extends BaseTypeSwitch {
 

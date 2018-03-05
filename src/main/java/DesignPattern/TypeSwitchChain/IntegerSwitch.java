@@ -1,4 +1,4 @@
-package POIUtils.TypeSwitchChain;
+package DesignPattern.TypeSwitchChain;
 
 /**
  * Integer类型转换器

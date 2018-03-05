@@ -40,4 +40,11 @@ public class Main {
         map.put("test2", 2);
     }
 
+    @Test
+    public void test4(){
+        java.util.HashMap<String, Integer> map = new java.util.HashMap<>();
+        map.put("test",1);
+        map.put("test",2);
+    }
+
 }

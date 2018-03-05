@@ -1,4 +1,4 @@
-package POIUtils.TypeSwitchChain;
+package DesignPattern.TypeSwitchChain;
 
 import org.apache.commons.lang.time.DateUtils;
 

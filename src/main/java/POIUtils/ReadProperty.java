@@ -1,6 +1,6 @@
 package POIUtils;
 
-import POIUtils.TypeSwitchChain.TypeSwitchChain;
+import DesignPattern.TypeSwitchChain.TypeSwitchChain;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
