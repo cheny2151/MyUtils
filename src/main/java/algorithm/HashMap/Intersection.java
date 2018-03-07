@@ -4,21 +4,23 @@ import org.junit.Test;
 
 import java.lang.reflect.Array;
 
+import static algorithm.HashMap.Intersection.HashNodes.LOAD_FACTOR;
+
 /**
  * 散列算法实现取两个数组的交集
  */
 public class Intersection {
 
 
-    private Intersection() {
-    }
+//    private Intersection() {
+//    }
 
     /**
      * 散列节点
      *
      * @param <V>
      */
-    private static class Node<V> {
+    final static class Node<V> {
 
         private int hash;
 
@@ -36,17 +38,17 @@ public class Intersection {
     /**
      * hash桶
      */
-    private static class HashNodes<V> {
+    final static class HashNodes<V> {
 
-        private final static int MAX_LENGTH = 1 << 30;
+        final static int MAX_LENGTH = 1 << 30;
 
-        private final static float LOAD_FACTOR = 0.75f;
+        final static float LOAD_FACTOR = 0.75f;
 
-        private int size;
+        int size;
 
-        private Node<V>[] tables;
+        Node<V>[] tables;
 
-        private int threshold;
+        int threshold;
 
         @SuppressWarnings("unchecked")
         public HashNodes(int length) {
@@ -77,6 +79,9 @@ public class Intersection {
             }
         }
 
+        /**
+         * 取交集算法可以不需要size算法,初始化大小为(forExclusive.length * (1 + LOAD_FACTOR))即可,因为传入的数组大小即tables的cap是固定的
+         */
         @SuppressWarnings({"unchecked", "Duplicates"})
         private void resize() {
             int oldLen = tables.length;
@@ -170,7 +175,8 @@ public class Intersection {
 
     @SuppressWarnings("unchecked")
     public static <T> T[] exclusive(T[] forExclusive, T[] toExclusive, Class<T> resultType) {
-        HashNodes<T> nodes = new HashNodes<>(forExclusive.length);
+        //初始化大小为(forExclusive.length * (1 + LOAD_FACTOR)) 则不用size
+        HashNodes<T> nodes = new HashNodes<>((int) (forExclusive.length * (1 + LOAD_FACTOR)));
         for (T t : forExclusive) {
             nodes.insert(t);
         }
