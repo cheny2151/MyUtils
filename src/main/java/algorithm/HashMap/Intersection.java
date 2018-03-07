@@ -118,6 +118,14 @@ public class Intersection {
             }
         }
 
+        /**
+         * hash散列算法求交集
+         * 将要比较的数组的值散列到对应桶中，遍历桶链，寻找相同的值
+         *
+         * @param toExclusive 要比较和数组
+         * @param resultType  数组内部类似
+         * @return
+         */
         @SuppressWarnings("unchecked")
         public V[] intersect(V[] toExclusive, Class<V> resultType) {
             Node<V>[] tables = this.tables;
