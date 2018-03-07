@@ -226,7 +226,7 @@ public class HashMap<K, V> {
      * 由于我们使用2的幂来扩容，则每个bin元素要么还是在原来的bucket中，要么在2的幂中。
      * 实现细节:假设oldCap = 16 -> 10000,oldCap&hash==0则还是在原来的bucket中，==1则在原来位置的基础上加2的4次幂中（即原位置i+oldCap）
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes", "unchecked", "Duplicates"})
     final void resize() {
         Node<K, V>[] oldTab = table;
         Node<K, V> current, next;
