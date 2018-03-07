@@ -10,8 +10,8 @@ import java.lang.reflect.Array;
 public class Intersection {
 
 
-//    private Intersection() {
-//    }
+    private Intersection() {
+    }
 
     /**
      * 散列节点
