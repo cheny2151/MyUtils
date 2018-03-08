@@ -175,6 +175,10 @@ public class Intersection {
 
     @SuppressWarnings("unchecked")
     public static <T> T[] exclusive(T[] forExclusive, T[] toExclusive, Class<T> resultType) {
+        //check
+        if (forExclusive == null || forExclusive.length == 0 || toExclusive == null || toExclusive.length == 0) {
+            return null;
+        }
         //初始化大小为(forExclusive.length * (1 + LOAD_FACTOR)) 则不用size
         HashNodes<T> nodes = new HashNodes<>((int) (forExclusive.length * (1 + LOAD_FACTOR)));
         for (T t : forExclusive) {
