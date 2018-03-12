@@ -134,32 +134,32 @@ public class HashMap<K, V> {
      * @param <K>
      * @param <V>
      */
-    static class Node<K, V> {
+    static final class Node<K, V> {
         final int hash;
         final K key;
         V value;
         Node<K, V> next;
 
-        public Node(int hash, K key, V value, Node<K, V> next) {
+        Node(int hash, K key, V value, Node<K, V> next) {
             this.hash = hash;
             this.key = key;
             this.value = value;
             this.next = next;
         }
 
-        public final K getKey() {
+        final K getKey() {
             return key;
         }
 
-        public final V getValue() {
+        final V getValue() {
             return value;
         }
 
-        public final Node<K, V> getNext() {
+        final Node<K, V> getNext() {
             return next;
         }
 
-        public final V setValue(V newValue) {
+        final V setValue(V newValue) {
             V oldValue = this.value;
             this.value = newValue;
             return oldValue;
@@ -227,7 +227,7 @@ public class HashMap<K, V> {
      * 实现细节:假设oldCap = 16 -> 10000,oldCap&hash==0则还是在原来的bucket中，==1则在原来位置的基础上加2的4次幂中（即原位置i+oldCap）
      */
     @SuppressWarnings({"rawtypes", "unchecked", "Duplicates"})
-    final void resize() {
+    private void resize() {
         Node<K, V>[] oldTab = table;
         Node<K, V> current, next;
         int oldCap = capacity;
@@ -279,7 +279,7 @@ public class HashMap<K, V> {
      * current next
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    final void resize_my() {
+    private void resize_my() {
         Node<K, V>[] oldTable = this.table;
         Node<K, V> newNode, current;
         int tempIndex;
@@ -317,14 +317,63 @@ public class HashMap<K, V> {
 
     final V getVal(int hash, K k) {
         Node<K, V> target;
-        int i = tableIndexFor(hash);
-        if (table != null && (target = table[i]) != null) {
+        if (table != null && (target = table[tableIndexFor(hash)]) != null) {
             do {
-                if (target.hash == hash && target.key.equals(k))
+                if (target.key == k || (k != null && target.hash == hash && k.equals(target.key)))
                     return target.value;
             } while ((target = target.next) != null);
         }
         return null;
+    }
+
+    /**
+     * 移除
+     */
+    public V remove(K k) {
+        return removeNode(hash(k), k);
+    }
+
+    final V removeNode(int hash, K k) {
+        Node<K, V>[] table = this.table;
+        Node<K, V> tar;
+        int i;
+        if (table != null && (tar = table[i = tableIndexFor(hash)]) != null) {
+            if (k == tar.key || (k != null && tar.hash == hash && k.equals(tar.key))) {
+                if (tar.next == null) {
+                    table[i] = null;
+                } else {
+                    table[i] = tar.next;
+                }
+                size--;
+                return tar.value;
+            }
+            Node<K, V> preNode;
+            while (tar.next != null) {
+                preNode = tar;
+                tar = tar.next;
+                if (k == tar.key || (k != null && tar.hash == hash && k.equals(tar.key))) {
+                    preNode.next = tar.next;
+                    size--;
+                    return tar.value;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean containsVal(V v) {
+        Node<K, V>[] table = this.table;
+        if (table != null && size > 0) {
+            for (Node<K, V> node : table) {
+                while (node != null) {
+                    if (v == node.value || (v != null && v.equals(node.value))) {
+                        return true;
+                    }
+                    node = node.next;
+                }
+            }
+        }
+        return false;
     }
 
 }
