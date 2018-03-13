@@ -2,7 +2,6 @@ package POIUtils.demo;
 
 import POIUtils.PoiUtils;
 import POIUtils.annotation.ExcelHead;
-import com.sun.istack.internal.NotNull;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.junit.Test;
 
@@ -58,7 +57,7 @@ public class Main {
     }
 
     @Test
-    public void test3(){
+    public void test3() {
         ExcelHead annotation = MemberVoPOI.class.getAnnotation(ExcelHead.class);
         System.out.println(annotation.title());
     }
