@@ -7,8 +7,11 @@ package attention;
  */
 public class Base {
 
+    private final static String a = "test";
+
     static {
         System.out.println("父类Base的静态代码块被调用了！");
+        System.out.println(a);
     }
 
     private String baseName = "base";

@@ -93,7 +93,7 @@ public class HashMap<K, V> {
 
     /**
      * 算法要点2:取最接近且大于入参的2的次幂的值
-     * 要求的2^N,只需要将2进制的Nbit位后方的所有位都污染为1，再+1就可以算出2^N
+     * 要求的2^N,只需要将2进制的Nbit位(包括N)后方的所有位都污染为1，再+1就可以算出2^N
      * 例子: 求10000: 01xxx ->01111 +1->10000(若要求的结果为10000，则入参的第4个bit位一定为1,即01xxx)
      */
     private static int tableSizeFor(int initCapacity) {
