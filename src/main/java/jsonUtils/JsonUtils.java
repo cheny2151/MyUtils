@@ -46,7 +46,7 @@ public class JsonUtils {
      */
     public static <T> T toJavaBean(String json, Class<T> type) {
         try {
-            getObjectMapper().readValue(json, type);
+            return getObjectMapper().readValue(json, type);
         } catch (IOException e) {
             e.printStackTrace();
         }

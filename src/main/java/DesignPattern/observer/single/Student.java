@@ -10,6 +10,8 @@ import java.util.List;
  */
 public class Student implements HomeWorkListener,Serializable {
 
+    private static final long serialVersionUID = -1374954042835581442L;
+
     private String id;
 
     private String name;
@@ -17,6 +19,9 @@ public class Student implements HomeWorkListener,Serializable {
     private String sex;
 
     private List<Homework> homework = new ArrayList<>();
+
+    public Student() {
+    }
 
     public Student(String id, String name, String sex) {
         this.id = id;
@@ -78,5 +83,14 @@ public class Student implements HomeWorkListener,Serializable {
 
     public void addHomeWork(Homework homework) {
         this.homework.add(homework);
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", sex='" + sex + '\'' +
+                '}';
     }
 }
