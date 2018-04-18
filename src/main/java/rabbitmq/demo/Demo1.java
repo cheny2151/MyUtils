@@ -58,7 +58,7 @@ public class Demo1 {
      * 消费者
      */
     @Test
-    public void test2() {
+    public void test2() throws InterruptedException {
         Connection connection = null;
         try {
             ConnectionFactory factory = new ConnectionFactory();
@@ -67,7 +67,7 @@ public class Demo1 {
             factory.setPassword("guest");
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
-            channel.basicQos(1);
+//            channel.basicQos(1);
             //定义一个队列 (防止服务器不存在此队列)
             channel.queueDeclare(queueName, false, false, false, null);
             DefaultConsumer consumer = new DefaultConsumer(channel) {
@@ -91,11 +91,11 @@ public class Demo1 {
                 }
             }
         }
+        Thread.sleep(1000);
     }
 
     private void callBack(byte[] body) {
         try {
-            Thread.sleep(1000);
             System.out.println("---" + new String(body, "utf-8"));
         } catch (Exception e) {
             e.printStackTrace();
