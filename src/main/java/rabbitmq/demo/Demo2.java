@@ -29,7 +29,7 @@ public class Demo2 {
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
             //定义一个交换器 参数1 名称  参数2 交换器类型 参数3表示将交换器信息永久保存在服务器磁盘上
-            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.FANOUT, false);
+            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.FANOUT, true);
             for (int i = 0; i < 5; i++) {
                 //通过交换机发送消息，routingKey为空 默认会转发给所有的订阅者队列
                 channel.basicPublish(exChangeName, "", MessageProperties.PERSISTENT_TEXT_PLAIN, "test".getBytes("utf-8"));

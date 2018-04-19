@@ -29,7 +29,7 @@ public class Demo4 {
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
             //定义一个交换器 参数1 名称  参数2 交换器类型 参数3表示将交换器信息永久保存在服务器磁盘上
-            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.TOPIC, false);
+            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.TOPIC, true);
             //通过交换机发送消息，指定不同的routingKey
             channel.basicPublish(exChangeName, "service.error", MessageProperties.PERSISTENT_TEXT_PLAIN, "error".getBytes("utf-8"));
             channel.basicPublish(exChangeName, "service.warn", MessageProperties.PERSISTENT_TEXT_PLAIN, "warn".getBytes("utf-8"));

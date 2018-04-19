@@ -1,9 +1,11 @@
 package rabbitmq.demo;
 
 import com.rabbitmq.client.*;
+import org.apache.commons.lang.SerializationUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * 简单模式
@@ -34,10 +36,30 @@ public class Demo1 {
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
             //定义一个队列
-            channel.queueDeclare(queueName, false, false, false, null);
+            channel.queueDeclare(queueName, true, false, false, null);
+            HashMap<String, String> map = new HashMap<>();
+            map.put("test", "success");
             for (int i = 0; i < 5; i++) {
                 //通过交换机发送消息，routingKey为空 默认会转发给所有的订阅者队列
-                channel.basicPublish("", queueName, MessageProperties.PERSISTENT_TEXT_PLAIN, "test".getBytes("utf-8"));
+
+                //发送json数据的配置
+                AMQP.BasicProperties jsonProperties = new AMQP.BasicProperties("application/json",
+                        null,
+                        null,
+                        1,
+                        0, null, null, null,
+                        null, null, null, null,
+                        null, null);
+                //发送java序列化数据配置
+                AMQP.BasicProperties objectProperties = new AMQP.BasicProperties("application/x-java-serialized-object",
+                        null,
+                        null,
+                        1,
+                        0, null, null, null,
+                        null, null, null, null,
+                        null, null);
+
+                channel.basicPublish("", queueName, objectProperties, SerializationUtils.serialize(map));
             }
             System.out.println("-------send--------");
         } catch (Exception e) {

@@ -74,7 +74,7 @@ public class Demo3 {
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
             //定义一个交换机（防止服务器还未创建此交换机）
-            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.DIRECT, false);
+            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.DIRECT, true);
             channel.basicQos(1);
             //产生一个随机的队列名称 该队列用于从交换器获取消息
             queueName = channel.queueDeclare().getQueue();
