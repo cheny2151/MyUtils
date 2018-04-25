@@ -2,6 +2,7 @@ package rabbitmq.demo;
 
 import com.rabbitmq.client.*;
 import org.apache.commons.lang.SerializationUtils;
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -19,6 +20,8 @@ import java.util.HashMap;
  * 状态3:   已消费确认
  */
 public class Demo1 {
+
+    private Logger logger = Logger.getLogger(Demo1.class);
 
     private String queueName = "test";
 
@@ -91,7 +94,7 @@ public class Demo1 {
             Channel channel = connection.createChannel();
 //            channel.basicQos(1);
             //定义一个队列 (防止服务器不存在此队列)
-            channel.queueDeclare(queueName, false, false, false, null);
+            channel.queueDeclare(queueName, true, false, false, null);
             DefaultConsumer consumer = new DefaultConsumer(channel) {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -118,7 +121,7 @@ public class Demo1 {
 
     private void callBack(byte[] body) {
         try {
-            System.out.println("---" + new String(body, "utf-8"));
+            logger.info(Thread.currentThread().isDaemon()+"---" + SerializationUtils.deserialize(body));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -126,8 +129,9 @@ public class Demo1 {
 
     private void basicConsume(String name, Channel channel, Consumer consumer) throws IOException, InterruptedException {
         //autoAck:false 手动确认
+        logger.info("start receive...");
         channel.basicConsume(name, false, consumer);
-        Thread.sleep(100);
-        basicConsume(name, channel, consumer);
+//        Thread.sleep(10000000);
+//        basicConsume(name, channel, consumer);
     }
 }

@@ -2,6 +2,7 @@ package rabbitmq.demo;
 
 import com.rabbitmq.client.*;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 
