@@ -1,9 +1,12 @@
 package rabbitmq.demo;
 
 import com.rabbitmq.client.*;
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 发布订阅模式
@@ -14,6 +17,12 @@ public class Demo2 {
     private String queueName;
 
     private String exChangeName = "ex_fanout";
+
+    private ReentrantLock lock = new ReentrantLock();
+
+    private Condition handled = lock.newCondition();
+
+    private Logger logger = Logger.getLogger(this.getClass());
 
     /**
      * 生产者
@@ -63,7 +72,7 @@ public class Demo2 {
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
             //定义一个交换机（防止服务器还未创建此交换机）
-            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.FANOUT, false);
+            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.FANOUT, true);
             channel.basicQos(1);
             //产生一个随机的队列名称 该队列用于从交换器获取消息
             queueName = channel.queueDeclare().getQueue();
@@ -93,19 +102,29 @@ public class Demo2 {
     }
 
     private void callBack(byte[] body) {
+        lock.lock();
         try {
-            Thread.sleep(1000);
-            System.out.println("---" + new String(body, "utf-8"));
+            logger.info(Thread.currentThread().getId()+":" + new String(body, "utf-8"));
+//            handled.signalAll();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            lock.unlock();
         }
     }
 
     private void basicConsume(String name, Channel channel, Consumer consumer) throws IOException, InterruptedException {
         //autoAck:false 手动确认
         channel.basicConsume(name, false, consumer);
-        Thread.sleep(100);
-        basicConsume(name, channel, consumer);
+        while (true) {
+            lock.lock();
+            try {
+                handled.await();
+//                logger.info("signal");
+            } finally {
+                lock.unlock();
+            }
+        }
     }
 
 }

@@ -79,11 +79,14 @@ public class Demo1 {
 
     }
 
+    private final Object key = new Object();
+
     /**
      * 消费者
      */
     @Test
     public void test2() throws InterruptedException {
+
         Connection connection = null;
         try {
             ConnectionFactory factory = new ConnectionFactory();
@@ -100,7 +103,10 @@ public class Demo1 {
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                     callBack(body);
                     //手动确认收到信息
-                    channel.basicAck(envelope.getDeliveryTag(), false);
+                    synchronized (key) {
+                        channel.basicAck(envelope.getDeliveryTag(), false);
+//                        key.notifyAll();
+                    }
                 }
             };
             //执行客户端回调
@@ -116,12 +122,12 @@ public class Demo1 {
                 }
             }
         }
-        Thread.sleep(1000);
+
     }
 
     private void callBack(byte[] body) {
         try {
-            logger.info(Thread.currentThread().isDaemon()+"---" + SerializationUtils.deserialize(body));
+            logger.info(Thread.currentThread().getId() + ":" + SerializationUtils.deserialize(body));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -131,7 +137,10 @@ public class Demo1 {
         //autoAck:false 手动确认
         logger.info("start receive...");
         channel.basicConsume(name, false, consumer);
-//        Thread.sleep(10000000);
-//        basicConsume(name, channel, consumer);
+        while (true) {
+            synchronized (key) {
+                key.wait();
+            }
+        }
     }
 }
