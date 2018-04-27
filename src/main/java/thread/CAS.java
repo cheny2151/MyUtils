@@ -36,6 +36,7 @@ public class CAS {
     private void safeCount() {
         int current = y.get();
         for (; ; ) {
+            //CAS
             if (y.compareAndSet(current, ++current)) {
                 break;
             }
