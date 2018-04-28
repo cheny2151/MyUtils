@@ -22,13 +22,13 @@ public class ConnectionPool {
     }
 
     public static String getConnection(Long outtime) {
+        long futrue = System.currentTimeMillis() + outtime;
         synchronized (key) {
-            String connection = pool.poll();
-            if (connection == null) {
+            String connection;
+            while ((connection = pool.poll()) == null && futrue - System.currentTimeMillis() > 0) {
                 try {
                     System.out.println("连接池为空，等待归还");
                     key.wait(outtime);
-                    connection = pool.poll();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     return null;
@@ -51,7 +51,7 @@ public class ConnectionPool {
     public void test() throws InterruptedException {
         for (int i = 0; i < 10; i++) {
             new Thread(() -> {
-                String connection = getConnection(1000L);
+                String connection = getConnection(95L);
                 System.out.println("获取连接:" + connection);
                 try {
                     Thread.sleep(100);
