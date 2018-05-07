@@ -4,7 +4,7 @@ import POIUtils.ReadProperty;
 import POIUtils.annotation.ExcelData;
 import POIUtils.annotation.ExcelHead;
 import POIUtils.exception.WorkBookReadException;
-import POIUtils.utils.BeanUtils;
+import beanUtils.BeanUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
