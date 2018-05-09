@@ -26,16 +26,6 @@ public class HSSFWorkbookBuilder {
     private final static String TITLE = "HAS_TITLE";
 
     /**
-     * 表头样式
-     */
-    private HSSFCellStyle headStyle;
-
-    /**
-     * 内容样式
-     */
-    private HSSFCellStyle countStyle;
-
-    /**
      * 创建空表格
      *
      * @param targetClass
@@ -86,6 +76,10 @@ public class HSSFWorkbookBuilder {
         Map<String, Object> headInfo = new LinkedHashMap<>();
         headInfo.put(LIST_FIELD, null);
         HSSFRow startRow = sheet.createRow(startRowNumber);
+
+        //获取头部style
+        HSSFCellStyle headStyle = getHeadStyle(workbook);
+
         for (Field field : targetClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(ExcelCell.class)) {
                 ExcelCell cellAnnotation = field.getAnnotation(ExcelCell.class);
@@ -102,7 +96,7 @@ public class HSSFWorkbookBuilder {
                     sheet.addValidationData(initSeller(new String[]{"是", "否"}, startRowNumber + 1, column));
                 }
                 HSSFCell cell = startRow.createCell(column++);
-                setHeadStyle(workbook, cell);
+                cell.setCellStyle(headStyle);
                 cell.setCellValue(cellAnnotation.name());
                 boolean isList = cellAnnotation.isList();
                 if (headInfo.get(LIST_FIELD) == null && isList) {
@@ -115,7 +109,7 @@ public class HSSFWorkbookBuilder {
         if (title != null) {
             HSSFCell cell = createTitle(sheet, title, headInfo.size() - 2);
             cell.getRow().setHeight((short) 800);
-            setHeadStyle(workbook, cell);
+            cell.setCellStyle(headStyle);
             headInfo.put(TITLE, title);
         }
 
@@ -144,6 +138,10 @@ public class HSSFWorkbookBuilder {
         if (headInfo.remove(TITLE) != null) {
             row++;
         }
+
+        //获取内容style
+        HSSFCellStyle countStyle = getCountStyle(workbook);
+
         for (Object object : data) {
             int column = 0;
             Integer size = null;
@@ -163,11 +161,11 @@ public class HSSFWorkbookBuilder {
                         List<String> values = (List) value;
                         if (values.size() == 0) {
                             HSSFCell cell = setValue(sheet, row, column, "-");
-                            setCountStyle(workbook, cell);
+                            cell.setCellStyle(countStyle);
                         } else {
                             for (int i = 0; i < size; i++) {
                                 HSSFCell cell = setValue(sheet, row + i, column, values.get(i));
-                                setCountStyle(workbook, cell);
+                                cell.setCellStyle(countStyle);
                             }
                         }
                     } else {
@@ -177,11 +175,11 @@ public class HSSFWorkbookBuilder {
                             sheet.addMergedRegion(cellRangeAddress);
                             setRegionBorder(cellRangeAddress, sheet);
                         }
-                        setCountStyle(workbook, cell);
+                        cell.setCellStyle(countStyle);
                     }
                 } else {
                     HSSFCell cell = setValue(sheet, row, column, value.toString());
-                    setCountStyle(workbook, cell);
+                    cell.setCellStyle(countStyle);
                 }
                 column++;
             }
@@ -195,44 +193,27 @@ public class HSSFWorkbookBuilder {
     }
 
     /**
-     * 设置表头样式
+     * 获取表头样式
      *
      * @param workbook
-     * @param cell
      */
-    private void setHeadStyle(HSSFWorkbook workbook, HSSFCell cell) {
-        HSSFCellStyle headStyle = getHeadStyle(workbook);
-        cell.setCellStyle(headStyle);
-    }
-
     private HSSFCellStyle getHeadStyle(HSSFWorkbook workbook) {
-        if (headStyle == null) {
-            headStyle = workbook.createCellStyle();
-            setCenterStyle(headStyle);
-            setBorder(headStyle);
-            setBoldFont(headStyle, workbook);
-        }
+        HSSFCellStyle headStyle = workbook.createCellStyle();
+        setCenterStyle(headStyle);
+        setBorder(headStyle);
+        setBoldFont(headStyle, workbook);
         return headStyle;
     }
 
-
     /**
-     * 设置内容样式
+     * 获取内容样式
      *
      * @param workbook
-     * @param cell
      */
-    private void setCountStyle(HSSFWorkbook workbook, HSSFCell cell) {
-        HSSFCellStyle countStyle = getCountStyle(workbook);
-        cell.setCellStyle(countStyle);
-    }
-
     private HSSFCellStyle getCountStyle(HSSFWorkbook workbook) {
-        if (countStyle == null) {
-            countStyle = workbook.createCellStyle();
-            setCenterStyle(countStyle);
-            setBorder(countStyle);
-        }
+        HSSFCellStyle countStyle = workbook.createCellStyle();
+        setCenterStyle(countStyle);
+        setBorder(countStyle);
         return countStyle;
     }
 
