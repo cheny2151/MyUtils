@@ -2,7 +2,7 @@ package POIUtils.worker;
 
 import POIUtils.annotation.ExcelCell;
 import POIUtils.annotation.ExcelHead;
-import POIUtils.utils.BeanUtils;
+import beanUtils.BeanUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -24,6 +24,16 @@ public class HSSFWorkbookBuilder {
     private final static String LIST_FIELD = "LIST_FIELD";
 
     private final static String TITLE = "HAS_TITLE";
+
+    /**
+     * 表头样式
+     */
+    private HSSFCellStyle headStyle;
+
+    /**
+     * 内容样式
+     */
+    private HSSFCellStyle countStyle;
 
     /**
      * 创建空表格
@@ -191,11 +201,20 @@ public class HSSFWorkbookBuilder {
      * @param cell
      */
     private void setHeadStyle(HSSFWorkbook workbook, HSSFCell cell) {
-        HSSFCellStyle headStyle = workbook.createCellStyle();
-        setCenterStyle(headStyle, cell);
-        setBorder(headStyle, cell);
-        setBoldFont(headStyle, workbook, cell);
+        HSSFCellStyle headStyle = getHeadStyle(workbook);
+        cell.setCellStyle(headStyle);
     }
+
+    private HSSFCellStyle getHeadStyle(HSSFWorkbook workbook) {
+        if (headStyle == null) {
+            headStyle = workbook.createCellStyle();
+            setCenterStyle(headStyle);
+            setBorder(headStyle);
+            setBoldFont(headStyle, workbook);
+        }
+        return headStyle;
+    }
+
 
     /**
      * 设置内容样式
@@ -204,35 +223,39 @@ public class HSSFWorkbookBuilder {
      * @param cell
      */
     private void setCountStyle(HSSFWorkbook workbook, HSSFCell cell) {
-        HSSFCellStyle countStyle = workbook.createCellStyle();
-        setCenterStyle(countStyle, cell);
-        setBorder(countStyle, cell);
+        HSSFCellStyle countStyle = getCountStyle(workbook);
+        cell.setCellStyle(countStyle);
+    }
+
+    private HSSFCellStyle getCountStyle(HSSFWorkbook workbook) {
+        if (countStyle == null) {
+            countStyle = workbook.createCellStyle();
+            setCenterStyle(countStyle);
+            setBorder(countStyle);
+        }
+        return countStyle;
     }
 
     /**
      * 设置居中样式
      *
      * @param cellStyle
-     * @param cell
      */
-    private void setCenterStyle(HSSFCellStyle cellStyle, HSSFCell cell) {
+    private void setCenterStyle(HSSFCellStyle cellStyle) {
         cellStyle.setAlignment(HorizontalAlignment.CENTER);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        cell.setCellStyle(cellStyle);
     }
 
     /**
      * 设置边框样式
      *
      * @param cellStyle
-     * @param cell
      */
-    private void setBorder(HSSFCellStyle cellStyle, HSSFCell cell) {
+    private void setBorder(HSSFCellStyle cellStyle) {
         cellStyle.setBorderBottom(BorderStyle.THIN);
         cellStyle.setBorderLeft(BorderStyle.THIN);
         cellStyle.setBorderRight(BorderStyle.THIN);
         cellStyle.setBorderTop(BorderStyle.THIN);
-        cell.setCellStyle(cellStyle);
     }
 
     private void setRegionBorder(CellRangeAddress cellRangeAddress, HSSFSheet sheet) {
@@ -247,13 +270,11 @@ public class HSSFWorkbookBuilder {
      *
      * @param cellStyle
      * @param workbook
-     * @param cell
      */
-    private void setBoldFont(HSSFCellStyle cellStyle, HSSFWorkbook workbook, HSSFCell cell) {
+    private void setBoldFont(HSSFCellStyle cellStyle, HSSFWorkbook workbook) {
         HSSFFont font = workbook.createFont();
         font.setBold(true);
         cellStyle.setFont(font);
-        cell.setCellStyle(cellStyle);
     }
 
     /**

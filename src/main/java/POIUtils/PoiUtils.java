@@ -31,9 +31,13 @@ public class PoiUtils {
         return WorkbookReaderHolder.WORKBOOK_READER;
     }
 
-
+    /**
+     * 每次都创建新的builder对象
+     * 由于workbook的style不是共享的
+     */
     private static HSSFWorkbookBuilder getHSSFWorkbookBuilder() {
-        return HSSFWorkbookBuilderHolder.HSSF_WORKBOOK_BUILDERK_BUILDER;
+//        return HSSFWorkbookBuilderHolder.HSSF_WORKBOOK_BUILDERK_BUILDER;
+        return new HSSFWorkbookBuilder();
     }
 
     /**
