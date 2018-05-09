@@ -18,6 +18,9 @@ import java.util.Map;
 
 /**
  * excel表创建者
+ *
+ * @apiNote   test in 2018-5-9 1w数据量导入mysql,用时12秒
+ *
  */
 public class HSSFWorkbookBuilder {
 
