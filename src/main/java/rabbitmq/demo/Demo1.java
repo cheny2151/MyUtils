@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * 简单模式
@@ -54,12 +55,14 @@ public class Demo1 {
                         null, null, null, null,
                         null, null);
                 //发送java序列化数据配置
+                HashMap<String, Object> hashMap = new HashMap<>();
+                hashMap.put("test","success");
                 AMQP.BasicProperties objectProperties = new AMQP.BasicProperties("application/x-java-serialized-object",
                         null,
-                        null,
+                        hashMap,
                         1,
                         0, null, null, null,
-                        null, null, null, null,
+                        UUID.randomUUID().toString(), null, null, null,
                         null, null);
 
                 channel.basicPublish("", queueName, objectProperties, SerializationUtils.serialize(map));
@@ -101,6 +104,8 @@ public class Demo1 {
             DefaultConsumer consumer = new DefaultConsumer(channel) {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    System.out.println("head:"+properties.getHeaders());
+                    System.out.println("msgId:"+properties.getMessageId());
                     callBack(body);
                     //手动确认收到信息
                     synchronized (key) {
