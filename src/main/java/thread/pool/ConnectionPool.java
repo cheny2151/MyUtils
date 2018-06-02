@@ -51,7 +51,7 @@ public class ConnectionPool {
     public void test() throws InterruptedException {
         for (int i = 0; i < 10; i++) {
             new Thread(() -> {
-                String connection = getConnection(95L);
+                String connection = getConnection(110L);
                 System.out.println("获取连接:" + connection);
                 try {
                     Thread.sleep(100);

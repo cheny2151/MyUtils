@@ -1,4 +1,4 @@
-package refecl.pojo;
+package reflect.pojo;
 
 import java.io.Serializable;
 

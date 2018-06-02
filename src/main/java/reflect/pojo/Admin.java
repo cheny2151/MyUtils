@@ -1,4 +1,4 @@
-package refecl.pojo;
+package reflect.pojo;
 
 /**
  * 管理员

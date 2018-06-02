@@ -1,7 +1,7 @@
-package refecl;
+package reflect;
 
 import org.junit.Test;
-import refecl.pojo.Admin;
+import reflect.pojo.Admin;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
