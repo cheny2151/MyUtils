@@ -5,6 +5,7 @@ import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.ACL;
 import org.junit.Test;
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class ZkApi {
+
+    private Logger logger = Logger.getLogger(this.getClass());
 
     private final static class ZookeeperHolder {
 
@@ -50,26 +53,43 @@ public class ZkApi {
         return ZookeeperHolder.ZOO_KEEPER;
     }
 
-    public String createAsloNoNode(String path, byte[] data, List<ACL> acls, CreateMode createMode) {
+    /**
+     * 创建节点，父节点不存在则自动创建
+     */
+    public String createNodeAndParentIfNeed(String path, byte[] data, List<ACL> acls, CreateMode createMode) {
+        //第一个/忽略
+        int start = 1;
+        //记录/的index
+        int i;
+        boolean exist = true;
+        ZooKeeper zk = getZK();
+
         try {
-            getZK().create(path, data, acls, createMode);
-        } catch (KeeperException.NoNodeException e) {
-            //try to create no exists node
-            createAsloNoNode(path.substring(0, path.lastIndexOf("/")), data, acls, createMode);
-            createAsloNoNode(path, data, acls, createMode);
+            while ((i = path.indexOf("/", start)) != -1) {
+                String parent = path.substring(0, i);
+                //上一个节点存在才需判断下个节点是否存在（上个节点不存在，下一个节点一定不存在）
+                if (!exist || !(exist = (zk.exists(parent, false) != null))) {
+                    String p = getZK().create(parent, "".getBytes(), acls, CreateMode.PERSISTENT);
+                    logger.info("parent node be create:" + p);
+                }
+                start = i + 1;
+            }
+            return getZK().create(path, data, acls, createMode);
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
+
     }
 
     @Test
     public void test() throws KeeperException, InterruptedException {
-//        for (; ; ) {
-        String s = getZK().create("/path1/test", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-        System.out.println(s);
-//            Thread.sleep(3000);
-//        }
+        try {
+            String asloNoNode = createNodeAndParentIfNeed("/path1/test/test", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+            System.out.println(asloNoNode);
+        } finally {
+            getZK().close();
+        }
     }
 
     public void printNodes(String nodePath) throws KeeperException, InterruptedException {
@@ -105,7 +125,6 @@ public class ZkApi {
                 .build();
 
         curator.start();
-
         byte[] bytes = curator.getData().forPath("/testNode");
     }
 
