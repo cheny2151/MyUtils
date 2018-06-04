@@ -42,6 +42,16 @@ public class ZKReentrantLock implements Serializable {
     private int length;
 
     /**
+     * 当前获取到锁的节点
+     */
+    private volatile String currentNode;
+
+    /**
+     * 当前获取到锁的线程
+     */
+    private volatile Thread currentThread;
+
+    /**
      * 重入次数
      */
     private int count = 0;
@@ -70,19 +80,20 @@ public class ZKReentrantLock implements Serializable {
     }
 
     public final void lock() {
-        if (CreateAndCheckSmallest()) {
-
+        Thread current = Thread.currentThread();
+        String zkPath;
+        if (current == currentThread || CreateNextAndCheckSmallest()) {
+            count++;
+        } else {
+            LockSupport.park(this);
         }
     }
 
-    private boolean CreateAndCheckSmallest() {
+    private boolean CreateNextAndCheckSmallest() {
         //创建锁标识（临时节点）
         String zkPath = zkClient.createNodeAndParentIfNeed(lockPath, "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
         logger.info("create lock node:" + zkPath);
-
-        //check small
-        checkSmallest(zkPath);
-        return true;
+        return checkSmallest(zkPath);
     }
 
     private boolean checkSmallest(String zkPath) {
@@ -113,7 +124,10 @@ public class ZKReentrantLock implements Serializable {
         }
         logger.info("smallest:" + preNode);
 
+        //当前线程获取到锁
         if (pre == null) {
+            currentNode = zkPath;
+            currentThread = Thread.currentThread();
             logger.info("new node is smallest,return true");
             return true;
         }
@@ -126,7 +140,7 @@ public class ZKReentrantLock implements Serializable {
             logger.info("exists and listening node:" + finalPreNode);
             zkClient.getZK().exists(finalPreNode, (event) -> {
                 Thread thread = threadMap.get(finalPreNode);
-                logger.info("node:"+finalPreNode);
+                logger.info("node:" + finalPreNode);
                 logger.info("thread:" + thread.getName());
                 LockSupport.unpark(thread);
             });
@@ -151,7 +165,11 @@ public class ZKReentrantLock implements Serializable {
     }
 
     public void unlock() {
-
+        try {
+            zkClient.getZK().delete(currentNode, -1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
