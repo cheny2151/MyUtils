@@ -14,7 +14,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-public class ZkApi {
+/**
+ * zookeeperAPI封装
+ */
+public class ZkClient {
 
     private Logger logger = Logger.getLogger(this.getClass());
 
@@ -44,7 +47,7 @@ public class ZkApi {
 
     }
 
-    public static ZooKeeper getZK() {
+    public ZooKeeper getZK() {
         try {
             ZookeeperHolder.waitForConnection();
         } catch (InterruptedException e) {
@@ -55,6 +58,7 @@ public class ZkApi {
 
     /**
      * 创建节点，父节点不存在则自动创建
+     * 注意：临时节点不允许创建节点
      */
     public String createNodeAndParentIfNeed(String path, byte[] data, List<ACL> acls, CreateMode createMode) {
         //第一个/忽略
@@ -82,16 +86,6 @@ public class ZkApi {
 
     }
 
-    @Test
-    public void test() throws KeeperException, InterruptedException {
-        try {
-            String asloNoNode = createNodeAndParentIfNeed("/path1/test/test", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-            System.out.println(asloNoNode);
-        } finally {
-            getZK().close();
-        }
-    }
-
     public void printNodes(String nodePath) throws KeeperException, InterruptedException {
         List<String> children = getZK().getChildren(nodePath, true);
         if (children.size() > 0) {
@@ -104,6 +98,10 @@ public class ZkApi {
             return;
         }
         System.out.println("null");
+    }
+
+    @Test
+    public void test() throws KeeperException, InterruptedException {
     }
 
     @Test
