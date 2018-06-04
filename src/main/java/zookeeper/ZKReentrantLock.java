@@ -81,7 +81,6 @@ public class ZKReentrantLock implements Serializable {
 
     public final void lock() {
         Thread current = Thread.currentThread();
-        String zkPath;
         if (current == currentThread || CreateNextAndCheckSmallest()) {
             count++;
         } else {
