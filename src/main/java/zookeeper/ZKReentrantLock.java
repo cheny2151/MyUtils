@@ -3,10 +3,10 @@ package zookeeper;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.ZooKeeper;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.LockSupport;
 
 /**
@@ -56,12 +56,6 @@ public class ZKReentrantLock implements Serializable {
      */
     private int count = 0;
 
-    /**
-     * k:path
-     * v:thread
-     * 存放阻塞的线程
-     */
-    private ConcurrentHashMap<String, Thread> threadMap = new ConcurrentHashMap<>();
 
     public ZKReentrantLock(String rootPath, String lockName) {
         if (lockName.contains("/")) {
@@ -84,6 +78,7 @@ public class ZKReentrantLock implements Serializable {
         if (current == currentThread || CreateNextAndCheckSmallest()) {
             count++;
         } else {
+            logger.info("park thread: " + current.getName());
             LockSupport.park(this);
         }
     }
@@ -96,6 +91,7 @@ public class ZKReentrantLock implements Serializable {
     }
 
     private boolean checkSmallest(String zkPath) {
+        final Thread current = Thread.currentThread();
         //锁节点编号
         Long newNum = lockNum(zkPath);
         //父节点路径
@@ -131,17 +127,15 @@ public class ZKReentrantLock implements Serializable {
             return true;
         }
 
-        //存放阻塞节点信息
-        threadMap.put(zkPath, Thread.currentThread());
-
         try {
             final String finalPreNode = rootPath + "/" + preNode;
             logger.info("exists and listening node:" + finalPreNode);
             zkClient.getZK().exists(finalPreNode, (event) -> {
-                Thread thread = threadMap.get(finalPreNode);
-                logger.info("node:" + finalPreNode);
-                logger.info("thread:" + thread.getName());
-                LockSupport.unpark(thread);
+                logger.info("thread:" + current.getName());
+                LockSupport.unpark(current);
+                //设置当前执行的线程和对应节点
+                currentThread = current;
+                currentNode = finalPreNode;
             });
 
         } catch (Exception e) {
@@ -164,8 +158,11 @@ public class ZKReentrantLock implements Serializable {
     }
 
     public void unlock() {
+        ZooKeeper zk = zkClient.getZK();
         try {
-            zkClient.getZK().delete(currentNode, -1);
+            if (zk.exists(currentNode, false) != null) {
+                zk.delete(currentNode, -1);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
