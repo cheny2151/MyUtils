@@ -32,10 +32,12 @@ public class ZkTest {
             lock.lock();
             logger.info("B get lock");
             try {
+                lock.lock();
                 for (int i = 0; i < 8; i++) {
                     logger.info("B running...");
                     Thread.sleep(500);
                 }
+                lock.unlock();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
@@ -45,6 +47,23 @@ public class ZkTest {
         });
         thread2.setName("B");
         thread2.start();
+        Thread thread3 = new Thread(() -> {
+            lock.lock();
+            logger.info("C get lock");
+            try {
+                for (int i = 0; i < 8; i++) {
+                    logger.info("C running...");
+                    Thread.sleep(500);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                lock.unlock();
+                logger.info("C unlock");
+            }
+        });
+        thread3.setName("C");
+        thread3.start();
         Thread.sleep(10000000);
     }
 

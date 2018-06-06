@@ -53,8 +53,9 @@ public class ZKReentrantLock implements Serializable {
 
     /**
      * 重入次数
+     * 由于计数的只有当前线程没有并发，所以无需原子操作
      */
-    private int count = 0;
+    private volatile int count = 0;
 
 
     public ZKReentrantLock(String rootPath, String lockName) {
@@ -104,7 +105,7 @@ public class ZKReentrantLock implements Serializable {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             //转为runtime异常
-            throw new RuntimeException();
+            throw new ZKLockException();
         }
 
         //查找最靠近并比newNum小的节点编号，不存在则newNum最小
@@ -132,10 +133,11 @@ public class ZKReentrantLock implements Serializable {
             logger.info("exists and listening node:" + finalPreNode);
             zkClient.getZK().exists(finalPreNode, (event) -> {
                 logger.info("thread:" + current.getName());
-                LockSupport.unpark(current);
+                count++;
                 //设置当前执行的线程和对应节点
                 currentThread = current;
-                currentNode = finalPreNode;
+                currentNode = zkPath;
+                LockSupport.unpark(current);
             });
 
         } catch (Exception e) {
@@ -153,18 +155,23 @@ public class ZKReentrantLock implements Serializable {
         return Long.valueOf(zkPath.substring(length));
     }
 
-    private boolean compareAndSet() {
-        return false;
-    }
-
     public void unlock() {
         ZooKeeper zk = zkClient.getZK();
         try {
+            count--;
+            if (count < 0) {
+                throw new ZKLockException();
+            } else if (count > 0) {
+                return;
+            }
             if (zk.exists(currentNode, false) != null) {
+                logger.info("delete node:" + currentNode);
                 zk.delete(currentNode, -1);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
+            //转为runtime异常
+            throw new ZKLockException();
         }
     }
 
