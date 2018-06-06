@@ -79,6 +79,7 @@ public class ZKReentrantLock implements Serializable {
         if (current == currentThread || CreateNextAndCheckSmallest()) {
             count++;
         } else {
+            //阻塞线程
             logger.info("park thread: " + current.getName());
             LockSupport.park(this);
         }
@@ -91,7 +92,14 @@ public class ZKReentrantLock implements Serializable {
         return checkSmallest(zkPath);
     }
 
+    /**
+     * 判断当前是否是最小节点
+     *
+     * @param zkPath 当前节点
+     * @return 是否最小
+     */
     private boolean checkSmallest(String zkPath) {
+        //当前线程
         final Thread current = Thread.currentThread();
         //锁节点编号
         Long newNum = lockNum(zkPath);
@@ -128,10 +136,23 @@ public class ZKReentrantLock implements Serializable {
             return true;
         }
 
+        //当前线程未获取到锁，阻塞前添加监听事件
+        addListener(rootPath + "/" + preNode, zkPath, current);
+
+        return false;
+    }
+
+    /**
+     * 添加监听事件，监听到上级节点被删除时恢复对应线程
+     *
+     * @param listenNode 监听的节点
+     * @param zkPath     阻塞的节点
+     * @param current    阻塞的线程
+     */
+    private void addListener(String listenNode, String zkPath, Thread current) {
         try {
-            final String finalPreNode = rootPath + "/" + preNode;
-            logger.info("exists and listening node:" + finalPreNode);
-            zkClient.getZK().exists(finalPreNode, (event) -> {
+            logger.info("exists and listening node:" + listenNode);
+            zkClient.getZK().exists(listenNode, (event) -> {
                 logger.info("thread:" + current.getName());
                 count++;
                 //设置当前执行的线程和对应节点
@@ -144,8 +165,6 @@ public class ZKReentrantLock implements Serializable {
             logger.error(e.getMessage(), e);
             throw new RuntimeException();
         }
-
-        return false;
     }
 
     /**
