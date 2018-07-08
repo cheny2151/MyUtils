@@ -5,8 +5,6 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 发布订阅模式
@@ -14,13 +12,9 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Demo2 {
 
-    private String queueName;
+    private String queueName = "test";
 
     private String exChangeName = "ex_fanout";
-
-    private ReentrantLock lock = new ReentrantLock();
-
-    private Condition handled = lock.newCondition();
 
     private Logger logger = Logger.getLogger(this.getClass());
 
@@ -39,6 +33,8 @@ public class Demo2 {
             Channel channel = connection.createChannel();
             //定义一个交换器 参数1 名称  参数2 交换器类型 参数3表示将交换器信息永久保存在服务器磁盘上
             channel.exchangeDeclare(exChangeName, BuiltinExchangeType.FANOUT, true);
+//            channel.queueDeclare(queueName, true, false, false, null);
+//            channel.queueBind(queueName,exChangeName,"");
             for (int i = 0; i < 5; i++) {
                 //通过交换机发送消息，routingKey为空 默认会转发给所有的订阅者队列
                 channel.basicPublish(exChangeName, "", MessageProperties.PERSISTENT_TEXT_PLAIN, "test".getBytes("utf-8"));
@@ -72,12 +68,12 @@ public class Demo2 {
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
             //定义一个交换机（防止服务器还未创建此交换机）
-            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.FANOUT, true);
-            channel.basicQos(1);
+//            channel.exchangeDeclare(exChangeName, BuiltinExchangeType.FANOUT, true);
+//            channel.basicQos(1);
             //产生一个随机的队列名称 该队列用于从交换器获取消息
-            queueName = channel.queueDeclare().getQueue();
+//            queueName = channel.queueDeclare().getQueue();
             //将队列和交换机绑定 就可以正式获取消息了 routingKey和交换器的一样都设置成空（获取所有消息）
-            channel.queueBind(queueName, exChangeName, "");
+//            channel.queueBind(queueName, exChangeName, "");
             DefaultConsumer consumer = new DefaultConsumer(channel) {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -87,7 +83,8 @@ public class Demo2 {
                 }
             };
             //执行客户端回调
-            basicConsume(queueName, channel, consumer);
+            channel.basicConsume(queueName, false, consumer);
+            Thread.sleep(1000000);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -102,28 +99,10 @@ public class Demo2 {
     }
 
     private void callBack(byte[] body) {
-        lock.lock();
         try {
-            logger.info(Thread.currentThread().getId()+":" + new String(body, "utf-8"));
-//            handled.signalAll();
+            logger.info(Thread.currentThread().getId() + ":" + new String(body, "utf-8"));
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    private void basicConsume(String name, Channel channel, Consumer consumer) throws IOException, InterruptedException {
-        //autoAck:false 手动确认
-        channel.basicConsume(name, false, consumer);
-        while (true) {
-            lock.lock();
-            try {
-                handled.await();
-//                logger.info("signal");
-            } finally {
-                lock.unlock();
-            }
         }
     }
 

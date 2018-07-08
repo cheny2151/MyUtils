@@ -47,24 +47,24 @@ public class Demo3 {
     }
 
     @Test
-    public void test2() {
+    public void test2() throws InterruptedException {
         System.out.println("---warn----");
         consume("warn");
     }
 
     @Test
-    public void test3() {
+    public void test3() throws InterruptedException {
         System.out.println("---info----");
         consume("info");
     }
 
     @Test
-    public void test4() {
+    public void test4() throws InterruptedException {
         System.out.println("---error----");
         consume("error");
     }
 
-    private void consume(String routingKey) {
+    private void consume(String routingKey) throws InterruptedException {
         Connection connection = null;
         try {
             ConnectionFactory factory = new ConnectionFactory();
@@ -90,7 +90,8 @@ public class Demo3 {
                 }
             };
             //执行客户端回调
-            basicConsume(queueName, channel, consumer);
+            channel.basicConsume(queueName, false, consumer);
+            Thread.sleep(100000);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -106,18 +107,10 @@ public class Demo3 {
 
     private void callBack(byte[] body) {
         try {
-            Thread.sleep(1000);
-            System.out.println("---" + new String(body, "utf-8"));
+            System.out.println("callback " + new String(body, "utf-8"));
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private void basicConsume(String name, Channel channel, Consumer consumer) throws IOException, InterruptedException {
-        //autoAck:false 手动确认
-        channel.basicConsume(name, false, consumer);
-        Thread.sleep(100);
-        basicConsume(name, channel, consumer);
     }
 
 }
