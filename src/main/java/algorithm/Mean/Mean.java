@@ -25,8 +25,8 @@ public class Mean {
      * @return 新的游标index
      */
     private int positioning(ArrayInfo arrayInfo) {
-        //中间位
-        int len = arrayInfo.getLength();
+        //未定位的个数
+        int len = arrayInfo.getLength() - arrayInfo.getLeftCount() - arrayInfo.getRightCount();
         int[] array = arrayInfo.getArray();
         int cursor = arrayInfo.getCursor();
 
@@ -68,9 +68,9 @@ public class Mean {
         rightCount = rightIndex - tempMidIndex;
 
         //目前游标左边的个数
-        int currentLeftCount = leftCount + arrayInfo.getStartIndex();
+        int currentLeftCount = leftCount + arrayInfo.getLeftCount();
         //目前游标右边的个数
-        int currentRightCount = rightCount + arrayInfo.getLength() - (arrayInfo.getEndIndex() + 1);
+        int currentRightCount = rightCount + arrayInfo.getRightCount();
         if (checkMid(currentLeftCount, currentRightCount, collision, arrayInfo)) {
             System.arraycopy(temp, leftIndex, array, arrayInfo.getStartIndex(),
                     arrayInfo.getEndIndex() + 1 - arrayInfo.getStartIndex());
@@ -83,7 +83,7 @@ public class Mean {
             int newEndIndex = arrayInfo.getEndIndex() - rightCount - 1 - collision;
             arrayInfo.setEndIndex(newEndIndex);
             arrayInfo.setCursor(newEndIndex);
-            return checkStartAfterEnd(arrayInfo) ? array[len / 2] : positioning(arrayInfo);
+            return checkStartAfterEnd(arrayInfo) ? array[arrayInfo.getLength() / 2] : positioning(arrayInfo);
         } else {
             //右边个数大于左边个数，中数在右
             System.arraycopy(temp, leftIndex, array, arrayInfo.getStartIndex(),
@@ -91,7 +91,7 @@ public class Mean {
             int newStartIndex = arrayInfo.getStartIndex() + leftCount + 1;
             arrayInfo.setStartIndex(newStartIndex);
             arrayInfo.setCursor(newStartIndex);
-            return checkStartAfterEnd(arrayInfo) ? array[len / 2] : positioning(arrayInfo);
+            return checkStartAfterEnd(arrayInfo) ? array[arrayInfo.getLength() / 2] : positioning(arrayInfo);
         }
 
     }
@@ -134,7 +134,7 @@ public class Mean {
 
     @Test
     public void test() {
-        int mid = 5000000;
+        int mid = 1362711;
         int[] array = new int[2 * mid + 1];
         array[mid] = mid;
         for (int i = 0; i < mid; i++) {
