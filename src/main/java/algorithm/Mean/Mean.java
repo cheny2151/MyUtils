@@ -41,7 +41,7 @@ public class Mean {
         //开始中分
         //与midNum相等的个数
         int collision = 0;
-        for (int i = arrayInfo.getStartIndex(); i < arrayInfo.getEndIndex(); i++) {
+        for (int i = arrayInfo.getStartIndex(); i <= arrayInfo.getEndIndex(); i++) {
             //跳过游标
             if (cursor == i) {
                 continue;
@@ -54,18 +54,11 @@ public class Mean {
             } else if (current < midNum) {
                 temp[--leftIndex] = current;
             } else {
-                //与midNum相等的处理逻辑：平均分布到左右
+                //与midNum相等的处理逻辑：全部放到左边
                 leftCount = tempMidIndex - leftIndex;
-                rightCount = rightIndex - tempMidIndex;
-                if ((collision & 1) == 0) {
-                    System.arraycopy(temp, leftIndex, temp, leftIndex - 1, leftCount);
-                    temp[tempMidIndex - 1] = current;
-                    leftIndex--;
-                } else {
-                    System.arraycopy(temp, tempMidIndex + 1, temp, tempMidIndex + 2, rightCount);
-                    temp[tempMidIndex + 1] = current;
-                    rightIndex++;
-                }
+                System.arraycopy(temp, leftIndex, temp, leftIndex - 1, leftCount);
+                temp[tempMidIndex - 1] = current;
+                leftIndex--;
                 collision++;
             }
         }
@@ -74,43 +67,37 @@ public class Mean {
         leftCount = tempMidIndex - leftIndex;
         rightCount = rightIndex - tempMidIndex;
 
-        /*System.out.println("--" + leftCount);
-        System.out.println("---" + rightCount);
-        System.out.println("leftIndex" + leftIndex);
-        System.out.println("rightIndex" + rightIndex);
-        for (int i : temp) {
-            System.out.print(i + " ");
-        }
-        System.out.println();*/
-
-
-        if (checkMid(leftCount, rightCount, collision, arrayInfo)) {
-            //找到中数
-            return midNum;
-        } else if (leftCount > rightCount) {
-            //左边个数大于右边个数，中数在左
-            System.out.println("getStartIndex" + arrayInfo.getStartIndex());
-            System.out.println("len" + (arrayInfo.getEndIndex() + 1 - arrayInfo.getStartIndex()));
-            System.out.println("getEndIndex" + arrayInfo.getEndIndex());
+        //目前游标左边的个数
+        int currentLeftCount = leftCount + arrayInfo.getStartIndex();
+        //目前游标右边的个数
+        int currentRightCount = rightCount + arrayInfo.getLength() - (arrayInfo.getEndIndex() + 1);
+        if (checkMid(currentLeftCount, currentRightCount, collision, arrayInfo)) {
             System.arraycopy(temp, leftIndex, array, arrayInfo.getStartIndex(),
                     arrayInfo.getEndIndex() + 1 - arrayInfo.getStartIndex());
-            int newEndIndex = arrayInfo.getEndIndex() - rightCount - 1;
+            //找到中数
+            return midNum;
+        } else if (currentLeftCount > currentRightCount) {
+            //左边个数大于右边个数，中数在左
+            System.arraycopy(temp, leftIndex, array, arrayInfo.getStartIndex(),
+                    arrayInfo.getEndIndex() + 1 - arrayInfo.getStartIndex());
+            int newEndIndex = arrayInfo.getEndIndex() - rightCount - 1 - collision;
             arrayInfo.setEndIndex(newEndIndex);
             arrayInfo.setCursor(newEndIndex);
-            return positioning(arrayInfo);
+            return checkStartAfterEnd(arrayInfo) ? array[len / 2] : positioning(arrayInfo);
         } else {
             //右边个数大于左边个数，中数在右
-            System.out.println("getStartIndex" + arrayInfo.getStartIndex());
-            System.out.println("getEndIndex" + arrayInfo.getEndIndex());
-            System.out.println("len" + (arrayInfo.getEndIndex() + 1 - arrayInfo.getStartIndex()));
             System.arraycopy(temp, leftIndex, array, arrayInfo.getStartIndex(),
                     arrayInfo.getEndIndex() + 1 - arrayInfo.getStartIndex());
             int newStartIndex = arrayInfo.getStartIndex() + leftCount + 1;
             arrayInfo.setStartIndex(newStartIndex);
             arrayInfo.setCursor(newStartIndex);
-            return positioning(arrayInfo);
+            return checkStartAfterEnd(arrayInfo) ? array[len / 2] : positioning(arrayInfo);
         }
 
+    }
+
+    private boolean checkStartAfterEnd(ArrayInfo arrayInfo) {
+        return arrayInfo.getStartIndex() >= arrayInfo.getEndIndex();
     }
 
     /**
@@ -121,19 +108,23 @@ public class Mean {
      * @return
      */
     private boolean checkMid(int leftCount, int rightCount, int collision, ArrayInfo arrayInfo) {
-        leftCount += arrayInfo.getStartIndex();
-        rightCount += arrayInfo.getLength() - (arrayInfo.getEndIndex() + 1);
-        int abs = Math.abs(leftCount - rightCount);
-        if (arrayInfo.isOdd()) {
-            if (collision == 0)
-                return abs == 0;
+        int c = leftCount - rightCount;
+        int abs = Math.abs(c);
+        if (collision == 0 || c <= 0) {
+            //由于重复的数全部放在左边，所以有重复的数并且右边大于左边时候，一定不会命中;
+            if (arrayInfo.isOdd())
+                return c == 0;
             else
-                return abs <= 1;
-        } else {
-            if (collision == 0)
                 return abs == 1;
-            else
-                return abs <= 2;
+        } else {
+            //检查重复的个数是否可以命中中间位
+//            if (arrayInfo.isOdd())
+//                return 2 * collision >= c;
+//            else {
+            int midIndex = arrayInfo.getLength() / 2 + 1;
+            return midIndex >= arrayInfo.getCursor() - collision
+                    && midIndex <= arrayInfo.getCursor();
+//            }
         }
     }
 
@@ -143,21 +134,61 @@ public class Mean {
 
     @Test
     public void test() {
-        int mid = 10;
+        int mid = 5000000;
         int[] array = new int[2 * mid + 1];
         array[mid] = mid;
         for (int i = 0; i < mid; i++) {
-            int t = mid + (int) (Math.random() * 10);
-            int t2 = mid - (int) (Math.random() * 10);
-            array[i] = t /*+ (int) (100 * Math.random()) + (int) (10 * Math.random())*/;
-            array[mid + 1 + i] = t2 /*+ (int) (100 * Math.random()) + (int) (10 * Math.random())*/;
+            int t = mid + (int) (Math.random() * 10) + (int) (Math.random() * 50);
+            int t2 = mid - (int) (Math.random() * 10) - (int) (Math.random() * 50);
+            if ((i & 1) == 1) {
+                array[i] = t + (int) (100 * Math.random()) + (int) (10 * Math.random());
+                array[mid + 1 + i] = t2 - (int) (100 * Math.random()) - (int) (10 * Math.random());
+            } else {
+                array[i] = t2 - (int) (100 * Math.random()) - (int) (10 * Math.random());
+                array[mid + 1 + i] = t + (int) (100 * Math.random()) + (int) (10 * Math.random());
+            }
         }
+//        for (int i : array) {
+//            System.out.print(i + " ");
+//        }
+        long x = System.currentTimeMillis();
+        System.out.println(x);
+        int midNum = getMidNum(array);
+        System.out.println(System.currentTimeMillis() - x);
+//        System.out.println();
+//        for (int i = 0; i < array.length; i++) {
+//            if (i == getMidLen(array.length) - 1)
+//                System.out.print(array[i] + "* ");
+//            else
+//                System.out.print(array[i] + " ");
+//        }
+//        System.out.println();
+        System.out.println(midNum);
+    }
+
+    @Test
+    public void test2() {
+        int[] array = {19, 103, 19, 56, 25, 69, 9, 94, 44, 97, 23, 72, 6, 72, 10, 90, 19, 92, 8, 79, 36, 83, -8, 80, 10, 78, 13, 78, 32, 103, 18, 65, 42, 89, 1, 73, 37, 87, 19, 53, 0, 75, 2, 103, 44, 98, 39, 73, 21, 73, 50, 79, 4, 75, 41, 98, 9, 98, 30, 62, -4, 93, 15, 92, 44, 96, 0, 71, 38, 59, 5, 70, 3, 104, 12, 62, 35, 63, 18, 74, 5, 65, 30, 68, 8, 86, 34, 56, 10, 76, 11, 57, 46, 79, 25, 64, 38, 74, 7, 54, 29};
         for (int i : array) {
             System.out.print(i + " ");
         }
         int midNum = getMidNum(array);
         System.out.println();
+        for (int i = 0; i < array.length; i++) {
+            if (i == getMidLen(array.length) - 1)
+                System.out.print(array[i] + "* ");
+            else
+                System.out.print(array[i] + " ");
+        }
+        System.out.println();
         System.out.println(midNum);
+    }
+
+    @Test
+    public void test3() {
+        String temp = "19 103 19 56 25 69 9 94 44 97 23 72 6 72 10 90 19 92 8 79 36 83 -8 80 10 78 13 78 32 103 18 65 42 89 1 73 37 87 19 53 0 75 2 103 44 98 39 73 21 73 50 79 4 75 41 98 9 98 30 62 -4 93 15 92 44 96 0 71 38 59 5 70 3 104 12 62 35 63 18 74 5 65 30 68 8 86 34 56 10 76 11 57 46 79 25 64 38 74 7 54 29";
+        String replace = temp.replace(" ", ",");
+        System.out.println(replace);
     }
 
 }
