@@ -11,4 +11,6 @@ public interface Future<T> {
     void complete();
 
     void sub();
+
+    void setResult(T result);
 }

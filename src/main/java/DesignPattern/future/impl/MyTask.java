@@ -5,6 +5,7 @@ import DesignPattern.future.Listener;
 import DesignPattern.future.Task;
 
 import java.util.Vector;
+import java.util.concurrent.CountDownLatch;
 
 public class MyTask<T> implements Runnable {
 
@@ -22,7 +23,7 @@ public class MyTask<T> implements Runnable {
     @Override
     public void run() {
         try {
-            future = task.execute();
+            future.setResult(task.execute());
             future.complete();
         } catch (Exception e) {
         }
@@ -31,9 +32,27 @@ public class MyTask<T> implements Runnable {
         }
     }
 
-
-    private Future<T> getFuture() {
+    public Future<T> getFuture() {
         return future;
+    }
+
+    public T getResultBlock() {
+        if (future.isComplete()) {
+            return future.getResult();
+        }
+        CountDownLatch latch = new CountDownLatch(1);
+        future.addListener(latch::countDown);
+        while (!future.isComplete()) {
+
+            try {
+                latch.await();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        return future.getResult();
     }
 
 
@@ -43,6 +62,8 @@ public class MyTask<T> implements Runnable {
 
         private boolean complete = false;
 
+        private T result;
+
         @Override
         public boolean isComplete() {
             return complete;
@@ -50,7 +71,7 @@ public class MyTask<T> implements Runnable {
 
         @Override
         public T getResult() {
-            return null;
+            return result;
         }
 
         @Override
@@ -67,6 +88,10 @@ public class MyTask<T> implements Runnable {
             for (Listener listener : listeners) {
                 listener.execute();
             }
+        }
+
+        public void setResult(T result) {
+            this.result = result;
         }
     }
 
