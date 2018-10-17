@@ -113,9 +113,15 @@ public class Observable<T> {
 
         @Override
         public void run() {
-            future = task.execute();
-            observable.isCompleted = true;
-            observable.executeSubscriber(future);
+            try {
+                future = task.execute();
+                observable.isCompleted = true;
+            } catch (Exception e) {
+                observable.isCompleted = false;
+            }
+            if (observable.isCompleted) {
+                observable.executeSubscriber(future);
+            }
         }
 
 
