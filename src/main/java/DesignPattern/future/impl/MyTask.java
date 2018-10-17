@@ -56,7 +56,7 @@ public class MyTask<T> implements Runnable {
     }
 
 
-    public class MyFuture<T> implements Future<T> {
+    public class MyFuture implements Future<T> {
 
         private Vector<Listener> listeners = new Vector<>();
 
