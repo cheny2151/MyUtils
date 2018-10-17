@@ -6,18 +6,24 @@ import DesignPattern.future.Task;
 
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 
 public class MyTask<T> implements Runnable {
 
     /**
      * 任务执行完返回的数据
      */
-    private Future<T> future;
+    private MyFuture future;
 
     private Task<T> task;
 
-    public MyTask(Task<T> task) {
+    private MyTask(Task<T> task) {
         this.task = task;
+        this.future = new MyFuture();
+    }
+
+    public static <T> MyTask<T> create(Task<T> task) {
+        return new MyTask<>(task);
     }
 
     @Override
@@ -26,10 +32,17 @@ public class MyTask<T> implements Runnable {
             future.setResult(task.execute());
             future.complete();
         } catch (Exception e) {
+            future.setSuccess(false);
         }
+        future.setSuccess(true);
         if (future.isComplete()) {
             future.sub();
         }
+    }
+
+    public Future<T> start() {
+        Executors.newSingleThreadExecutor().submit(this);
+        return future;
     }
 
     public Future<T> getFuture() {
@@ -52,21 +65,32 @@ public class MyTask<T> implements Runnable {
 
         }
 
-        return future.getResult();
+        if (future.isSuccess()) {
+            return future.getResult();
+        } else {
+            throw new RuntimeException("执行未成功");
+        }
     }
 
 
-    public class MyFuture<T> implements Future<T> {
+    public class MyFuture implements Future<T> {
 
         private Vector<Listener> listeners = new Vector<>();
 
         private boolean complete = false;
+
+        private boolean success = false;
 
         private T result;
 
         @Override
         public boolean isComplete() {
             return complete;
+        }
+
+        @Override
+        public boolean isSuccess() {
+            return success;
         }
 
         @Override
@@ -79,9 +103,6 @@ public class MyTask<T> implements Runnable {
             listeners.add(listener);
         }
 
-        public void complete() {
-            this.complete = true;
-        }
 
         @Override
         public void sub() {
@@ -92,6 +113,14 @@ public class MyTask<T> implements Runnable {
 
         public void setResult(T result) {
             this.result = result;
+        }
+
+        public void complete() {
+            this.complete = true;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
         }
     }
 

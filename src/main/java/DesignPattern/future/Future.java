@@ -4,6 +4,8 @@ public interface Future<T> {
 
     boolean isComplete();
 
+    boolean isSuccess();
+
     T getResult();
 
     void addListener(Listener listener);
@@ -13,4 +15,5 @@ public interface Future<T> {
     void sub();
 
     void setResult(T result);
+
 }
