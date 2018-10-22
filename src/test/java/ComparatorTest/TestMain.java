@@ -1,5 +1,7 @@
 package ComparatorTest;
 
+import DesignPattern.future.Future;
+import DesignPattern.future.impl.MyTask;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -44,6 +46,22 @@ public class TestMain {
         for (MyInt myInta : myInts) {
             System.out.println("============" + myInta.getI());
         }
+    }
+
+    @Test
+    public void test2(){
+        MyTask<String> stringMyTask = MyTask.create(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return "test";
+        });
+        Future<String> start = stringMyTask.start();
+        System.out.println(start.isComplete());
+        System.out.println(stringMyTask.getResultBlock());
+        System.out.println(start.isComplete());
     }
 
 }
