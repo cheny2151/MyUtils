@@ -30,12 +30,11 @@ public class MyTask<T> implements Runnable {
     public void run() {
         try {
             future.setResult(task.execute());
-            future.complete();
+            future.setSuccess(true);
         } catch (Exception e) {
             future.setSuccess(false);
-        }
-        future.setSuccess(true);
-        if (future.isComplete()) {
+        } finally {
+            future.complete();
             future.sub();
         }
     }
@@ -50,19 +49,24 @@ public class MyTask<T> implements Runnable {
     }
 
     public T getResultBlock() {
+        //已经完成
         if (future.isComplete()) {
-            return future.getResult();
+            if (future.isSuccess()) {
+                return future.getResult();
+            } else {
+                throw new RuntimeException("执行未成功");
+            }
         }
+
+        //未完成，阻塞并监听完成事件
         CountDownLatch latch = new CountDownLatch(1);
         future.addListener(latch::countDown);
         while (!future.isComplete()) {
-
             try {
                 latch.await();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
 
         if (future.isSuccess()) {
