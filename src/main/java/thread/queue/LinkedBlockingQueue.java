@@ -110,7 +110,7 @@ public class LinkedBlockingQueue<V> {
     }
 
     /**
-     * 思考：为什么不用加synchronized，由于是操作对象引用，而不是值。、
+     * 思考：为什么不用加synchronized，由于是操作对象引用，而不是值。
      * 明确h与head始终指向一个内存地址,所以无论head是否被其他线程修改，h始终和head保持同个引用，不存在线程安全问题。
      *
      * @return
