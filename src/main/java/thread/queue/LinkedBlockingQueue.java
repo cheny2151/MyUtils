@@ -25,7 +25,7 @@ public class LinkedBlockingQueue<V> {
 
     private final int capacity;
 
-    private volatile node<V> head;
+    private  node<V> head;
 
     private volatile node<V> last;
 
@@ -109,12 +109,6 @@ public class LinkedBlockingQueue<V> {
         return true;
     }
 
-    /**
-     * 思考：为什么不用加synchronized，由于是操作对象引用，而不是值。
-     * 明确h与head始终指向一个内存地址,所以无论head是否被其他线程修改，h始终和head保持同个引用，不存在线程安全问题。
-     *
-     * @return
-     */
     private V dequeue() {
         node<V> h = head;
         V v = h.getValue();
@@ -209,7 +203,7 @@ public class LinkedBlockingQueue<V> {
             if (c - 1 > 0) {
                 notEmpty.signal();
             }
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             takeLock.unlock();
