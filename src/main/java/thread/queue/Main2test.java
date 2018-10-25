@@ -3,6 +3,7 @@ package thread.queue;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 //import java.util.concurrent.LinkedBlockingQueue;
@@ -63,13 +64,4 @@ public class Main2test {
         }
     }
 
-    @Test
-    public void test2() {
-        BigDecimal start = new BigDecimal(100);
-        double result = 0;
-        while (result < 0) {
-            BigDecimal multiply = start.multiply(new BigDecimal(1.2));
-//            BigDecimal
-        }
-    }
 }
