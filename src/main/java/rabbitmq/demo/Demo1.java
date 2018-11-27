@@ -39,7 +39,8 @@ public class Demo1 {
             factory.setPassword("guest");
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
-            //定义一个队列
+            //定义一个队列 durable:队列是否持久化 exclusive:排他性,只对首次声明它的连接(connection)可见，会在其连接断开的时候自动删除
+            //autoDelete: 是否自动删除
             channel.queueDeclare(queueName, true, false, false, null);
             HashMap<String, String> map = new HashMap<>();
             map.put("test", "success");
