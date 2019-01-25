@@ -108,7 +108,7 @@ public class ShareQRUtils {
         headGraphics.drawImage(userHeadImage, DEFAULT_GAP, DEFAULT_GAP, null);
 
         int x = DEFAULT_GAP * 2 + userHeadImage.getWidth();
-        int y = DEFAULT_GAP;
+        int y = DEFAULT_GAP/2;
 
         //昵称
         int fontSize = 40;
