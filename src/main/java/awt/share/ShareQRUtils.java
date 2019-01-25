@@ -18,8 +18,13 @@ import java.net.URL;
  */
 public class ShareQRUtils {
 
+    //通用间隙
+    private static final int DEFAULT_GAP = 40;
+
+    //背景宽度
     private final static int BG_WIDTH = 900;
 
+    //背景高度
     private final static int BG_HEIGHT = 1500;
 
     //二维码高度
@@ -32,16 +37,14 @@ public class ShareQRUtils {
     private static final int PRODUCT_INFO_HEIGHT = 300;
 
     //商品信息图片宽度
-    private static final int PRODUCT_INFO_WIDTH = BG_WIDTH - QR_WIDTH;
+    private static final int PRODUCT_INFO_WIDTH = BG_WIDTH - QR_WIDTH - DEFAULT_GAP;
 
     //头部图片高度
     private static final int HEAD_HEIGHT = 250;
 
     //头部图片宽度
-    private static final int HEAD_WIDTH = BG_WIDTH * 5 / 4;
+    private static final int HEAD_WIDTH = BG_WIDTH * 19 / 20;
 
-    //通用间隙
-    private static final int DEFAULT_GAP = 40;
 
 
     @Test
@@ -49,8 +52,8 @@ public class ShareQRUtils {
         BufferedImage read = ImageIO.read(new File("C:\\Users\\cheny\\Pictures\\share_20190124152015.png"));
 
         imageToFile(createShare(new URL("http://auction-fat.oss-cn-shenzhen.aliyuncs.com/COMMODITY/29668155-0703-40a6-a084-3b3abf998ba0.jpg")
-                , new URL("https://wx.qlogo.cn/mmopen/vi_32/gUhMa7CSLZxG7iaa82t37lNrLoMNbiaOGMZ5DQLfCyHB7TGvKs2dds804Is3kNgzxGIcXDPomDxE3u7ibWpkTMz3g/132"), "崔长葱", "喜拍优品，拍卖新体验，省钱、省钱、省钱！"
-                , "法国拉比红酒法国拉比红酒法国拉比红酒", "200", "50"
+                , new URL("https://wx.qlogo.cn/mmopen/vi_32/gUhMa7CSLZxG7iaa82t37lNrLoMNbiaOGMZ5DQLfCyHB7TGvKs2dds804Is3kNgzxGIcXDPomDxE3u7ibWpkTMz3g/132"), "崔长葱", "喜拍优品，拍卖新体验，省钱、省钱、省钱省钱省钱省钱省钱省钱省钱省钱！"
+                , "法国拉比红酒法国拉比红酒法国拉比红酒法国拉比红酒法国拉比红酒法", "200", "50"
                 , "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx6882489a7a2331d8&redirect_uri=http://auction-fat.mmdpp.cn/frontend-call/wechats/indexPage&response_type=code&scope=snsapi_userinfo&state=cmVkaXJlY3RVcmxfaHR0cDovL2F1Y3Rpb24tZmF0Lm1tZHBwLmNuL2luZGV4Lmh0bWwjL2xvZ2lu%0AP3BhcmVudFVpZD03NTQzZWQ3MzY4MDE0Nzk4YmU4OTBjYTA4ZGJkNTlhMCZidXNpbmVzc0lkPTEz%0AZjI3N2Y1ZmFhNjRjZjlhZDI0ZTI0MjQ3YWU0YTVi#wechat_redirect")
                 , new File("C:\\Users\\cheny\\Pictures\\test.jpg"));
     }
@@ -58,9 +61,6 @@ public class ShareQRUtils {
     public static BufferedImage createShare(URL imageUrl, URL headUrl, String nickname
             , String title, String productName, String currentPrice, String economize
             , String qrCodeContent) throws IOException, WriterException {
-
-        BufferedImage productImg = ImageIO.read(imageUrl);
-        productImg = getScaledImageByOne(productImg, 700, 2);
 
         BufferedImage bg = new BufferedImage(BG_WIDTH, BG_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics bgGraphics = bg.getGraphics();
@@ -73,6 +73,8 @@ public class ShareQRUtils {
         bgGraphics.drawImage(head, 0, 0, head.getWidth(), head.getHeight(), null);
 
         //商品
+        BufferedImage productImg = ImageIO.read(imageUrl);
+        productImg = getScaledImageByOne(productImg, 700, 2);
         bgGraphics.drawImage(productImg, 0, HEAD_HEIGHT, productImg.getWidth(), productImg.getHeight(), null);
 
         //二维码
@@ -118,7 +120,6 @@ public class ShareQRUtils {
         headGraphics.setColor(new Color(0, 0, 0));
         headGraphics.drawString(nickname, x, (y = y + fm.getHeight()));
 
-
         //标题文案
         fontSize = 30;
         font = new Font("微软雅黑", Font.PLAIN, fontSize);
@@ -127,13 +128,13 @@ public class ShareQRUtils {
         int titleWidth = fm.stringWidth(title);
         headGraphics.setColor(new Color(0, 0, 0));
         if (titleWidth + x > HEAD_WIDTH) {
-            int sub = title.length() * (HEAD_WIDTH - x) / titleWidth;
+            int sub = (HEAD_WIDTH - x) / fontSize;
             String title1 = title.substring(0, sub);
             String title2 = title.substring(sub);
-            headGraphics.drawString(title1, x, (y = y + fm.getHeight() + DEFAULT_GAP));
+            headGraphics.drawString(title1, x, (y = y + fm.getHeight() + (DEFAULT_GAP / 2)));
             headGraphics.drawString(title2, x, y + fm.getHeight());
         } else {
-            headGraphics.drawString(title, x, y + fm.getHeight() + DEFAULT_GAP);
+            headGraphics.drawString(title, x, y + fm.getHeight() + (DEFAULT_GAP / 2));
         }
         headGraphics.dispose();
 
@@ -152,7 +153,7 @@ public class ShareQRUtils {
     private static BufferedImage createProductInfo(String productName, String currentPrice, String economize) {
 
         int fontSize = 50;
-        int currentHeight = fontSize;
+        int y = fontSize;
         int gap = fontSize + 40;
 
         BufferedImage productInfoImage = new BufferedImage(PRODUCT_INFO_WIDTH, PRODUCT_INFO_HEIGHT, BufferedImage.TYPE_INT_RGB);
@@ -165,11 +166,19 @@ public class ShareQRUtils {
 
         //商品图片
         int i = fontMetrics.stringWidth(productName);
-        if (i > PRODUCT_INFO_WIDTH) {
-            productName = productName.substring(0, (PRODUCT_INFO_WIDTH / fontSize) - 3) + "...";
-        }
         infoGraphics.setColor(new Color(0, 0, 0));
-        infoGraphics.drawString(productName, 20, currentHeight = (currentHeight + 20));
+        if (i > PRODUCT_INFO_WIDTH) {
+            int sub = PRODUCT_INFO_WIDTH / fontSize;
+            String productName1 = productName.substring(0, sub);
+            infoGraphics.drawString(productName1, 20, y = (y + 20));
+            String productName2 = productName.substring(sub);
+            if (fontMetrics.stringWidth(productName2) > PRODUCT_INFO_WIDTH) {
+                productName2 = productName2.substring(0, (PRODUCT_INFO_WIDTH / fontSize) - 1) + "...";
+            }
+            infoGraphics.drawString(productName2, 20, y = (y + fontMetrics.getHeight() + 20));
+        } else {
+            infoGraphics.drawString(productName, 20, y = (y + 20));
+        }
 
         fontSize = 38;
         font = new Font("微软雅黑", Font.PLAIN, fontSize);
@@ -178,18 +187,18 @@ public class ShareQRUtils {
         //当前价
         int len1 = fontMetrics.stringWidth("当前价");
         infoGraphics.setColor(new Color(0, 0, 0));
-        infoGraphics.drawString("当前价", 20, currentHeight = (currentHeight + gap));
+        infoGraphics.drawString("当前价", 20, y = (y + gap));
         currentPrice = currentPrice + "元";
         infoGraphics.setColor(new Color(255, 0, 0));
-        infoGraphics.drawString(currentPrice, len1 + 50, currentHeight);
+        infoGraphics.drawString(currentPrice, len1 + 50, y);
 
         //拍中可省
         int len2 = fontMetrics.stringWidth("拍中可省");
         infoGraphics.setColor(new Color(0, 0, 0));
-        infoGraphics.drawString("拍中可省", 20, currentHeight = (currentHeight + gap));
+        infoGraphics.drawString("拍中可省", 20, y = (y + gap));
         economize = economize + "元";
         infoGraphics.setColor(new Color(255, 0, 0));
-        infoGraphics.drawString(economize, len2 + 50, currentHeight);
+        infoGraphics.drawString(economize, len2 + 50, y);
 
         infoGraphics.dispose();
         return productInfoImage;
