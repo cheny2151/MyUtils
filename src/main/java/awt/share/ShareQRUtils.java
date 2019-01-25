@@ -30,8 +30,18 @@ public class ShareQRUtils {
 
     //商品信息图片高度
     private static final int PRODUCT_INFO_HEIGHT = 300;
+
     //商品信息图片宽度
     private static final int PRODUCT_INFO_WIDTH = BG_WIDTH - QR_WIDTH;
+
+    //头部图片高度
+    private static final int HEAD_HEIGHT = 250;
+
+    //头部图片宽度
+    private static final int HEAD_WIDTH = BG_WIDTH * 5 / 4;
+
+    //通用间隙
+    private static final int DEFAULT_GAP = 40;
 
 
     @Test
@@ -39,12 +49,15 @@ public class ShareQRUtils {
         BufferedImage read = ImageIO.read(new File("C:\\Users\\cheny\\Pictures\\share_20190124152015.png"));
 
         imageToFile(createShare(new URL("http://auction-fat.oss-cn-shenzhen.aliyuncs.com/COMMODITY/29668155-0703-40a6-a084-3b3abf998ba0.jpg")
+                , new URL("https://wx.qlogo.cn/mmopen/vi_32/gUhMa7CSLZxG7iaa82t37lNrLoMNbiaOGMZ5DQLfCyHB7TGvKs2dds804Is3kNgzxGIcXDPomDxE3u7ibWpkTMz3g/132"), "崔长葱", "喜拍优品，拍卖新体验，省钱、省钱、省钱！"
                 , "法国拉比红酒法国拉比红酒法国拉比红酒", "200", "50"
                 , "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx6882489a7a2331d8&redirect_uri=http://auction-fat.mmdpp.cn/frontend-call/wechats/indexPage&response_type=code&scope=snsapi_userinfo&state=cmVkaXJlY3RVcmxfaHR0cDovL2F1Y3Rpb24tZmF0Lm1tZHBwLmNuL2luZGV4Lmh0bWwjL2xvZ2lu%0AP3BhcmVudFVpZD03NTQzZWQ3MzY4MDE0Nzk4YmU4OTBjYTA4ZGJkNTlhMCZidXNpbmVzc0lkPTEz%0AZjI3N2Y1ZmFhNjRjZjlhZDI0ZTI0MjQ3YWU0YTVi#wechat_redirect")
                 , new File("C:\\Users\\cheny\\Pictures\\test.jpg"));
     }
 
-    public static BufferedImage createShare(URL imageUrl, String productName, String currentPrice, String economize, String qrCodeContent) throws IOException, WriterException {
+    public static BufferedImage createShare(URL imageUrl, URL headUrl, String nickname
+            , String title, String productName, String currentPrice, String economize
+            , String qrCodeContent) throws IOException, WriterException {
 
         BufferedImage productImg = ImageIO.read(imageUrl);
         productImg = getScaledImageByOne(productImg, 700, 2);
@@ -54,8 +67,13 @@ public class ShareQRUtils {
         //背景
         bgGraphics.setColor(new Color(255, 255, 255));
         bgGraphics.fillRect(0, 0, BG_WIDTH, BG_HEIGHT);
+
+        //头部
+        BufferedImage head = createHead(headUrl, nickname, title);
+        bgGraphics.drawImage(head, 0, 0, head.getWidth(), head.getHeight(), null);
+
         //商品
-        bgGraphics.drawImage(productImg, 0, 200, productImg.getWidth(), productImg.getHeight(), null);
+        bgGraphics.drawImage(productImg, 0, HEAD_HEIGHT, productImg.getWidth(), productImg.getHeight(), null);
 
         //二维码
         BufferedImage qrImage = createQRWithWord(qrCodeContent);
@@ -68,6 +86,59 @@ public class ShareQRUtils {
         bgGraphics.dispose();
 
         return bg;
+    }
+
+    /**
+     * 绘制头部图片
+     *
+     * @param headUrl 头像URL
+     * @param nickname 昵称
+     * @param title 标题文案
+     * @return
+     */
+    private static BufferedImage createHead(URL headUrl, String nickname, String title) throws IOException {
+
+        BufferedImage headImage = new BufferedImage(HEAD_WIDTH, HEAD_HEIGHT, BufferedImage.TYPE_INT_RGB);
+        Graphics headGraphics = headImage.getGraphics();
+        headGraphics.setColor(new Color(255, 255, 255));
+        headGraphics.fillRect(0, 0, headImage.getWidth(), headImage.getHeight());
+
+        //头像
+        BufferedImage userHeadImage = ImageIO.read(headUrl);
+        headGraphics.drawImage(userHeadImage, DEFAULT_GAP, DEFAULT_GAP, null);
+
+        int x = DEFAULT_GAP * 2 + userHeadImage.getWidth();
+        int y = DEFAULT_GAP;
+
+        //昵称
+        int fontSize = 40;
+        Font font = new Font("微软雅黑", Font.PLAIN, fontSize);
+        headGraphics.setFont(font);
+        FontMetrics fm = headGraphics.getFontMetrics();
+        headGraphics.setColor(new Color(0, 0, 0));
+        headGraphics.drawString(nickname, x, (y = y + fm.getHeight()));
+
+
+        //标题文案
+        fontSize = 30;
+        font = new Font("微软雅黑", Font.PLAIN, fontSize);
+        headGraphics.setFont(font);
+        fm = headGraphics.getFontMetrics();
+        int titleWidth = fm.stringWidth(title);
+        headGraphics.setColor(new Color(0, 0, 0));
+        if (titleWidth + x > HEAD_WIDTH) {
+            int sub = title.length() * (HEAD_WIDTH - x) / titleWidth;
+            String title1 = title.substring(0, sub);
+            String title2 = title.substring(sub);
+            headGraphics.drawString(title1, x, (y = y + fm.getHeight() + DEFAULT_GAP));
+            headGraphics.drawString(title2, x, y + fm.getHeight());
+        } else {
+            headGraphics.drawString(title, x, y + fm.getHeight() + DEFAULT_GAP);
+        }
+        headGraphics.dispose();
+
+        return headImage;
+
     }
 
     /**
