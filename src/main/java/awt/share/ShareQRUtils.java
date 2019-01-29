@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.Area;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -107,6 +109,7 @@ public class ShareQRUtils {
 
         //头像
         BufferedImage userHeadImage = ImageIO.read(headUrl);
+        userHeadImage = convertRoundedImage(userHeadImage, userHeadImage.getWidth());
         headGraphics.drawImage(userHeadImage, DEFAULT_GAP, DEFAULT_GAP, null);
 
         int x = DEFAULT_GAP * 2 + userHeadImage.getWidth();
@@ -170,14 +173,14 @@ public class ShareQRUtils {
         if (i > PRODUCT_INFO_WIDTH) {
             int sub = PRODUCT_INFO_WIDTH / fontSize;
             String productName1 = productName.substring(0, sub);
-            infoGraphics.drawString(productName1, 20, y = (y + 20));
+            infoGraphics.drawString(productName1, DEFAULT_GAP, y = (y + 20));
             String productName2 = productName.substring(sub);
             if (fontMetrics.stringWidth(productName2) > PRODUCT_INFO_WIDTH) {
                 productName2 = productName2.substring(0, (PRODUCT_INFO_WIDTH / fontSize) - 1) + "...";
             }
-            infoGraphics.drawString(productName2, 20, y = (y + fontMetrics.getHeight() + 20));
+            infoGraphics.drawString(productName2, DEFAULT_GAP, y = (y + fontMetrics.getHeight() + 20));
         } else {
-            infoGraphics.drawString(productName, 20, y = (y + 20));
+            infoGraphics.drawString(productName, DEFAULT_GAP, y = (y + 20));
         }
 
         fontSize = 38;
@@ -187,18 +190,18 @@ public class ShareQRUtils {
         //当前价
         int len1 = fontMetrics.stringWidth("当前价");
         infoGraphics.setColor(new Color(0, 0, 0));
-        infoGraphics.drawString("当前价", 20, y = (y + gap));
+        infoGraphics.drawString("当前价", DEFAULT_GAP, y = (y + gap));
         currentPrice = currentPrice + "元";
         infoGraphics.setColor(new Color(255, 0, 0));
-        infoGraphics.drawString(currentPrice, len1 + 50, y);
+        infoGraphics.drawString(currentPrice, len1 + DEFAULT_GAP, y);
 
         //拍中可省
         int len2 = fontMetrics.stringWidth("拍中可省");
         infoGraphics.setColor(new Color(0, 0, 0));
-        infoGraphics.drawString("拍中可省", 20, y = (y + gap));
+        infoGraphics.drawString("拍中可省", DEFAULT_GAP, y = (y + gap));
         economize = economize + "元";
         infoGraphics.setColor(new Color(255, 0, 0));
-        infoGraphics.drawString(economize, len2 + 50, y);
+        infoGraphics.drawString(economize, len2 + DEFAULT_GAP, y);
 
         infoGraphics.dispose();
         return productInfoImage;
@@ -307,6 +310,33 @@ public class ShareQRUtils {
         Graphics2D g = bufferedImage.createGraphics();
         g.drawImage(schedImage, 0, 0, null);
         return bufferedImage;
+    }
+
+    /**
+     * 方形转为圆形
+     *
+     * @param img    the img
+     * @param radius the radius 半径
+     * @return the buffered image
+     */
+    public static BufferedImage convertRoundedImage(BufferedImage img, int radius) {
+        BufferedImage result = new BufferedImage(radius, radius, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = result.createGraphics();
+        //在适当的位置画图
+        g.drawImage(img, (radius - img.getWidth(null)) / 2, (radius - img.getHeight(null)) / 2, null);
+
+        //圆角
+        RoundRectangle2D round = new RoundRectangle2D.Double(0, 0, radius, radius, radius * 2, radius * 2);
+        Area clear = new Area(new Rectangle(0, 0, radius, radius));
+        clear.subtract(new Area(round));
+        g.setComposite(AlphaComposite.Clear);
+
+        //抗锯齿
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.fill(clear);
+        g.dispose();
+
+        return result;
     }
 
     /**
