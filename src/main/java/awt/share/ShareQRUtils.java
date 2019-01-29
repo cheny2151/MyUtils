@@ -68,6 +68,7 @@ public class ShareQRUtils {
         if (productUrl != null) {
             BufferedImage productImg = ImageIO.read(productUrl);
             productImg = getScaledImageByOne(productImg, 700, 2);
+            productImg = round(productImg, 50, 50);
             bgGraphics.drawImage(productImg, (BG_WIDTH - productImg.getWidth()) / 2, HEAD_HEIGHT, productImg.getWidth(), productImg.getHeight(), null);
         }
 
@@ -372,6 +373,34 @@ public class ShareQRUtils {
         return scale.multiply(new BigDecimal(oOtherLen)).intValue();
     }
 
+    /**
+     * 绘制圆角
+     *
+     * @param image
+     * @param arcw
+     * @param arch
+     * @return
+     */
+    private static BufferedImage round(BufferedImage image, int arcw, int arch) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        Graphics2D graphics = image.createGraphics();
+        //前两个指定矩形的左上角的坐标
+        //第3，4个指定矩形的宽度和高度
+        //最后两个指定圆角弧形的宽度和高度
+        RoundRectangle2D.Double round = new RoundRectangle2D.Double(0, 0, width, height, arcw, arch);
+        graphics.draw(round);
+        Area clear = new Area(new Rectangle(0, 0, width, height));
+        clear.subtract(new Area(round));
+        graphics.setComposite(AlphaComposite.Clear);
+
+        //抗锯齿
+        graphics.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT);
+        graphics.fill(clear);
+        graphics.dispose();
+        return image;
+    }
+
     private static BufferedImage createQRWithWord(String content) throws WriterException {
         BufferedImage qrCode = QRCodeUtils.createQRCode(content
                 , QR_HEIGHT, QR_WIDTH);
@@ -389,5 +418,6 @@ public class ShareQRUtils {
 
         return qrWithWord;
     }
+
 
 }
