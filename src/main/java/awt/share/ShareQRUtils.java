@@ -2,7 +2,6 @@ package awt.share;
 
 import awt.qrcode.QRCodeUtils;
 import com.google.zxing.WriterException;
-import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -47,37 +46,30 @@ public class ShareQRUtils {
     //头部图片宽度
     private static final int HEAD_WIDTH = BG_WIDTH * 19 / 20;
 
+    private static final Color bgColor = new Color(251, 251, 251, 255);
 
+    public static final String FONT_NAME = "Default";
 
-    @Test
-    public void test() throws IOException, WriterException {
-        BufferedImage read = ImageIO.read(new File("C:\\Users\\cheny\\Pictures\\share_20190124152015.png"));
-
-        imageToFile(createShare(new URL("http://auction-fat.oss-cn-shenzhen.aliyuncs.com/COMMODITY/29668155-0703-40a6-a084-3b3abf998ba0.jpg")
-                , new URL("https://wx.qlogo.cn/mmopen/vi_32/gUhMa7CSLZxG7iaa82t37lNrLoMNbiaOGMZ5DQLfCyHB7TGvKs2dds804Is3kNgzxGIcXDPomDxE3u7ibWpkTMz3g/132"), "崔长葱", "喜拍优品，拍卖新体验，省钱、省钱、省钱省钱省钱省钱省钱省钱省钱省钱！"
-                , "法国拉比红酒法国拉比红酒法国拉比红酒法国拉比红酒法国拉比红酒法", "200", "50"
-                , "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx6882489a7a2331d8&redirect_uri=http://auction-fat.mmdpp.cn/frontend-call/wechats/indexPage&response_type=code&scope=snsapi_userinfo&state=cmVkaXJlY3RVcmxfaHR0cDovL2F1Y3Rpb24tZmF0Lm1tZHBwLmNuL2luZGV4Lmh0bWwjL2xvZ2lu%0AP3BhcmVudFVpZD03NTQzZWQ3MzY4MDE0Nzk4YmU4OTBjYTA4ZGJkNTlhMCZidXNpbmVzc0lkPTEz%0AZjI3N2Y1ZmFhNjRjZjlhZDI0ZTI0MjQ3YWU0YTVi#wechat_redirect")
-                , new File("C:\\Users\\cheny\\Pictures\\test.jpg"));
-    }
-
-    public static BufferedImage createShare(URL imageUrl, URL headUrl, String nickname
+    public static BufferedImage createShare(URL productUrl, URL headUrl, String nickname
             , String title, String productName, String currentPrice, String economize
             , String qrCodeContent) throws IOException, WriterException {
 
         BufferedImage bg = new BufferedImage(BG_WIDTH, BG_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics bgGraphics = bg.getGraphics();
         //背景
-        bgGraphics.setColor(new Color(255, 255, 255));
+        bgGraphics.setColor(bgColor);
         bgGraphics.fillRect(0, 0, BG_WIDTH, BG_HEIGHT);
 
         //头部
         BufferedImage head = createHead(headUrl, nickname, title);
         bgGraphics.drawImage(head, 0, 0, head.getWidth(), head.getHeight(), null);
 
-        //商品
-        BufferedImage productImg = ImageIO.read(imageUrl);
-        productImg = getScaledImageByOne(productImg, 700, 2);
-        bgGraphics.drawImage(productImg, 0, HEAD_HEIGHT, productImg.getWidth(), productImg.getHeight(), null);
+        //商品图片
+        if (productUrl != null) {
+            BufferedImage productImg = ImageIO.read(productUrl);
+            productImg = getScaledImageByOne(productImg, 700, 2);
+            bgGraphics.drawImage(productImg, (BG_WIDTH - productImg.getWidth()) / 2, HEAD_HEIGHT, productImg.getWidth(), productImg.getHeight(), null);
+        }
 
         //二维码
         BufferedImage qrImage = createQRWithWord(qrCodeContent);
@@ -95,29 +87,32 @@ public class ShareQRUtils {
     /**
      * 绘制头部图片
      *
-     * @param headUrl 头像URL
+     * @param headUrl  头像URL
      * @param nickname 昵称
-     * @param title 标题文案
+     * @param title    标题文案
      * @return
      */
     private static BufferedImage createHead(URL headUrl, String nickname, String title) throws IOException {
 
         BufferedImage headImage = new BufferedImage(HEAD_WIDTH, HEAD_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics headGraphics = headImage.getGraphics();
-        headGraphics.setColor(new Color(255, 255, 255));
+        headGraphics.setColor(bgColor);
         headGraphics.fillRect(0, 0, headImage.getWidth(), headImage.getHeight());
 
+        int x = DEFAULT_GAP;
+        int y = DEFAULT_GAP;
         //头像
-        BufferedImage userHeadImage = ImageIO.read(headUrl);
-        userHeadImage = convertRoundedImage(userHeadImage, userHeadImage.getWidth());
-        headGraphics.drawImage(userHeadImage, DEFAULT_GAP, DEFAULT_GAP, null);
+        if (headUrl != null) {
+            BufferedImage userHeadImage = ImageIO.read(headUrl);
+            userHeadImage = convertRoundedImage(userHeadImage, userHeadImage.getWidth());
+            headGraphics.drawImage(userHeadImage, DEFAULT_GAP, DEFAULT_GAP, null);
 
-        int x = DEFAULT_GAP * 2 + userHeadImage.getWidth();
-        int y = DEFAULT_GAP/2;
+            x = x + DEFAULT_GAP + userHeadImage.getWidth();
+        }
 
         //昵称
         int fontSize = 40;
-        Font font = new Font("微软雅黑", Font.PLAIN, fontSize);
+        Font font = new Font(FONT_NAME, Font.PLAIN, fontSize);
         headGraphics.setFont(font);
         FontMetrics fm = headGraphics.getFontMetrics();
         headGraphics.setColor(new Color(0, 0, 0));
@@ -125,13 +120,13 @@ public class ShareQRUtils {
 
         //标题文案
         fontSize = 30;
-        font = new Font("微软雅黑", Font.PLAIN, fontSize);
+        font = new Font(FONT_NAME, Font.PLAIN, fontSize);
         headGraphics.setFont(font);
         fm = headGraphics.getFontMetrics();
         int titleWidth = fm.stringWidth(title);
         headGraphics.setColor(new Color(0, 0, 0));
         if (titleWidth + x > HEAD_WIDTH) {
-            int sub = (HEAD_WIDTH - x) / fontSize;
+            int sub = (HEAD_WIDTH - x) / (int) fontSize;
             String title1 = title.substring(0, sub);
             String title2 = title.substring(sub);
             headGraphics.drawString(title1, x, (y = y + fm.getHeight() + (DEFAULT_GAP / 2)));
@@ -155,59 +150,60 @@ public class ShareQRUtils {
      */
     private static BufferedImage createProductInfo(String productName, String currentPrice, String economize) {
 
-        int fontSize = 50;
+        int fontSize = 40;
         int y = fontSize;
-        int gap = fontSize + 40;
+        int gap = (fontSize + 20);
 
         BufferedImage productInfoImage = new BufferedImage(PRODUCT_INFO_WIDTH, PRODUCT_INFO_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics infoGraphics = productInfoImage.getGraphics();
-        infoGraphics.setColor(new Color(255, 255, 255));
+        infoGraphics.setColor(bgColor);
         infoGraphics.fillRect(0, 0, productInfoImage.getWidth(), productInfoImage.getHeight());
-        Font font = new Font("微软雅黑", Font.PLAIN, fontSize);
+        Font font = new Font(FONT_NAME, Font.PLAIN, fontSize);
         infoGraphics.setFont(font);
         FontMetrics fontMetrics = infoGraphics.getFontMetrics();
 
-        //商品图片
+        //商品信息
         int i = fontMetrics.stringWidth(productName);
         infoGraphics.setColor(new Color(0, 0, 0));
         if (i > PRODUCT_INFO_WIDTH) {
             int sub = PRODUCT_INFO_WIDTH / fontSize;
             String productName1 = productName.substring(0, sub);
-            infoGraphics.drawString(productName1, DEFAULT_GAP, y = (y + 20));
+            infoGraphics.drawString(productName1, DEFAULT_GAP * 2, y = (y + 10));
             String productName2 = productName.substring(sub);
             if (fontMetrics.stringWidth(productName2) > PRODUCT_INFO_WIDTH) {
                 productName2 = productName2.substring(0, (PRODUCT_INFO_WIDTH / fontSize) - 1) + "...";
             }
-            infoGraphics.drawString(productName2, DEFAULT_GAP, y = (y + fontMetrics.getHeight() + 20));
+            infoGraphics.drawString(productName2, DEFAULT_GAP * 2, y = (y + fontMetrics.getHeight() + 5));
         } else {
-            infoGraphics.drawString(productName, DEFAULT_GAP, y = (y + 20));
+            infoGraphics.drawString(productName, DEFAULT_GAP * 2, y = (y + 10));
         }
 
-        fontSize = 38;
-        font = new Font("微软雅黑", Font.PLAIN, fontSize);
+        fontSize = 33;
+        font = new Font(FONT_NAME, Font.PLAIN, fontSize);
         infoGraphics.setFont(font);
         fontMetrics = infoGraphics.getFontMetrics();
+        int x = DEFAULT_GAP * 2;
         //当前价
         int len1 = fontMetrics.stringWidth("当前价");
         infoGraphics.setColor(new Color(0, 0, 0));
-        infoGraphics.drawString("当前价", DEFAULT_GAP, y = (y + gap));
+        infoGraphics.drawString("当前价", x, y = (y + gap));
         currentPrice = currentPrice + "元";
         infoGraphics.setColor(new Color(255, 0, 0));
-        infoGraphics.drawString(currentPrice, len1 + DEFAULT_GAP, y);
+        infoGraphics.drawString(currentPrice, len1 + x + DEFAULT_GAP, y);
 
         //拍中可省
         int len2 = fontMetrics.stringWidth("拍中可省");
         infoGraphics.setColor(new Color(0, 0, 0));
-        infoGraphics.drawString("拍中可省", DEFAULT_GAP, y = (y + gap));
+        infoGraphics.drawString("拍中可省", x, y = (y + gap));
         economize = economize + "元";
         infoGraphics.setColor(new Color(255, 0, 0));
-        infoGraphics.drawString(economize, len2 + DEFAULT_GAP, y);
+        infoGraphics.drawString(economize, len2 + x + DEFAULT_GAP, y);
 
         infoGraphics.dispose();
         return productInfoImage;
     }
 
-    private static void imageToFile(BufferedImage image, File file) throws IOException {
+    public static void imageToFile(BufferedImage image, File file) throws IOException {
         ImageIO.write(image, "jpg", file);
     }
 
@@ -313,33 +309,6 @@ public class ShareQRUtils {
     }
 
     /**
-     * 方形转为圆形
-     *
-     * @param img    the img
-     * @param radius the radius 半径
-     * @return the buffered image
-     */
-    public static BufferedImage convertRoundedImage(BufferedImage img, int radius) {
-        BufferedImage result = new BufferedImage(radius, radius, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = result.createGraphics();
-        //在适当的位置画图
-        g.drawImage(img, (radius - img.getWidth(null)) / 2, (radius - img.getHeight(null)) / 2, null);
-
-        //圆角
-        RoundRectangle2D round = new RoundRectangle2D.Double(0, 0, radius, radius, radius * 2, radius * 2);
-        Area clear = new Area(new Rectangle(0, 0, radius, radius));
-        clear.subtract(new Area(round));
-        g.setComposite(AlphaComposite.Clear);
-
-        //抗锯齿
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.fill(clear);
-        g.dispose();
-
-        return result;
-    }
-
-    /**
      * 图像按宽度或高度等比例缩放
      *
      * @param img  the img
@@ -370,22 +339,49 @@ public class ShareQRUtils {
         return bufferedImage;
     }
 
+    /**
+     * 方形转为圆形
+     *
+     * @param img    the img
+     * @param radius the radius 半径
+     * @return the buffered image
+     */
+    public static BufferedImage convertRoundedImage(BufferedImage img, int radius) {
+        BufferedImage result = new BufferedImage(radius, radius, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = result.createGraphics();
+        //在适当的位置画图
+        g.drawImage(img, (radius - img.getWidth(null)) / 2, (radius - img.getHeight(null)) / 2, null);
+
+        //圆角
+        RoundRectangle2D round = new RoundRectangle2D.Double(0, 0, radius, radius, radius * 2, radius * 2);
+        Area clear = new Area(new Rectangle(0, 0, radius, radius));
+        clear.subtract(new Area(round));
+        g.setComposite(AlphaComposite.Clear);
+
+        //抗锯齿
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.fill(clear);
+        g.dispose();
+
+        return result;
+    }
+
 
     private static int getOtherLen(int len, int oLen, int oOtherLen) {
         BigDecimal scale = new BigDecimal(len).divide(new BigDecimal(oLen), 2, RoundingMode.HALF_DOWN);
         return scale.multiply(new BigDecimal(oOtherLen)).intValue();
     }
 
-    public static BufferedImage createQRWithWord(String content) throws WriterException {
+    private static BufferedImage createQRWithWord(String content) throws WriterException {
         BufferedImage qrCode = QRCodeUtils.createQRCode(content
                 , QR_HEIGHT, QR_WIDTH);
         BufferedImage qrWithWord = new BufferedImage(qrCode.getWidth(), qrCode.getHeight() + 50, BufferedImage.TYPE_INT_RGB);
         Graphics qrGraphics = qrWithWord.getGraphics();
-        qrGraphics.setColor(new Color(255, 255, 255));
+        qrGraphics.setColor(bgColor);
         qrGraphics.fillRect(0, 0, qrWithWord.getWidth(), qrWithWord.getHeight());
         qrGraphics.drawImage(qrCode, 0, 0, null);
         // 普通字体
-        Font font = new Font("微软雅黑", Font.PLAIN, 30);
+        Font font = new Font(FONT_NAME, Font.PLAIN, 30);
         qrGraphics.setFont(font);
         qrGraphics.setColor(new Color(68, 68, 68));
         qrGraphics.drawString("长按识别查看商品", 20, qrWithWord.getHeight() - 25);
