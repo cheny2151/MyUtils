@@ -10,6 +10,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
@@ -50,7 +51,25 @@ public class ShareQRUtils {
 
     public static final String FONT_NAME = "Default";
 
+    public static BufferedImage createShare(InputStream productInput, InputStream headInput, String nickname
+            , String title, String productName, String currentPrice, String economize
+            , String qrCodeContent) throws IOException, WriterException {
+        return createShare((Object) productInput, (Object) headInput, nickname, title, productName, currentPrice, economize, qrCodeContent);
+    }
+
+    public static BufferedImage createShare(File productFile, File headFile, String nickname
+            , String title, String productName, String currentPrice, String economize
+            , String qrCodeContent) throws IOException, WriterException {
+        return createShare((Object) productFile, (Object) headFile, nickname, title, productName, currentPrice, economize, qrCodeContent);
+    }
+
     public static BufferedImage createShare(URL productUrl, URL headUrl, String nickname
+            , String title, String productName, String currentPrice, String economize
+            , String qrCodeContent) throws IOException, WriterException {
+        return createShare((Object) productUrl, (Object) headUrl, nickname, title, productName, currentPrice, economize, qrCodeContent);
+    }
+
+    public static BufferedImage createShare(Object productSource, Object headSource, String nickname
             , String title, String productName, String currentPrice, String economize
             , String qrCodeContent) throws IOException, WriterException {
 
@@ -61,14 +80,15 @@ public class ShareQRUtils {
         bgGraphics.fillRect(0, 0, BG_WIDTH, BG_HEIGHT);
 
         //头部
-        BufferedImage head = createHead(headUrl, nickname, title);
-        bgGraphics.drawImage(head, 0, 0, head.getWidth(), head.getHeight(), null);
+        if (headSource != null) {
+            BufferedImage head = createHead(loadImg(headSource), nickname, title);
+            bgGraphics.drawImage(head, 0, 0, head.getWidth(), head.getHeight(), null);
+        }
 
         //商品图片
-        if (productUrl != null) {
-            BufferedImage productImg = ImageIO.read(productUrl);
-            productImg = getScaledImageByOne(productImg, 700, 2);
-            productImg = round(productImg, 50, 50);
+        if (productSource != null) {
+            BufferedImage productImg = getScaledImageByOne(loadImg(productSource), 700, 2);
+            round(productImg, 50, 50);
             bgGraphics.drawImage(productImg, (BG_WIDTH - productImg.getWidth()) / 2, HEAD_HEIGHT, productImg.getWidth(), productImg.getHeight(), null);
         }
 
@@ -88,12 +108,12 @@ public class ShareQRUtils {
     /**
      * 绘制头部图片
      *
-     * @param headUrl  头像URL
+     * @param userHeadImage  头像
      * @param nickname 昵称
      * @param title    标题文案
      * @return
      */
-    private static BufferedImage createHead(URL headUrl, String nickname, String title) throws IOException {
+    private static BufferedImage createHead(BufferedImage userHeadImage, String nickname, String title) {
 
         BufferedImage headImage = new BufferedImage(HEAD_WIDTH, HEAD_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics headGraphics = headImage.getGraphics();
@@ -103,8 +123,7 @@ public class ShareQRUtils {
         int x = DEFAULT_GAP;
         int y = DEFAULT_GAP;
         //头像
-        if (headUrl != null) {
-            BufferedImage userHeadImage = ImageIO.read(headUrl);
+        if (userHeadImage != null) {
             userHeadImage = convertRoundedImage(userHeadImage, userHeadImage.getWidth());
             headGraphics.drawImage(userHeadImage, DEFAULT_GAP, DEFAULT_GAP, null);
 
@@ -419,5 +438,18 @@ public class ShareQRUtils {
         return qrWithWord;
     }
 
+    private static BufferedImage loadImg(Object source) throws IOException {
+        BufferedImage headImg;
+        if (source instanceof URL) {
+            headImg = ImageIO.read((URL) source);
+        } else if (source instanceof InputStream) {
+            headImg = ImageIO.read((InputStream) source);
+        } else if (source instanceof File) {
+            headImg = ImageIO.read((File) source);
+        } else {
+            throw new IllegalArgumentException();
+        }
+        return headImg;
+    }
 
 }
