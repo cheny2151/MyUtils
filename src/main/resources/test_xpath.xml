@@ -1,0 +1,4 @@
+<root>
+    <node1 id="id_1" value="node1_value">node1</node1>
+    <node2 statue="node1_statue">node2</node2>
+</root>
