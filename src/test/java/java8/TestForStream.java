@@ -1,8 +1,10 @@
 package java8;
 
-import DesignPattern.observer.single.Student;
 import org.junit.Test;
+import sun.misc.BASE64Encoder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,7 +12,7 @@ import java.util.stream.Collectors;
 public class TestForStream {
 
     @Test
-    public void test(){
+    public void test() {
         ArrayList<String> strings = new ArrayList<>();
         strings.add("231423");
         strings.add("2343");
@@ -26,5 +28,4 @@ public class TestForStream {
     @Test
     public void test2(){
     }
-
 }

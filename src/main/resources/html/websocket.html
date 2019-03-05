@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test for websocket</title>
+</head>
+<script type="text/javascript">
+    let webSocket = new WebSocket("ws://localhost:8080");
+    webSocket.onopen = function () {
+        webSocket.send("test");
+    };
+
+    webSocket.onmessage = function (msg) {
+        console.info(msg);
+    }
+</script>
+<body>
+
+</body>
+</html>
