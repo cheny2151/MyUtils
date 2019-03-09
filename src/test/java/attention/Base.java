@@ -14,6 +14,10 @@ public class Base {
         System.out.println(a);
     }
 
+    {
+        System.out.println("父类代码块");
+    }
+
     private String baseName = "base";
 
     public Base() {
@@ -27,6 +31,10 @@ public class Base {
     }
 
     static class Sub extends Base {
+
+        {
+            System.out.println("子类代码块");
+        }
 
         static {
             System.out.println("子类Sub的静态代码块被调用了！");
