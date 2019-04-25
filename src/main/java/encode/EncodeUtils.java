@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 
 public class EncodeUtils {
 
+
     public static String encodeDownLoadFileName(String fileName, HttpServletRequest request) throws UnsupportedEncodingException {
         if (request.getHeader("User-Agent").toLowerCase().indexOf("firefox") > 0) {
             // firefox浏览器
