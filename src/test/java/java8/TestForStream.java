@@ -37,6 +37,5 @@ public class TestForStream {
         List<String> collect = lists.stream().flatMap(Collection::stream).collect(Collectors.toList());
         System.out.println(collect);
         System.out.println(System.currentTimeMillis()-l);
-        System.out.println("");
     }
 }
