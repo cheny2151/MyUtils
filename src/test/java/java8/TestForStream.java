@@ -1,11 +1,9 @@
 package java8;
 
 import org.junit.Test;
-import sun.misc.BASE64Encoder;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,5 +25,18 @@ public class TestForStream {
 
     @Test
     public void test2(){
+        long l = System.currentTimeMillis();
+        ArrayList<List<String>> lists = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            ArrayList<String> strings = new ArrayList<>();
+            for (int j = i * 20; j < (i + 1) * 20; j++) {
+                strings.add(j + "");
+            }
+            lists.add(strings);
+        }
+        List<String> collect = lists.stream().flatMap(Collection::stream).collect(Collectors.toList());
+        System.out.println(collect);
+        System.out.println(System.currentTimeMillis()-l);
+        System.out.println("");
     }
 }
