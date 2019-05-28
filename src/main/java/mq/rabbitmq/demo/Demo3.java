@@ -1,4 +1,4 @@
-package rabbitmq.demo;
+package mq.rabbitmq.demo;
 
 import com.rabbitmq.client.*;
 import org.junit.Test;

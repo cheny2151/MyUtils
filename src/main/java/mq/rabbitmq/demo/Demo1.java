@@ -1,4 +1,4 @@
-package rabbitmq.demo;
+package mq.rabbitmq.demo;
 
 import com.rabbitmq.client.*;
 import org.apache.commons.lang.SerializationUtils;
@@ -15,7 +15,7 @@ import java.util.UUID;
  * 假设 发布者推送了一个消息  消息接受者 接受到了消息  处理过程中出现中断或者异常 就说明消息处理失败
  * channel.basicConsume(QUEUE_NAME, true, consumer);  
  * 第二个参数是true 表示自动确定  服务器推送消息给接受者 一旦推送成功就删除消息 不会管接受者的死活了
- * rabbitmq 提供了 手动确认的功能 等接受者 业务逻辑处理完成后 手动调用确认方法确认后 才会删除消息 否则消息就不会从服务器删除
+ * mq.rabbitmq 提供了 手动确认的功能 等接受者 业务逻辑处理完成后 手动调用确认方法确认后 才会删除消息 否则消息就不会从服务器删除
  * 状态1:  新建消息 未被消费
  * 状态2:  已消费未确认 接受者设置为手动确定 但是最终未确认(未调用channel.basicAck(envelope.getDeliveryTag(),false))
  * 状态3:   已消费确认

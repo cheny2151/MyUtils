@@ -1,4 +1,4 @@
-package rabbitmq;
+package mq.rabbitmq;
 
 import com.rabbitmq.client.Connection;
 
@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.concurrent.TimeoutException;
 
 /**
- * rabbitmq 工厂
+ * mq.rabbitmq 工厂
  */
 public class ConnectionFactory {
 
