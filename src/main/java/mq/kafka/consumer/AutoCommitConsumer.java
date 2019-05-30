@@ -18,9 +18,9 @@ import java.util.Properties;
 @Slf4j
 public class AutoCommitConsumer<T> implements Consumer<T> {
 
-    private KafkaConsumer<String, T> kafkaConsumer;
+    private final static int DEFAULT_TIMEOUT_SECOND = 30;
 
-    private Properties properties;
+    private KafkaConsumer<String, T> kafkaConsumer;
 
     private String groupId;
 
@@ -34,16 +34,16 @@ public class AutoCommitConsumer<T> implements Consumer<T> {
         properties.put("auto.commit.interval.ms", 1000);
         properties.put("group.id", groupId);
         System.out.println(properties.get("key.deserializer"));
-        this.properties = properties;
         this.kafkaConsumer = new KafkaConsumer<>(properties);
         this.kafkaConsumer.subscribe(topics);
     }
 
     @Override
     public void consume(java.util.function.Consumer<T> consumer) {
-        ConsumerRecords<String, T> records = kafkaConsumer.poll(Duration.ofSeconds(30));
+        ConsumerRecords<String, T> records = kafkaConsumer.poll(Duration.ofSeconds(DEFAULT_TIMEOUT_SECOND));
         for (ConsumerRecord<String, T> record : records) {
             consumer.accept(record.value());
+            log.info("offset:[{}]被消费", record.offset());
         }
     }
 

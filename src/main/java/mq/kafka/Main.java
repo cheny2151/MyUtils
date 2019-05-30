@@ -12,14 +12,23 @@ import java.util.Collections;
  */
 public class Main {
 
-    public static void main(String[] args) {
+    @Test
+    public void produce() {
         Producer<String> stringProducer = new Producer<>();
         stringProducer.send("hello,java api", "test");
     }
 
     @Test
-    public void consumer() {
+    public void consume() {
         AutoCommitConsumer<String> consumer = new AutoCommitConsumer<>("group_0", Collections.singletonList("test"));
+        for (;;) {
+            consumer.consume(System.out::println);
+        }
+    }
+
+    @Test
+    public void consume2() {
+        AutoCommitConsumer<String> consumer = new AutoCommitConsumer<>("group_1", Collections.singletonList("test"));
         for (;;) {
             consumer.consume(System.out::println);
         }
