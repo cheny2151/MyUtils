@@ -24,10 +24,10 @@ public class AutoCommitConsumer<T> implements Consumer<T> {
 
     private String groupId;
 
-    private Collection<String> subscribeTopices;
+    private Collection<String> subscribeTopics;
 
     public AutoCommitConsumer(String groupId, List<String> topics) {
-        this.subscribeTopices = topics;
+        this.subscribeTopics = topics;
         this.groupId = groupId;
         Properties properties = KafkaUtils.cloneDefaultProperties();
         properties.put("enable.auto.commit", true);
@@ -45,6 +45,19 @@ public class AutoCommitConsumer<T> implements Consumer<T> {
         for (ConsumerRecord<String, T> record : records) {
             consumer.accept(record.value());
         }
+    }
+
+    public KafkaConsumer<String, T> getKafkaConsumer() {
+        return kafkaConsumer;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+
+    public Collection<String> getSubscribeTopics() {
+        return subscribeTopics;
     }
 
 }
