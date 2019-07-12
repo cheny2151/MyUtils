@@ -13,7 +13,7 @@ public class Main {
 
     @Test
     public void main() {
-        getType(new TypeTest());
+        getType(new TestInterface2<Integer,String>(){});
     }
 
     private <T> T getType(TypeReference<T> typeReference) {

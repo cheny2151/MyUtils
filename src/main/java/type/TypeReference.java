@@ -1,6 +1,6 @@
 package type;
 
-import jsonUtils.JsonUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -15,6 +15,7 @@ import java.util.Optional;
  * @author cheney
  * @date 2019/6/27
  */
+@Slf4j
 public abstract class TypeReference<T> {
 
     private Type actualType;
@@ -35,16 +36,8 @@ public abstract class TypeReference<T> {
             extractTypeMap(typeAsParameterized);
             next = (Class<?>) (typeAsParameterized).getRawType();
             if (TypeReference.class.equals(next)) {
-                System.out.println("next:" + next);
-                System.out.println("next TypeParameters:" + JsonUtils.toJson(next.getTypeParameters()));
-                System.out.println("next TypeParameters size:" + next.getTypeParameters().length);
                 // genericSuperclass命中TypeReference，尝试从typeMap中获取actualType
                 TypeVariable typeParameter = next.getTypeParameters()[0];
-                System.out.println("typeParameter:" + typeParameter);
-                System.out.println(typeMap);
-                typeMap.forEach((k, v) -> {
-                    System.out.println(k + ":" + k.equals(typeParameter));
-                });
                 Optional<Map.Entry<TypeVariable, Type>> actualType =
                         typeMap.entrySet().stream().filter(entry -> entry.getKey().equals(typeParameter)).findFirst();
                 if (actualType.isPresent()) {
@@ -75,10 +68,14 @@ public abstract class TypeReference<T> {
         for (int i = 0; i < typeParameters.length; i++) {
             Type actualTypeArgument = actualTypeArguments[i];
             if (actualTypeArgument instanceof TypeVariable) {
+                // 若真实类型actualTypeArgument为TypeVariable，则尝试在typeMap中查找Key为该TypeVariable的value替换actualTypeArgument
+                // 这种情景为：父类ParameterizedType的真实泛型(ActualTypeArgument)是子类ParameterizedType的泛型参数(TypeParameter),
+                // 通过这个泛型参数(TypeParameter)传递子类真实参数给父类
                 Optional<Type> typeChange = Optional.empty();
                 for (Map.Entry<TypeVariable, Type> entry : typeMap.entrySet()) {
                     if (entry.getKey().equals(actualTypeArgument)) {
                         typeChange = Optional.of(entry.getValue());
+                        log.debug(classAsParameterized.getTypeName() + ":change before:" + actualTypeArgument + " after:" + entry.getValue());
                         break;
                     }
                 }
