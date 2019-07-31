@@ -50,7 +50,6 @@ public class HttpClientUtils {
 
         if (isJson) {
             String data = JsonUtils.toJson(params);
-            System.out.println(data);
             StringEntity stringEntity = new StringEntity(data != null ? data : "", encoding);
             httpPost.setHeader("Content-type", "application/json;charset=" + encoding);
             httpPost.setEntity(stringEntity);
