@@ -1,11 +1,6 @@
 package POIUtils.utils;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,7 +13,7 @@ public class CloneUtils {
     public CloneUtils() {
     }
 
-    public <T> T clone(T beCloned) {
+    public static <T> T clone(T beCloned) {
         try {
             return readBytesToObject(writeObjectToBytes(beCloned));
         } catch (IOException | ClassNotFoundException e) {
@@ -27,16 +22,16 @@ public class CloneUtils {
         }
     }
 
-    private <T> byte[] writeObjectToBytes(T beCloned) throws IOException {
-        ByteOutputStream byteOutputStream = new ByteOutputStream();
+    private static <T> byte[] writeObjectToBytes(T beCloned) throws IOException {
+        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteOutputStream);
         objectOutputStream.writeObject(beCloned);
-        byte[] bytes = byteOutputStream.getBytes();
+        byte[] bytes = byteOutputStream.toByteArray();
         CACHE.putIfAbsent(beCloned.hashCode(),bytes);
         return bytes;
     }
 
-    private <T> T readBytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
+    private static <T> T readBytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
         ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(bytes));
         return (T) objectInputStream.readObject();
     }

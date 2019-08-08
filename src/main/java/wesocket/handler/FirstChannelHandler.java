@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Test;
-import sun.misc.CompoundEnumeration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -34,13 +33,6 @@ public class FirstChannelHandler extends ChannelInboundHandlerAdapter {
     @Test
     public void test2() throws IOException {
         Enumeration<URL> resources = this.getClass().getClassLoader().getResources("");
-        CompoundEnumeration resources1 = (CompoundEnumeration) resources;
-        Object o = resources1.nextElement();
-        System.out.println(o);
-       /* while (resources.hasMoreElements()) {
-            URL url = resources.nextElement();
-            System.out.println(url);
-        }*/
     }
 
 }
