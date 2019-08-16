@@ -42,11 +42,12 @@ public class PathScan {
     private static void scanClassInFile(String parentPath, File file, ArrayList<Class> result, boolean root) {
         if (file.isFile()) {
             String className = file.getName().substring(0, file.getName().length() - 6);
+            parentPath = parentPath.endsWith(".") ? parentPath : parentPath + ".";
+            String fullClassName = parentPath + className;
             try {
-                String fullClassName = parentPath + "." + className;
                 result.add(Class.forName(fullClassName));
             } catch (ClassNotFoundException e) {
-                log.error("can not find class name:{}", className);
+                log.error("can not find class name:{}", fullClassName);
             }
         } else if (file.isDirectory()) {
             File[] childFiles = file.listFiles((childFile) ->
@@ -63,6 +64,7 @@ public class PathScan {
     }
 
     private static String getNextScanPath(String parentPath, File file, boolean root) {
+        parentPath = parentPath.endsWith(".") ? parentPath : parentPath + ".";
         if (ROOT_PATH.equals(parentPath)) {
             // 根目录
             return "";
@@ -73,7 +75,7 @@ public class PathScan {
             // 为空
             return file.getName();
         }
-        return parentPath + "." + file.getName();
+        return parentPath + file.getName();
     }
 
     public static void main(String[] args) {
