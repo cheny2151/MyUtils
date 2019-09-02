@@ -36,14 +36,21 @@ public class XpathTest {
         System.out.println("-----------------------------------------------------------------------");
 
         //获取root/node1的id属性（属性也是一个node对象）
-        Node node = (Node) xPath.evaluate("/root/node1/@id", document, XPathConstants.NODE);
-        System.out.println(node.getNodeName() + ":" + node.getNodeValue());
+        Node node = (Node) xPath.evaluate("/root/node2", document, XPathConstants.NODE);
+        System.out.println(node.getNodeName() + ":" + node.getNodeValue() + ":" + node.getNodeType());
+        Node next = node.getFirstChild();
+        while (next != null) {
+            System.out.println(next.getNodeName() + ":" + next.getNodeValue() + ":" + next.getNodeType());
+            next = next.getFirstChild();
+        }
+        next = node.getChildNodes().item(1);
+        while (next != null) {
+            System.out.println(next.getNodeName() + ":" + next.getNodeValue() + ":" + next.getNodeType());
+            next = next.getFirstChild();
+        }
 
         System.out.println("-----------------------------------------------------------------------");
 
-        //获取root/node2的值
-        String nodeValue = (String) xPath.evaluate("/root/node2", document, XPathConstants.STRING);
-        System.out.println(nodeValue);
     }
 
 }
