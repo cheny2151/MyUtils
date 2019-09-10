@@ -27,4 +27,8 @@ public class Admin extends UserBase {
         return test;
     }
 
+    private String getAdminNumber2(){
+        return adminNumber;
+    }
+
 }
