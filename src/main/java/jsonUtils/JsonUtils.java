@@ -56,9 +56,9 @@ public class JsonUtils {
     /**
      * json转化为map
      */
-    public static <T> T toMap(String json) {
+    public static Map<?,?> toMap(String json) {
         try {
-            getObjectMapper().readValue(json, Map.class);
+            return getObjectMapper().readValue(json, Map.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
