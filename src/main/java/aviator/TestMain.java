@@ -2,7 +2,6 @@ package aviator;
 
 import com.googlecode.aviator.AviatorEvaluator;
 import com.googlecode.aviator.runtime.function.AbstractVariadicFunction;
-import com.googlecode.aviator.runtime.type.AviatorDecimal;
 import com.googlecode.aviator.runtime.type.AviatorObject;
 import com.googlecode.aviator.runtime.type.AviatorString;
 import org.junit.Test;
