@@ -10,4 +10,6 @@ public interface MethodHolder {
 
     Object invoke(String methodName, Object obj, Object... args);
 
+    boolean hasMethod(String methodName);
+
 }

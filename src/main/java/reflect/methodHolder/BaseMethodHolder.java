@@ -37,6 +37,11 @@ public abstract class BaseMethodHolder implements MethodHolder {
         }
     }
 
+    @Override
+    public boolean hasMethod(String methodName) {
+        return methodMap.containsKey(methodName);
+    }
+
     /**
      * 通过方法名获取方法
      *
