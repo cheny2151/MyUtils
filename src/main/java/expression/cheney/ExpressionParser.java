@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 表达式解析器抽象接口
+ *
  * @author cheney
  * @date 2019-12-07
  */
-public abstract class ExpressionParser {
+public abstract class ExpressionParser implements Parser {
 
     private final static char COMMA_CHAR = ",".toCharArray()[0];
 
@@ -27,21 +29,7 @@ public abstract class ExpressionParser {
 
     private final static char[] END_CHAR = new char[]{COMMA_CHAR, BRACKETS_RIGHT_CHAR, APOSTROPHE_CHAR};
 
-    public ParseResult parse(String expression) {
-        if (StringUtils.isEmpty(expression)) {
-            throw new ExpressionParseException("expression can not be empty");
-        }
-        int start = expression.indexOf("(");
-        int length = expression.length();
-        if (start == -1 || start == 0 || ")".toCharArray()[0] != expression.charAt(length - 1)) {
-            throw new ExpressionParseException("error expression,miss function main");
-        }
-        List<Arg> args = parseArg(expression.substring(start + 1, length - 1));
-
-        return new ParseResult(expression.substring(0, start), args);
-    }
-
-    abstract ExpressionExecutor parseExpression(String expression);
+    public abstract ExpressionExecutor parseExpression(String expression);
 
     @Data
     @AllArgsConstructor
@@ -62,11 +50,27 @@ public abstract class ExpressionParser {
         private boolean func;
     }
 
-    public List<Arg> parseArg(String expression) {
+    protected ParseResult parse(String expression) {
+        if (StringUtils.isEmpty(expression)) {
+            throw new ExpressionParseException("expression can not be empty");
+        }
+        int start = expression.indexOf("(");
+        int length = expression.length();
+        if (start == -1 || start == 0 || ")".toCharArray()[0] != expression.charAt(length - 1)) {
+            throw new ExpressionParseException("error expression,miss function main");
+        }
+        List<Arg> args = parseArg(expression.substring(start + 1, length - 1));
+
+        return new ParseResult(expression.substring(0, start), args);
+    }
+
+    private List<Arg> parseArg(String expression) {
         char[] chars = expression.toCharArray();
         int length = chars.length;
         int endIndex = length - 1;
+        // 语句开始位置
         Integer startIndex = null;
+        // 语句结尾检查字符
         Character endCheck = null;
         int count = 0;
         List<Arg> result = new ArrayList<>();

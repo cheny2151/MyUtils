@@ -1,6 +1,5 @@
 package expression.cheney;
 
-import jsonUtils.JsonUtils;
 import reflect.methodHolder.MethodHolder;
 import reflect.methodHolder.MethodHolderFactory;
 import reflect.methodHolder.NoSuchMethodException;
@@ -31,10 +30,15 @@ public class ReflectExpressionExecutor extends ExpressionExecutor {
 
     @Override
     public Object execute(Map<String, Object> env) {
+        return executeFunc(functionName, args, env);
+    }
+
+    @Override
+    public Object executeFunc(String functionName, List<ExpressionParser.Arg> args, Map<String, Object> env) {
         for (Class<?> clazz : functionClasses) {
             MethodHolder methodHolder = methodHolderFactory.getMethodHolder(clazz, StatusMethodHolder.class);
             if (methodHolder.hasMethod(functionName)) {
-                return methodHolder.invoke(functionName, null, loadArgs(env));
+                return methodHolder.invoke(functionName, null, loadArgs(args, env));
             }
         }
         throw new NoSuchMethodException(functionName);
