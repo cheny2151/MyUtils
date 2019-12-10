@@ -81,19 +81,21 @@ public abstract class ExpressionParser implements Parser {
                 continue;
             }
             if (startIndex == null && COMMA_CHAR != c) {
-                // 开始
+                // 段落开始
                 startIndex = i;
             }
             if (APOSTROPHE_CHAR == c) {
+                // 当前char为'
                 endCheck = APOSTROPHE_CHAR;
                 count++;
             }
             if (BRACKETS_LEFT_CHAR == c) {
+                // 当前char为(,每遇到一个(加一，没遇到一个)减一，直到最后一个)视为结束
                 if (endCheck != null) {
                     if (endCheck == BRACKETS_RIGHT_CHAR) {
                         count++;
                     } else {
-                        throw new ExpressionParseException();
+                        throw new ExpressionParseException("'('与')'数量不匹配");
                     }
                 } else {
                     endCheck = BRACKETS_RIGHT_CHAR;
@@ -119,9 +121,11 @@ public abstract class ExpressionParser implements Parser {
                             count--;
                         }
                     } else if (count == 0) {
+                        // 当前char不为endCheck时抛出异常
                         throw new ExpressionParseException("end char miss '" + endCheck + "'");
                     }
                 } else {
+                    // 不需要endCheck
                     if (startIndex == i) {
                         continue;
                     }
@@ -131,6 +135,7 @@ public abstract class ExpressionParser implements Parser {
                     result.add(new Arg(expression.substring(startIndex, i), false, false));
                 }
                 if (count == 0) {
+                    // 匹配结束符并且count为0时,标识段落结束
                     startIndex = null;
                     endCheck = null;
                 }
