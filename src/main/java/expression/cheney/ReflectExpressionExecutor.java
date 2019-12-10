@@ -15,13 +15,13 @@ import java.util.Set;
  * @author cheney
  * @date 2019-12-06
  */
-public class ReflectExpressionExecutor extends ExpressionExecutor {
+public class ReflectExpressionExecutor extends BaseExpressionExecutor {
 
     private MethodHolderFactory methodHolderFactory;
 
     private Set<Class<?>> functionClasses;
 
-    ReflectExpressionExecutor(String express, String functionName, List<ExpressionParser.Arg> args,
+    ReflectExpressionExecutor(String express, String functionName, List<BaseExpressionParser.Arg> args,
                               MethodHolderFactory methodHolderFactory, Set<Class<?>> functionClasses) {
         super(express, functionName, args);
         this.methodHolderFactory = methodHolderFactory;
@@ -34,7 +34,7 @@ public class ReflectExpressionExecutor extends ExpressionExecutor {
     }
 
     @Override
-    public Object executeFunc(String functionName, List<ExpressionParser.Arg> args, Map<String, Object> env) {
+    public Object executeFunc(String functionName, List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
         for (Class<?> clazz : functionClasses) {
             MethodHolder methodHolder = methodHolderFactory.getMethodHolder(clazz, StatusMethodHolder.class);
             if (methodHolder.hasMethod(functionName)) {

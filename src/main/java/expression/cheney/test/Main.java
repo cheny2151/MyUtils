@@ -1,11 +1,15 @@
 package expression.cheney.test;
 
+import expression.cheney.AviatorExpressionParser;
 import expression.cheney.ExpressionExecutor;
+import expression.cheney.ExpressionParser;
 import expression.cheney.ReflectExpressionParser;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author cheney
@@ -15,11 +19,27 @@ public class Main {
 
     @Test
     public void test() {
-        ReflectExpressionParser expressionParser = ReflectExpressionParser.getInstance();
+        ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor = expressionParser.parseExpression("date_format(date,getString())");
         HashMap<String, Object> env = new HashMap<>();
-        env.put("date",new Date());
+        env.put("date", new Date());
         System.out.println(expressionExecutor.execute(env));
+    }
+
+
+    @Test
+    public void test2() {
+        Map<String, Object> args = new HashMap<>();
+        args.put("a", BigDecimal.valueOf(1));
+        args.put("b", BigDecimal.valueOf(2));
+        args.put("c", "A");
+        args.put("a1", BigDecimal.valueOf(2));
+        args.put("b1", BigDecimal.valueOf(1));
+        args.put("c1", "B");
+        AviatorExpressionParser aviatorExpressionParser = AviatorExpressionParser.getInstance();
+        ExpressionExecutor executor = aviatorExpressionParser.parseExpression("ifs(a>b,c,a1>b1,c1)");
+        Object execute = executor.execute(args);
+        System.out.println(execute);
     }
 
 }

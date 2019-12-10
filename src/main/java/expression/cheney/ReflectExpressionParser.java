@@ -19,7 +19,7 @@ import java.util.Set;
  * @date 2019-12-06
  */
 @Slf4j
-public class ReflectExpressionParser extends ExpressionParser {
+public class ReflectExpressionParser extends BaseExpressionParser {
 
     private MethodHolderFactory methodHolderFactory;
 
@@ -27,7 +27,7 @@ public class ReflectExpressionParser extends ExpressionParser {
 
     private static ReflectExpressionParser defaultReflectExpressionParser;
 
-    public ReflectExpressionParser() {
+    private ReflectExpressionParser() {
         ClassLoader classLoader = ReflectExpressionParser.class.getClassLoader();
         InputStream resourceAsStream = classLoader.getResourceAsStream("func-config.conf");
         functionClasses = new HashSet<>();
@@ -51,7 +51,7 @@ public class ReflectExpressionParser extends ExpressionParser {
         this.functionClasses = new HashSet<>(classes);
     }
 
-    public ExpressionExecutor parseExpression(String expression) {
+    public BaseExpressionExecutor parseExpression(String expression) {
         ParseResult parseResult = parse(expression);
         return new ReflectExpressionExecutor(expression, parseResult.getFuncName(),
                 parseResult.getArgs(), this.methodHolderFactory, this.functionClasses);
