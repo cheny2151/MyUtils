@@ -33,12 +33,9 @@ public abstract class BaseMethodHolder implements MethodHolder {
         Method method = methodOpt.orElseThrow(() -> new NoSuchMethodException(methodName));
         try {
             int parameterCount = method.getParameterCount();
-            if (args != null && args.length > parameterCount) {
-                // args长度大于parameterCount证明存在不定参数,不定参数必在最后一位
-                Class<?> parameterType = method.getParameterTypes()[parameterCount - 1];
-                if (!parameterType.isArray()) {
-                    throw new IllegalArgumentException("error args num");
-                }
+            Class<?> parameterType = method.getParameterTypes()[parameterCount - 1];
+            if (parameterType.isArray()) {
+                // 不定参数必在最后一位,对不定参数进行参数修复
                 Class<?> componentType = parameterType.getComponentType();
                 return method.invoke(obj, castToObjectArray(args, componentType, parameterCount));
             } else {
