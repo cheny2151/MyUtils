@@ -2,6 +2,7 @@ package expression.cheney;
 
 import com.googlecode.aviator.AviatorEvaluator;
 import com.googlecode.aviator.AviatorEvaluatorInstance;
+import com.googlecode.aviator.Options;
 import com.googlecode.aviator.runtime.function.AbstractVariadicFunction;
 import com.googlecode.aviator.runtime.type.AviatorObject;
 import com.googlecode.aviator.runtime.type.AviatorString;
@@ -22,6 +23,7 @@ public class AviatorExpressionParser implements ExpressionParser {
 
     private AviatorExpressionParser() {
         aviatorEvaluator = AviatorEvaluator.getInstance();
+        aviatorEvaluator.setOption(Options.ALWAYS_PARSE_FLOATING_POINT_NUMBER_INTO_DECIMAL, true);
         init();
     }
 

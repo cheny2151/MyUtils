@@ -31,7 +31,12 @@ public abstract class BaseMethodHolder implements MethodHolder {
         Optional<Method> methodOpt = getMethod(methodName);
         Method method = methodOpt.orElseThrow(() -> new NoSuchMethodException(methodName));
         try {
-            return method.invoke(obj, args);
+            int parameterCount = method.getParameterCount();
+            if (args != null && args.length > parameterCount && parameterCount == 1) {
+                return method.invoke(obj, new Object[]{args});
+            } else {
+                return method.invoke(obj, args);
+            }
         } catch (Exception e) {
             throw new MethodHolderInvokeException(holdClass.getSimpleName() + "执行方法#" + methodName + "异常", e);
         }

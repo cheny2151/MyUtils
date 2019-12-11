@@ -4,6 +4,7 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * 表达式执行器
@@ -12,6 +13,10 @@ import java.util.Map;
  * @date 2019-12-06
  */
 public abstract class BaseExpressionExecutor implements ExpressionExecutor {
+
+    private final static Pattern operators = Pattern.compile("(!|(((?!([+\\-*/%!|&?><=])).)+" +
+            "([+\\-*/%?]|>=?|<=?|={2}|\\|{1,2}|&{1,2}})))" +
+            "((?!([+\\-*/%!|&?><=])).)+");
 
     // 表达式
     protected String express;
@@ -30,13 +35,21 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
 
     protected Object[] loadArgs(List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
         return CollectionUtils.isEmpty(args) ? null : args.stream().map(arg -> {
+            Object value = arg.getValue();
             if (arg.isConstant()) {
-                return arg.getValue();
+                return value;
             } else if (arg.isFunc()) {
-                BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) arg.getValue();
+                BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) value;
                 return executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
             } else {
-                return env.get((String) arg.getValue());
+                Object envArg = env.get((String) value);
+                if (envArg != null) {
+                    return envArg;
+                } else if (operators.matcher((String) value).matches()) {
+                    // 结合Aviator,将按运算符的arg丢给Aviator执行
+                    return AviatorExpressionParser.getInstance().parseExpression((String) value).execute(env);
+                }
+                return null;
             }
         }).toArray();
     }
