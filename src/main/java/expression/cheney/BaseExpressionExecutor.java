@@ -14,9 +14,7 @@ import java.util.regex.Pattern;
  */
 public abstract class BaseExpressionExecutor implements ExpressionExecutor {
 
-    private final static Pattern operators = Pattern.compile("(!|(((?!([+\\-*/%!|&?><=])).)+" +
-            "([+\\-*/%?]|>=?|<=?|={2}|\\|{1,2}|&{1,2}})))" +
-            "((?!([+\\-*/%!|&?><=])).)+");
+    private final static Pattern operators = Pattern.compile(".*([+\\-*/%?><=|&]).*");
 
     // 表达式
     protected String express;
@@ -33,6 +31,13 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
         this.args = args;
     }
 
+    /**
+     * 从env中提取arg对应的参数
+     *
+     * @param args 表达式参数
+     * @param env  实际参数
+     * @return 参数数组
+     */
     protected Object[] loadArgs(List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
         return CollectionUtils.isEmpty(args) ? null : args.stream().map(arg -> {
             Object value = arg.getValue();
@@ -46,7 +51,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                 if (envArg != null) {
                     return envArg;
                 } else if (operators.matcher((String) value).matches()) {
-                    // 结合Aviator,将按运算符的arg丢给Aviator执行
+                    // 结合Aviator,将含运算符的arg丢给Aviator执行
                     return AviatorExpressionParser.getInstance().parseExpression((String) value).execute(env);
                 }
                 return null;

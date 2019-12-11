@@ -3,6 +3,7 @@ package expression.cheney.test;
 import jsonUtils.JsonUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Date;
  */
 public class TestFunction {
 
-    public static String getString() {
+    public static String getString(BigDecimal[] test) {
         return "yyyy-MM-dd";
     }
 
@@ -19,9 +20,14 @@ public class TestFunction {
         return DateFormatUtils.format(date, format);
     }
 
-    public static String ifs(Object... obj) {
-        System.out.println(JsonUtils.toJson(obj));
-        return "success";
+    public static Object ifs(Object... objs) {
+        System.out.println(JsonUtils.toJson(objs));
+        for (int i = 0; i < objs.length; i++) {
+            if ((i & 1) == 0 && (boolean) objs[i]) {
+                return objs[i + 1];
+            }
+        }
+        return "error";
     }
 
 }

@@ -2,6 +2,7 @@ package reflect.methodHolder;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,14 +33,43 @@ public abstract class BaseMethodHolder implements MethodHolder {
         Method method = methodOpt.orElseThrow(() -> new NoSuchMethodException(methodName));
         try {
             int parameterCount = method.getParameterCount();
-            if (args != null && args.length > parameterCount && parameterCount == 1) {
-                return method.invoke(obj, new Object[]{args});
+            if (args != null && args.length > parameterCount) {
+                // args长度大于parameterCount证明存在不定参数,不定参数必在最后一位
+                Class<?> parameterType = method.getParameterTypes()[parameterCount - 1];
+                if (!parameterType.isArray()) {
+                    throw new IllegalArgumentException("error args num");
+                }
+                Class<?> componentType = parameterType.getComponentType();
+                return method.invoke(obj, castToObjectArray(args, componentType, parameterCount));
             } else {
                 return method.invoke(obj, args);
             }
         } catch (Exception e) {
             throw new MethodHolderInvokeException(holdClass.getSimpleName() + "执行方法#" + methodName + "异常", e);
         }
+    }
+
+    /**
+     * 修复不定参数,将最后一项参数(不定参数)包装为array，其他参数不变copy出新的Object[]
+     *
+     * @param args           参数
+     * @param type           不定参数类型
+     * @param parameterCount 方法参数个数
+     * @return 修复后的数据
+     */
+    private Object[] castToObjectArray(Object[] args, Class<?> type, int parameterCount) {
+        Object[] fixArgs = new Object[parameterCount];
+        int defineNum = parameterCount - 1;
+        // 非不定参数不变，copy
+        System.arraycopy(args, 0, fixArgs, 0, defineNum);
+        // 通过反射将不定参数包装到array中，存到fixArgs最后一位
+        Object array = Array.newInstance(type, args.length - parameterCount + 1);
+        int index = 0;
+        for (int i = defineNum; i < args.length; i++) {
+            Array.set(array, index++, args[i]);
+        }
+        fixArgs[defineNum] = array;
+        return fixArgs;
     }
 
     @Override

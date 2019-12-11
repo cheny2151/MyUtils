@@ -20,7 +20,7 @@ public class Main {
     @Test
     public void test() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("date_format(date,getString())");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("date_format(date,getString(1+1,1+2))");
         HashMap<String, Object> env = new HashMap<>();
         env.put("date", new Date());
         System.out.println(expressionExecutor.execute(env));
@@ -37,7 +37,7 @@ public class Main {
         args.put("b1", BigDecimal.valueOf(1));
         args.put("c1", "B");
         AviatorExpressionParser aviatorExpressionParser = AviatorExpressionParser.getInstance();
-        ExpressionExecutor executor = aviatorExpressionParser.parseExpression("ifs(a>b,c,a1>b1,c1)");
+        ExpressionExecutor executor = aviatorExpressionParser.parseExpression("ifs(a>b-a,c,a1>b1,c1)");
         Object execute = executor.execute(args);
         System.out.println(execute);
     }
@@ -52,7 +52,7 @@ public class Main {
         env.put("b1", BigDecimal.valueOf(1));
         env.put("c1", 100);
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("ifs(a>b,c,a1>b1,c1)");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("ifs(a>b-a,c,a1>b1,c1)");
         System.out.println(expressionExecutor.execute(env));
     }
 

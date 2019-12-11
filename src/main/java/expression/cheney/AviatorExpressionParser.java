@@ -24,6 +24,7 @@ public class AviatorExpressionParser implements ExpressionParser {
     private AviatorExpressionParser() {
         aviatorEvaluator = AviatorEvaluator.getInstance();
         aviatorEvaluator.setOption(Options.ALWAYS_PARSE_FLOATING_POINT_NUMBER_INTO_DECIMAL, true);
+        aviatorEvaluator.setOption(Options.ALWAYS_PARSE_INTEGRAL_NUMBER_INTO_DECIMAL, true);
         init();
     }
 
