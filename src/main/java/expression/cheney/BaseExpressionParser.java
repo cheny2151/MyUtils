@@ -71,6 +71,9 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     // 参数为方法表达式,执行方法表达式解析
                     value = parse(function);
                 }
+            } else if (!constant) {
+                // 不为方法不为常类的arg，去除前后的空格
+                value = ((String) value).trim();
             }
             return new Arg(value, constant, func);
         }
