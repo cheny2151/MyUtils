@@ -2,7 +2,7 @@ package expression.cheney;
 
 import reflect.methodHolder.MethodHolder;
 import reflect.methodHolder.MethodHolderFactory;
-import reflect.methodHolder.NoSuchMethodException;
+import reflect.methodHolder.exception.NoSuchMethodException;
 import reflect.methodHolder.StatusMethodHolder;
 
 import java.util.List;
