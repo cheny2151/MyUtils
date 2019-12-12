@@ -34,12 +34,12 @@ public class ReflectExpressionExecutor extends BaseExpressionExecutor {
     }
 
     @Override
-    public Object executeOperation(String expression, Map<String, Object> env) {
+    protected Object executeOperation(String expression, Map<String, Object> env) {
         return AviatorExpressionParser.getInstance().parseExpression(expression).execute(env);
     }
 
     @Override
-    public Object executeFunc(String functionName, List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
+    protected Object executeFunc(String functionName, List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
         for (Class<?> clazz : functionClasses) {
             MethodHolder methodHolder = methodHolderFactory.getMethodHolder(clazz, StatusMethodHolder.class);
             if (methodHolder.hasMethod(functionName)) {

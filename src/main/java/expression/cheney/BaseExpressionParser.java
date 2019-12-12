@@ -31,13 +31,22 @@ public abstract class BaseExpressionParser implements ExpressionParser {
 
     private final static char[] END_CHAR = new char[]{COMMA_CHAR, BRACKETS_RIGHT_CHAR, APOSTROPHE_CHAR};
 
-    public abstract BaseExpressionExecutor parseExpression(String expression);
+    public abstract ExpressionExecutor parseExpression(String expression);
 
     @Data
     @AllArgsConstructor
     protected static class ParseResult {
         private String funcName;
         private List<Arg> args;
+        private boolean noFunc;
+
+        public static ParseResult noFunc() {
+            return new ParseResult(null, null, true);
+        }
+
+        public static ParseResult func(String funcName, List<Arg> args) {
+            return new ParseResult(funcName, args, false);
+        }
     }
 
     @Data
@@ -80,11 +89,12 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         int start = expression.indexOf("(");
         int length = expression.length();
         if (start == -1 || start == 0 || ")".toCharArray()[0] != expression.charAt(length - 1)) {
-            throw new ExpressionParseException("error expression,miss function main");
+            // 不包含()则不为函数
+            return ParseResult.noFunc();
         }
         List<Arg> args = parseArg(expression.substring(start + 1, length - 1));
 
-        return new ParseResult(expression.substring(0, start), args);
+        return ParseResult.func(expression.substring(0, start), args);
     }
 
     /**

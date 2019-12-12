@@ -56,4 +56,14 @@ public class Main {
         System.out.println(expressionExecutor.execute(env));
     }
 
+    @Test
+    public void test4() {
+        Map<String, Object> env = new HashMap<>();
+        env.put("a", BigDecimal.valueOf(1));
+        env.put("b", BigDecimal.valueOf(2));
+        ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("a>b");
+        System.out.println(expressionExecutor.execute(env));
+    }
+
 }
