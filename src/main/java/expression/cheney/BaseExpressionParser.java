@@ -115,7 +115,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         List<Arg> result = new ArrayList<>();
         for (int i = 0; i < length; i++) {
             char c = chars[i];
-            if (SPACE_CHAR == c && endCheck != null && APOSTROPHE_CHAR != endCheck) {
+            if (SPACE_CHAR == c) {
                 // 跳过无用空格
                 continue;
             }
