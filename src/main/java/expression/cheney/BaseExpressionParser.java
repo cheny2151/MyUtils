@@ -53,7 +53,6 @@ public abstract class BaseExpressionParser implements ExpressionParser {
 
         public static Arg create(Object value, boolean constant, boolean func) {
             if (func) {
-                System.out.println(value);
                 String function = (String) value;
                 String substring = function.substring(0, function.indexOf("("));
                 if (OPERATORS.matcher(substring).matches()) {

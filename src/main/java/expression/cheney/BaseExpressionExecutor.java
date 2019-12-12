@@ -47,19 +47,28 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                 BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) value;
                 return executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
             } else {
-                Object envArg = env.get((String) value);
+                String valueStr = (String) value;
+                Object envArg = env.get(valueStr);
                 if (envArg != null) {
                     return envArg;
-                } else if (OPERATORS.matcher((String) value).matches()) {
+                } else if (OPERATORS.matcher(valueStr).matches()) {
                     // 结合Aviator,将含运算符的arg丢给Aviator执行
-                    return AviatorExpressionParser.getInstance().parseExpression((String) value).execute(env);
+                    return executeOperation(valueStr, env);
                 }
                 return null;
             }
         }).toArray();
     }
 
-    public abstract Object execute(Map<String, Object> env);
+
+    /**
+     * 执行运算表达式
+     *
+     * @param expression 运算表达式
+     * @param env        实际参数
+     * @return 表达式执行结果
+     */
+    protected abstract Object executeOperation(String expression, Map<String, Object> env);
 
     /**
      * 提供额外的表达式执行方法
