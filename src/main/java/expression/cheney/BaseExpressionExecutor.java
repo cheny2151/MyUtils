@@ -2,6 +2,7 @@ package expression.cheney;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -14,7 +15,11 @@ import java.util.regex.Pattern;
  */
 public abstract class BaseExpressionExecutor implements ExpressionExecutor {
 
+    // 运算符正则
     final static Pattern OPERATORS = Pattern.compile(".*([+\\-*/%?><=|&!]).*");
+
+    // 数字正则
+    final static Pattern NUMBER = Pattern.compile("\\d+(\\.?\\d+)?");
 
     // 表达式
     protected String express;
@@ -41,7 +46,9 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
     protected Object[] loadArgs(List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
         return CollectionUtils.isEmpty(args) ? null : args.stream().map(arg -> {
             Object value = arg.getValue();
-            if (arg.isConstant()) {
+            if (value == null) {
+                return null;
+            } else if (arg.isConstant()) {
                 return value;
             } else if (arg.isFunc()) {
                 BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) value;
@@ -55,11 +62,29 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                     // 结合Aviator,将含运算符的arg丢给Aviator执行
                     return executeOperation(valueStr, env);
                 }
-                return null;
+                return castToBasic(valueStr);
             }
         }).toArray();
     }
 
+    /**
+     * 尝试转换基本类型数据
+     *
+     * @param valueStr 待转换的值
+     * @return
+     */
+    private static Object castToBasic(String valueStr) {
+        if ("false".equals(valueStr) || "true".equals(valueStr)) {
+            return Boolean.valueOf(valueStr);
+        } else if (NUMBER.matcher(valueStr).matches()) {
+            if (valueStr.contains(".")) {
+                return new BigDecimal(valueStr);
+            } else {
+                return Integer.valueOf(valueStr);
+            }
+        }
+        return null;
+    }
 
     /**
      * 执行运算表达式
