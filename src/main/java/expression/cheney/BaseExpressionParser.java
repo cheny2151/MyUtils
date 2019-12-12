@@ -9,6 +9,8 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static expression.cheney.BaseExpressionExecutor.OPERATORS;
+
 /**
  * 表达式解析器抽象接口
  *
@@ -48,9 +50,31 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         private boolean constant;
         // 是否函数
         private boolean func;
+
+        public static Arg create(Object value, boolean constant, boolean func) {
+            if (func) {
+                System.out.println(value);
+                String function = (String) value;
+                String substring = function.substring(0, function.indexOf("("));
+                if (OPERATORS.matcher(substring).matches()) {
+                    // 方法名包含运算符则视为运算
+                    func = false;
+                } else {
+                    // 参数为方法表达式,执行方法表达式解析
+                    value = parse(function);
+                }
+            }
+            return new Arg(value, constant, func);
+        }
     }
 
-    protected ParseResult parse(String expression) {
+    /**
+     * 解析方法表达式
+     *
+     * @param expression 表达式
+     * @return 解析结果 ParseResult实体
+     */
+    protected static ParseResult parse(String expression) {
         if (StringUtils.isEmpty(expression)) {
             throw new ExpressionParseException("expression can not be empty");
         }
@@ -64,7 +88,13 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         return new ParseResult(expression.substring(0, start), args);
     }
 
-    private List<Arg> parseArg(String expression) {
+    /**
+     * 解析方法表达式中的参数段类
+     *
+     * @param expression 方法的参数段类,例:ifs(a>b,c)-->'a>b,c'
+     * @return 参数解析结果 Arg集合
+     */
+    private static List<Arg> parseArg(String expression) {
         char[] chars = expression.toCharArray();
         int length = chars.length;
         int endIndex = length - 1;
@@ -110,13 +140,13 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                         if (APOSTROPHE_CHAR == endCheck) {
                             if (count == 2) {
                                 // 出现第二个'结束
-                                result.add(new Arg(expression.substring(startIndex + 1, i), true, false));
+                                result.add(Arg.create(expression.substring(startIndex + 1, i), true, false));
                                 count = 0;
                             }
                         } else if (BRACKETS_RIGHT_CHAR == endCheck) {
                             if (count == 1) {
                                 // 匹配')'时只有一个未匹配的'('结束
-                                result.add(new Arg(parse(expression.substring(startIndex, ++i)), false, true));
+                                result.add(Arg.create(expression.substring(startIndex, ++i), false, true));
                             }
                             count--;
                         }
@@ -132,7 +162,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     if (end) {
                         i++;
                     }
-                    result.add(new Arg(expression.substring(startIndex, i), false, false));
+                    result.add(Arg.create(expression.substring(startIndex, i), false, false));
                 }
                 if (count == 0) {
                     // 匹配结束符并且count为0时,标识段落结束

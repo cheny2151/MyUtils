@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  */
 public abstract class BaseExpressionExecutor implements ExpressionExecutor {
 
-    private final static Pattern operators = Pattern.compile(".*([+\\-*/%?><=|&]).*");
+    final static Pattern OPERATORS = Pattern.compile(".*([+\\-*/%?><=|&!]).*");
 
     // 表达式
     protected String express;
@@ -50,7 +50,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                 Object envArg = env.get((String) value);
                 if (envArg != null) {
                     return envArg;
-                } else if (operators.matcher((String) value).matches()) {
+                } else if (OPERATORS.matcher((String) value).matches()) {
                     // 结合Aviator,将含运算符的arg丢给Aviator执行
                     return AviatorExpressionParser.getInstance().parseExpression((String) value).execute(env);
                 }
