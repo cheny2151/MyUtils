@@ -1,6 +1,8 @@
 package expression.cheney;
 
 /**
+ * 表达式解析异常类
+ *
  * @author cheney
  * @date 2019-12-09
  */

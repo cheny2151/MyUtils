@@ -11,14 +11,21 @@ import java.util.Map;
 
 /**
  * Aviator表达式解析器
+ * 底层直接使用Aviator进行解析
  *
  * @author cheney
  * @date 2019-12-10
  */
 public class AviatorExpressionParser implements ExpressionParser {
 
+    /**
+     * Aviator解析器
+     */
     private AviatorEvaluatorInstance aviatorEvaluator;
 
+    /**
+     * AviatorExpressionParser单例
+     */
     private static AviatorExpressionParser AviatorExpressionParser;
 
     private AviatorExpressionParser() {
@@ -33,10 +40,32 @@ public class AviatorExpressionParser implements ExpressionParser {
         return new AviatorExpressionExecutor(aviatorEvaluator.compile(expression, true));
     }
 
+    /**
+     * 获取AviatorExpressionParser实例
+     *
+     * @return
+     */
+    public static AviatorExpressionParser getInstance() {
+        if (AviatorExpressionParser == null) {
+            synchronized (AviatorExpressionParser.class) {
+                if (AviatorExpressionParser == null) {
+                    AviatorExpressionParser = new AviatorExpressionParser();
+                }
+            }
+        }
+        return AviatorExpressionParser;
+    }
+
+    /**
+     * 初始化方法
+     */
     private void init() {
         aviatorEvaluator.addFunction(new IfsAviatorFunction());
     }
 
+    /**
+     * Aviator提供实现AbstractVariadicFunction增加函数
+     */
     private static class IfsAviatorFunction extends AbstractVariadicFunction {
 
         @Override
@@ -56,17 +85,6 @@ public class AviatorExpressionParser implements ExpressionParser {
         public String getName() {
             return "ifs";
         }
-    }
-
-    public static AviatorExpressionParser getInstance() {
-        if (AviatorExpressionParser == null) {
-            synchronized (AviatorExpressionParser.class) {
-                if (AviatorExpressionParser == null) {
-                    AviatorExpressionParser = new AviatorExpressionParser();
-                }
-            }
-        }
-        return AviatorExpressionParser;
     }
 
 }

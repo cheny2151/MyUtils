@@ -17,8 +17,14 @@ import java.util.Set;
  */
 public class ReflectExpressionExecutor extends BaseExpressionExecutor {
 
+    /**
+     * 方法反射工厂
+     */
     private MethodHolderFactory methodHolderFactory;
 
+    /**
+     * 反射的类
+     */
     private Set<Class<?>> functionClasses;
 
     ReflectExpressionExecutor(String express, String functionName, List<BaseExpressionParser.Arg> args,

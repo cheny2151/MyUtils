@@ -3,7 +3,7 @@ package expression.cheney;
 import java.util.Map;
 
 /**
- * 解析器
+ * 表达式执行器
  *
  * @author cheney
  * @date 2019-12-10

@@ -13,7 +13,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 表达式解析器
+ * 反射表达式解析器
+ * 通过解析表达式后用反射的方式结合Aviator执行表达式
  *
  * @author cheney
  * @date 2019-12-06
@@ -21,10 +22,19 @@ import java.util.Set;
 @Slf4j
 public class ReflectExpressionParser extends BaseExpressionParser {
 
+    /**
+     * 反射方法工厂
+     */
     private MethodHolderFactory methodHolderFactory;
 
+    /**
+     * 执行反射的类
+     */
     private Set<Class<?>> functionClasses;
 
+    /**
+     * ReflectExpressionParser单例
+     */
     private static ReflectExpressionParser defaultReflectExpressionParser;
 
     private ReflectExpressionParser() {
@@ -33,6 +43,7 @@ public class ReflectExpressionParser extends BaseExpressionParser {
         functionClasses = new HashSet<>();
         if (resourceAsStream != null) {
             try {
+                // 读取func-config.conf配置中的类
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(resourceAsStream));
                 String classesStr = bufferedReader.readLine();
                 String[] classStrArray = classesStr.split(",");
@@ -58,10 +69,18 @@ public class ReflectExpressionParser extends BaseExpressionParser {
                 parseResult.getArgs(), this.methodHolderFactory, this.functionClasses);
     }
 
+    /**
+     * 动态添加方法反射类
+     *
+     * @param clazz 类
+     */
     public void addFunctionClass(Class<?> clazz) {
         functionClasses.add(clazz);
     }
 
+    /**
+     * 获取默认单例
+     */
     public static ReflectExpressionParser getInstance() {
         if (defaultReflectExpressionParser == null) {
             synchronized (ReflectExpressionParser.class) {
@@ -73,6 +92,9 @@ public class ReflectExpressionParser extends BaseExpressionParser {
         return defaultReflectExpressionParser;
     }
 
+    /**
+     * 获取新的ReflectExpressionParser解析器实例
+     */
     public static ReflectExpressionParser getInstance(MethodHolderFactory methodHolderFactory, Collection<Class<?>> classes) {
         if (methodHolderFactory == null || CollectionUtils.isEmpty(classes)) {
             throw new NullPointerException();

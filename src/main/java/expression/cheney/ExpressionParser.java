@@ -8,6 +8,12 @@ package expression.cheney;
  */
 public interface ExpressionParser {
 
+    /**
+     * 解析表达式
+     *
+     * @param expression 表达式
+     * @return 解析结果
+     */
     ExpressionExecutor parseExpression(String expression);
 
 }

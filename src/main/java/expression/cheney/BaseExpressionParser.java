@@ -29,10 +29,20 @@ public abstract class BaseExpressionParser implements ExpressionParser {
 
     private final static char SPACE_CHAR = " ".toCharArray()[0];
 
+    /**
+     * 可为结尾的字符
+     */
     private final static char[] END_CHAR = new char[]{COMMA_CHAR, BRACKETS_RIGHT_CHAR, APOSTROPHE_CHAR};
 
     public abstract ExpressionExecutor parseExpression(String expression);
 
+    /**
+     * 表达式解析结果
+     * 例如: ifs(a>b,c) 则
+     * args字段：a>b与c {@link Arg}
+     * funcName字段：ifs
+     * noFunc字段:当表达式不为函数时，该字段为true
+     */
     @Data
     @AllArgsConstructor
     protected static class ParseResult {
@@ -49,6 +59,9 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         }
     }
 
+    /**
+     * 参数段类实体
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
