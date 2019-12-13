@@ -149,23 +149,17 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 // 段落开始
                 startIndex = i;
             }
-            if ((endCheck == null || endCheck == APOSTROPHE_CHAR) && APOSTROPHE_CHAR == c) {
+            if (APOSTROPHE_CHAR == c && (endCheck == null || endCheck == APOSTROPHE_CHAR)) {
                 // 当前char为'
                 endCheck = APOSTROPHE_CHAR;
                 count++;
             }
-            if ((endCheck == null || endCheck == BRACKETS_RIGHT_CHAR) && BRACKETS_LEFT_CHAR == c) {
+            if (BRACKETS_LEFT_CHAR == c && (endCheck == null || endCheck == BRACKETS_RIGHT_CHAR)) {
                 // 当前char为(,每遇到一个(加一，没遇到一个)减一，直到最后一个)视为结束
-                if (endCheck != null) {
-                    if (endCheck == BRACKETS_RIGHT_CHAR) {
-                        count++;
-                    } else {
-                        throw new ExpressionParseException("'('与')'数量不匹配");
-                    }
-                } else {
+                if (endCheck == null) {
                     endCheck = BRACKETS_RIGHT_CHAR;
-                    count++;
                 }
+                count++;
             }
             boolean end = i == endIndex;
             if (startIndex != null && (ArrayUtils.contains(END_CHAR, c) || end)) {
