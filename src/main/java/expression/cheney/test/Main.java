@@ -20,7 +20,7 @@ public class Main {
     @Test
     public void test() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("toJson(date_format(date,noArg()))");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(toJson(date_format(date,noArg())))");
         HashMap<String, Object> env = new HashMap<>();
         env.put("date", new Date());
         expressionExecutor.execute(env);
