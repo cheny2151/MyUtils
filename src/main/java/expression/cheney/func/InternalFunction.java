@@ -21,7 +21,7 @@ public class InternalFunction {
         System.out.print(obj);
     }
 
-    public static String toJSONString(Object obj) {
+    public static String toJson(Object obj) {
         return JSON.toJSONString(obj);
     }
 
