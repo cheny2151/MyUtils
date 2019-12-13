@@ -35,8 +35,12 @@ public abstract class BaseMethodHolder implements MethodHolder {
         Method method = methodOpt.orElseThrow(() -> new NoSuchMethodException(methodName));
         try {
             int parameterCount = method.getParameterCount();
-            Class<?> parameterType = method.getParameterTypes()[parameterCount - 1];
-            if (parameterType.isArray()) {
+            Class<?> parameterType;
+            if (args == null) {
+                // 参数为null时填充null数组为入参
+                return method.invoke(obj, createNullArray(parameterCount));
+            } else if (parameterCount > 0
+                    && (parameterType = method.getParameterTypes()[parameterCount - 1]).isArray()) {
                 // 不定参数必在最后一位,对不定参数进行参数修复
                 Class<?> componentType = parameterType.getComponentType();
                 return method.invoke(obj, castToObjectArray(args, componentType, parameterCount));
@@ -69,6 +73,20 @@ public abstract class BaseMethodHolder implements MethodHolder {
         }
         fixArgs[defineNum] = array;
         return fixArgs;
+    }
+
+    /**
+     * 生成空的Object array
+     *
+     * @param count 个数
+     * @return 空array
+     */
+    private Object[] createNullArray(int count) {
+        Object[] nullArray = new Object[count];
+        for (int i = 0; i < count; i++) {
+            nullArray[i] = null;
+        }
+        return nullArray;
     }
 
     @Override

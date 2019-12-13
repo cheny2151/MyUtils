@@ -20,7 +20,7 @@ public class Main {
     @Test
     public void test() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("date_format(date, getString('test','test',1+2))");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("date_format(date,noArg())");
         HashMap<String, Object> env = new HashMap<>();
         env.put("date", new Date());
         System.out.println(expressionExecutor.execute(env));

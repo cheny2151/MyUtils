@@ -11,7 +11,11 @@ import java.util.Date;
  */
 public class TestFunction {
 
-    public static String getString(Object test1,Object... test) {
+    public static String noArg() {
+        return "yyyy-MM-dd";
+    }
+
+    public static String getString(Object test1, Object... test) {
         System.out.println(test1);
         System.out.println(JsonUtils.toJson(test));
         return "yyyy-MM-dd";
