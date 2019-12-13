@@ -154,7 +154,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 endCheck = APOSTROPHE_CHAR;
                 count++;
             }
-            if ((endCheck == null || endCheck == BRACKETS_LEFT_CHAR) && BRACKETS_LEFT_CHAR == c) {
+            if ((endCheck == null || endCheck == BRACKETS_RIGHT_CHAR) && BRACKETS_LEFT_CHAR == c) {
                 // 当前char为(,每遇到一个(加一，没遇到一个)减一，直到最后一个)视为结束
                 if (endCheck != null) {
                     if (endCheck == BRACKETS_RIGHT_CHAR) {
