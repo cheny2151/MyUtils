@@ -181,11 +181,10 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     }
                 } else {
                     // 不需要endCheck
-                    if (startIndex == i) {
-                        continue;
-                    }
                     if (end) {
                         i++;
+                    } else if (startIndex == i) {
+                        continue;
                     }
                     result.add(Arg.create(expression.substring(startIndex, i), false, false));
                 }
