@@ -68,13 +68,15 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
     }
 
     /**
-     * 尝试转换基本类型数据
+     * 尝试将变量转换基本类型数据
      *
      * @param valueStr 待转换的值
      * @return
      */
     private static Object castToBasic(String valueStr) {
-        if ("false".equals(valueStr) || "true".equals(valueStr)) {
+        if ("null".equals(valueStr) || "nil".equals(valueStr)) {
+            return null;
+        } else if ("false".equals(valueStr) || "true".equals(valueStr)) {
             return Boolean.valueOf(valueStr);
         } else if (NUMBER.matcher(valueStr).matches()) {
             if (valueStr.contains(".")) {
