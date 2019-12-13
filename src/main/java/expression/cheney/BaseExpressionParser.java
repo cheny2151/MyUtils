@@ -162,7 +162,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 count++;
             }
             boolean end = i == endIndex;
-            if (startIndex != null && (ArrayUtils.contains(END_CHAR, c) || end)) {
+            if ((ArrayUtils.contains(END_CHAR, c) || end) && startIndex != null) {
                 // 结束
                 if (endCheck != null) {
                     if (c == endCheck) {
@@ -179,8 +179,9 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                             }
                             count--;
                         }
-                    } else if (count == 0) {
-                        // 当前char不为endCheck时抛出异常
+                    }
+                    if (end && count != 0) {
+                        // 到达结尾时，当前char无法匹配endCheck时抛出异常
                         throw new ExpressionParseException("end char miss '" + endCheck + "'");
                     }
                 } else {
