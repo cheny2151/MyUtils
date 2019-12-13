@@ -181,7 +181,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                         }
                     }
                     if (end && count != 0) {
-                        // 到达结尾时，当前char无法匹配endCheck时抛出异常
+                        // 到达结尾时，无法匹配完endCheck时抛出异常
                         throw new ExpressionParseException("end char miss \"" + endCheck + "\"");
                     }
                 } else {
