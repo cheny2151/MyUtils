@@ -1,10 +1,12 @@
 package expression.cheney;
 
+import expression.cheney.func.InternalFunction;
 import reflect.methodHolder.MethodHolder;
 import reflect.methodHolder.MethodHolderFactory;
-import reflect.methodHolder.exception.NoSuchMethodException;
 import reflect.methodHolder.StatusMethodHolder;
+import reflect.methodHolder.exception.NoSuchMethodException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +33,11 @@ public class ReflectExpressionExecutor extends BaseExpressionExecutor {
                               MethodHolderFactory methodHolderFactory, Set<Class<?>> functionClasses) {
         super(express, functionName, args);
         this.methodHolderFactory = methodHolderFactory;
+        if (functionClasses == null) {
+            functionClasses = new HashSet<>();
+        }
+        // 添加内置函数类
+        functionClasses.add(InternalFunction.class);
         this.functionClasses = functionClasses;
     }
 

@@ -35,8 +35,4 @@ public class TestFunction {
         return "error";
     }
 
-    public static void println(Object obj) {
-        System.out.println(obj);
-    }
-
 }
