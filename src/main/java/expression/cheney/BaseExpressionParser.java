@@ -12,7 +12,17 @@ import java.util.List;
 import static expression.cheney.BaseExpressionExecutor.OPERATORS;
 
 /**
- * 表达式解析器抽象接口
+ * 表达式解析器抽象接口,提供基础的解析方法实现
+ * <p>
+ * 表达式解析支持:
+ * 1.解析方法表达式(funcA(xx));
+ * 2:解析''为分隔符的字符串(funcA('xx'));
+ * 3.解析变量(funA(a),a将视为变量);
+ * 4.嵌套函数解析(例如：funcA(funcB(funcC()))，通过递归实现)
+ * <p>
+ * 解析的结果封装为{@link ParseResult},一个方法表达式为一个ParseResult，
+ * 例如funcA(funcB()，解析结果ParseResult实体中，其成员变量args{@link ParseResult.args}为单个元素的{@link Arg}，
+ * 元素Arg中的成员变量{@link Arg.value}为funB解析结果的实体{@link ParseResult}，形成嵌套。
  *
  * @author cheney
  * @date 2019-12-07
