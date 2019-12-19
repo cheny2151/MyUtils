@@ -132,7 +132,7 @@ public class HSSFWorkbookBuilder {
     /**
      * 设置表内容
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
     private void createCount(HSSFWorkbook workbook, List<?> data, Map<String, Object> headInfo) {
 
         HSSFSheet sheet = workbook.getSheetAt(0);
@@ -161,7 +161,7 @@ public class HSSFWorkbookBuilder {
                 if (size != null) {
                     //是否是List
                     if ((boolean) entry.getValue()) {
-                        List<String> values = (List) value;
+                        List<String> values = (List<String>) value;
                         if (values.size() == 0) {
                             HSSFCell cell = setValue(sheet, row, column, "-");
                             cell.setCellStyle(countStyle);
