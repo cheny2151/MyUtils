@@ -1,15 +1,15 @@
 package POIUtils.worker;
 
-import POIUtils.ReadProperty;
 import POIUtils.annotation.ExcelData;
 import POIUtils.annotation.ExcelHead;
+import POIUtils.annotation.ExcelWriteBack;
+import POIUtils.entity.ReadProperty;
+import POIUtils.entity.ReadResult;
 import POIUtils.exception.WorkBookReadException;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import reflect.ReflectUtils;
 
@@ -18,41 +18,97 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * excel表读取者
  */
 public class WorkBookReader {
 
-    public <T> List<T> reader(File file, Class<T> targetClass) throws WorkBookReadException {
+    public <T> ReadResult<T> read(File file, Class<T> targetClass) throws WorkBookReadException {
         try {
             Workbook workbook = judgeWorkBook(file);
-            Sheet sheet = null;
+            Sheet sheet;
             //数据出现行数,从0开始算
             ExcelHead excelHead = targetClass.getAnnotation(ExcelHead.class);
-            int titleRow = 1;
+            int titleRowNum = 1;
             if (excelHead != null) {
-                titleRow = excelHead.titleRow();
+                titleRowNum = excelHead.titleRow();
                 sheet = workbook.getSheet(excelHead.sheetName());
             } else {
                 sheet = workbook.getSheetAt(0);
             }
-            int startRowNumber = titleRow + 1;
+            int startRowNumber = titleRowNum + 1;
             // 分析excel列表映射字段信息
-            Map<Integer, ReadProperty> readPropertyMap = analysisAnnotation(targetClass, sheet.getRow(titleRow));
+            Row titleRow = sheet.getRow(titleRowNum);
+            Map<Integer, ReadProperty> readPropertyMap = analysisAnnotation(targetClass, titleRow);
             List<T> results = new ArrayList<>();
+            Map<Integer, T> resultWithRow = new HashMap<>();
             for (int i = startRowNumber; i <= sheet.getLastRowNum(); i++) {
                 T t = createTarget(targetClass, readPropertyMap, sheet.getRow(i));
                 results.add(t);
+                resultWithRow.put(i, t);
             }
-            return results;
+            return new ReadResult<>(results, resultWithRow, workbook, sheet, titleRow.getLastCellNum() - 1, titleRowNum, targetClass);
         } catch (Exception e) {
             throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 回写数据
+     *
+     * @param readResult 读取的数据结果实体
+     * @param <T>        数据类型
+     */
+    public <T> void writeBack(ReadResult<T> readResult) {
+        Sheet sheet = readResult.getSheet();
+        Workbook workbook = readResult.getWorkbook();
+        int titleCount = readResult.getTitleCount();
+        int titleRowNum = readResult.getTitleRowNum();
+        Class<T> dataClass = readResult.getDataClass();
+        // 获取负责回写的注解
+        Map<String, Field> fieldMap = ReflectUtils.getAllFieldHasAnnotation(dataClass, ExcelWriteBack.class);
+        if (fieldMap == null || fieldMap.size() == 0) {
+            throw new IllegalArgumentException("write back excel,but not find annotation @ExcelWriteBack");
+        }
+        // 构造注解与读方法的映射
+        Map<ExcelWriteBack, Method> backMethodMap =
+                fieldMap.values().stream().collect(Collectors.toMap(
+                        field -> field.getDeclaredAnnotation(ExcelWriteBack.class),
+                        field -> ReflectUtils.getReadMethod(dataClass, field.getName())
+                ));
+        ArrayList<Method> readMethods = new ArrayList<>();
+        // 写入标题
+        List<ExcelWriteBack> excelWriteBacks = backMethodMap.keySet().stream().sorted(Comparator.comparingInt(ExcelWriteBack::sort)).collect(Collectors.toList());
+        int currentColumnNum = titleCount + 1;
+        for (ExcelWriteBack excelWriteBack : excelWriteBacks) {
+            String title = excelWriteBack.title();
+            HSSFColor.HSSFColorPredefined color = excelWriteBack.titleColor();
+            Cell cell = sheet.getRow(titleRowNum).createCell(currentColumnNum++);
+            cell.setCellValue(title);
+            setFontColor(workbook, color, cell);
+            readMethods.add(backMethodMap.get(excelWriteBack));
+        }
+        // 写数据
+        int size = excelWriteBacks.size();
+        Map<Integer, T> dataIndexMap = readResult.getDataIndexMap();
+        dataIndexMap.forEach((index, value) -> {
+            int _currentColumnNum = titleCount + 1;
+            for (int i = 0; i < size; i++) {
+                ExcelWriteBack excelWriteBack = excelWriteBacks.get(i);
+                HSSFColor.HSSFColorPredefined color = excelWriteBack.color();
+                Object cellValue = ReflectUtils.readValue(value, readMethods.get(i));
+                if (cellValue != null) {
+                    Cell cell = sheet.getRow(index).createCell(_currentColumnNum++);
+                    cell.setCellValue(cellValue.toString());
+                    setFontColor(workbook, color, cell);
+                }
+            }
+        });
+
     }
 
     /**
@@ -168,6 +224,17 @@ public class WorkBookReader {
             throw new WorkBookReadException("未发现该类的@ExcelData注解");
         }
         return readPropertyMap;
+    }
+
+    /**
+     * 设置字体颜色
+     */
+    private void setFontColor(Workbook workbook, HSSFColor.HSSFColorPredefined color, Cell cell) {
+        CellStyle cellStyle = workbook.createCellStyle();
+        Font font = workbook.createFont();
+        font.setColor(color.getIndex());
+        cellStyle.setFont(font);
+        cell.setCellStyle(cellStyle);
     }
 
 }

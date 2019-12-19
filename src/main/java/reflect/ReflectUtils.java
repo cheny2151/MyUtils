@@ -36,6 +36,18 @@ public class ReflectUtils {
     }
 
     /**
+     * 反射获取字段值
+     * 转换为运行时异常
+     */
+    public static Object readValue(Object bean, Method readMethod) {
+        try {
+            return readMethod.invoke(bean);
+        } catch (Exception e) {
+            throw new ReflectException("反射获取字段值错误", e);
+        }
+    }
+
+    /**
      * 获取read方法
      * 找不到对应方法不抛出异常，返回null
      */
@@ -105,6 +117,18 @@ public class ReflectUtils {
     public static void writeValue(Object bean, String property, Object value) {
         try {
             getWriterMethod(bean.getClass(), property, value.getClass()).invoke(bean, value);
+        } catch (Exception e) {
+            throw new ReflectException("反射写入字段值错误", e);
+        }
+    }
+
+    /**
+     * 反射写入字段值
+     * 转换为运行时异常
+     */
+    public static void writeValue(Object bean, Method method, Object value) {
+        try {
+            method.invoke(bean, value);
         } catch (Exception e) {
             throw new ReflectException("反射写入字段值错误", e);
         }

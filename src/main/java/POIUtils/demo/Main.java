@@ -2,14 +2,15 @@ package POIUtils.demo;
 
 import POIUtils.PoiUtils;
 import POIUtils.annotation.ExcelHead;
+import POIUtils.entity.ReadResult;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -39,8 +40,8 @@ public class Main {
     @Test
     public void test() {
         File file = new File("C://360Downloads//test.xls");
-        List<MemberVoPOI> memberVoPOIS = PoiUtils.readFormFile(file, MemberVoPOI.class);
-        for (MemberVoPOI memberVoPOI : memberVoPOIS) {
+        ReadResult<MemberVoPOI> readResult = PoiUtils.readFormFile(file, MemberVoPOI.class);
+        for (MemberVoPOI memberVoPOI : readResult.getData()) {
             System.out.println(memberVoPOI);
         }
     }
@@ -60,6 +61,18 @@ public class Main {
     public void test3() {
         ExcelHead annotation = MemberVoPOI.class.getAnnotation(ExcelHead.class);
         System.out.println(annotation.headTitle());
+    }
+
+    @Test
+    public void test4() throws IOException {
+        File file = new File("D://test.xlsx");
+        ReadResult<Expense> readResult = PoiUtils.readFormFile(file, Expense.class);
+        for (Expense expense : readResult.getData()) {
+            System.out.println(expense);
+            expense.setMsg("测试");
+        }
+        Workbook sheets = PoiUtils.writeBack(readResult);
+        sheets.write(new FileOutputStream("D://test2.xlsx"));
     }
 
 }

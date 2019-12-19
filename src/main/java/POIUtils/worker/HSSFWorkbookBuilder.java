@@ -54,7 +54,7 @@ public class HSSFWorkbookBuilder {
         Class<?> entityType = data.get(0).getClass();
         HSSFWorkbook workbook = new HSSFWorkbook();
         Map<String, Object> head = createHead(workbook, entityType);
-        createCount(workbook, data, head);
+        createContext(workbook, data, head);
         return workbook;
 
     }
@@ -133,7 +133,7 @@ public class HSSFWorkbookBuilder {
      * 设置表内容
      */
     @SuppressWarnings({"unchecked", "ConstantConditions"})
-    private void createCount(HSSFWorkbook workbook, List<?> data, Map<String, Object> headInfo) {
+    private void createContext(HSSFWorkbook workbook, List<?> data, Map<String, Object> headInfo) {
 
         HSSFSheet sheet = workbook.getSheetAt(0);
         String listField = (String) headInfo.remove(LIST_FIELD);

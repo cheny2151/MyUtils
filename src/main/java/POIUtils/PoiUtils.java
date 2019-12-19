@@ -1,8 +1,10 @@
 package POIUtils;
 
+import POIUtils.entity.ReadResult;
 import POIUtils.worker.HSSFWorkbookBuilder;
 import POIUtils.worker.WorkBookReader;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.File;
 import java.util.List;
@@ -63,9 +65,19 @@ public class PoiUtils {
      * @param <T>         类型
      * @return
      */
-    public static <T> List<T> readFormFile(File file, Class<T> targetClass) {
-        return getWorkBookReader().reader(file, targetClass);
+    public static <T> ReadResult<T> readFormFile(File file, Class<T> targetClass) {
+        return getWorkBookReader().read(file, targetClass);
     }
 
+    /**
+     * 回写数据
+     *
+     * @param readResult 读取的结果实体
+     * @param <T>        数据类型
+     */
+    public static <T> Workbook writeBack(ReadResult<T> readResult) {
+        getWorkBookReader().writeBack(readResult);
+        return readResult.getWorkbook();
+    }
 
 }

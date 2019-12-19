@@ -34,7 +34,7 @@ public class ImportScript {
         gradeMap.put("高三", 6);
         SimplePool simplePool = new SimplePool();
         try (Connection connection = simplePool.getConnection()) {
-            List<Student> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\学生名册.xlsx"), Student.class);
+            List<Student> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\学生名册.xlsx"), Student.class).getData();
             Set<Grade> gradeSet = new HashSet<>();
             for (Student entity : entities) {
                 String gradeName = entity.getC3().trim();
@@ -83,7 +83,7 @@ public class ImportScript {
         subCategoryMap.put("文科", 2);
         SimplePool simplePool = new SimplePool();
         try (Connection connection = simplePool.getConnection()) {
-            List<Student> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\学生名册.xlsx"), Student.class);
+            List<Student> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\学生名册.xlsx"), Student.class).getData();
             PreparedStatement preparedStatement
                     = connection.prepareStatement("insert into t_student(sid,nickname,grade_code,class_code,gender,in_dorm,subject_category,category,create_date)" +
                     " values(?,?,?,?,?,?,?,?,sysdate())");
@@ -135,7 +135,7 @@ public class ImportScript {
         SimplePool simplePool = new SimplePool();
         try (Connection connection = simplePool.getConnection()) {
             connection.setAutoCommit(false);
-            List<Teacher> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\教职工信息.xlsx"), Teacher.class);
+            List<Teacher> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\教职工信息.xlsx"), Teacher.class).getData();
             PreparedStatement preparedStatement
                     = connection.prepareStatement("insert into t_teacher(tid,nickname,gender,birthday,subject,phone,short_phone,card_id,education,political,married,create_date)" +
                     " values(?,?,?,?,?,?,?,?,?,?,?,sysdate())");
@@ -180,7 +180,7 @@ public class ImportScript {
         SimplePool simplePool = new SimplePool();
         try (Connection connection = simplePool.getConnection()) {
             connection.setAutoCommit(false);
-            List<Teacher2> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\teacher2.xlsx"), Teacher2.class);
+            List<Teacher2> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\teacher2.xlsx"), Teacher2.class).getData();
             PreparedStatement preparedStatement
                     = connection.prepareStatement("insert into t_teacher(nickname,subject,phone,short_phone,create_date,tid)" +
                     " values(?,?,?,?,sysdate(),?)");
@@ -228,7 +228,7 @@ public class ImportScript {
         HashSet<String> snameError = new HashSet<>();
         try (Connection connection = simplePool.getConnection()) {
             connection.setAutoCommit(false);
-            List<Schedule> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\任课表.xlsx"), Schedule.class);
+            List<Schedule> entities = PoiUtils.readFormFile(new File("C:\\Users\\Cheney\\Documents\\Project\\化州中学oa\\数据库\\任课表.xlsx"), Schedule.class).getData();
 //            PreparedStatement preparedStatement
 //                    = connection.prepareStatement("insert into t_teacher(tid,nickname,gender,birthday,subject,phone,short_phone,card_id,education,political,married,create_date)" +
 //                    " values(?,?,?,?,?,?,?,?,?,?,?,sysdate())");
