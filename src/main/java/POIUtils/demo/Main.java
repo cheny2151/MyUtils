@@ -59,7 +59,7 @@ public class Main {
     @Test
     public void test3() {
         ExcelHead annotation = MemberVoPOI.class.getAnnotation(ExcelHead.class);
-        System.out.println(annotation.title());
+        System.out.println(annotation.headTitle());
     }
 
 }

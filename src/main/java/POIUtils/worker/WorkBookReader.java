@@ -4,7 +4,6 @@ import POIUtils.ReadProperty;
 import POIUtils.annotation.ExcelData;
 import POIUtils.annotation.ExcelHead;
 import POIUtils.exception.WorkBookReadException;
-import beanUtils.BeanUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -12,6 +11,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import reflect.ReflectUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,14 +31,19 @@ public class WorkBookReader {
     public <T> List<T> reader(File file, Class<T> targetClass) throws WorkBookReadException {
         try {
             Workbook workbook = judgeWorkBook(file);
-            Map<Integer, ReadProperty> readPropertyMap = analyAnnotation(targetClass);
-            Sheet sheet = workbook.getSheetAt(0);
+            Sheet sheet = null;
             //数据出现行数,从0开始算
             ExcelHead excelHead = targetClass.getAnnotation(ExcelHead.class);
-            int startRowNumber = 1;
-            if (excelHead != null && !"".equals(excelHead.title())) {
-                startRowNumber++;
+            int titleRow = 1;
+            if (excelHead != null) {
+                titleRow = excelHead.titleRow();
+                sheet = workbook.getSheet(excelHead.sheetName());
+            } else {
+                sheet = workbook.getSheetAt(0);
             }
+            int startRowNumber = titleRow + 1;
+            // 分析excel列表映射字段信息
+            Map<Integer, ReadProperty> readPropertyMap = analysisAnnotation(targetClass, sheet.getRow(titleRow));
             List<T> results = new ArrayList<>();
             for (int i = startRowNumber; i <= sheet.getLastRowNum(); i++) {
                 T t = createTarget(targetClass, readPropertyMap, sheet.getRow(i));
@@ -63,7 +68,7 @@ public class WorkBookReader {
      * @throws InvocationTargetException
      */
     private <T> T createTarget(Class<T> targetClass, Map<Integer, ReadProperty> readPropertyMap, Row row) throws IllegalAccessException, InstantiationException, InvocationTargetException {
-        T t = targetClass.newInstance();
+        T t = ReflectUtils.newObject(targetClass, null, null);
         for (Map.Entry<Integer, ReadProperty> entry : readPropertyMap.entrySet()) {
             ReadProperty readProperty = entry.getValue();
             Cell cell = row.getCell(entry.getKey());
@@ -80,8 +85,8 @@ public class WorkBookReader {
      * 获取单元格数据(只处理Number和String)
      * Date属于Number
      *
-     * @param cell
-     * @return
+     * @param cell 单元格实体
+     * @return 单元格数据
      */
     private Object getCellValue(Cell cell) {
         Object value;
@@ -117,19 +122,42 @@ public class WorkBookReader {
     /**
      * 解析注解，获取列对应field的map
      *
-     * @param targetClass
-     * @return
+     * @param targetClass 目标类型
+     * @param titleRow    标题行
+     * @return 解析结果
      */
-    public <T> Map<Integer, ReadProperty> analyAnnotation(Class<T> targetClass) throws WorkBookReadException {
+    public <T> Map<Integer, ReadProperty> analysisAnnotation(Class<T> targetClass, Row titleRow) throws WorkBookReadException {
         //遍历所有含有@ExcelData的字段
         Map<Integer, ReadProperty> readPropertyMap = new HashMap<>();
+        Map<String, Integer> titleMap = new HashMap<>();
+        titleRow.forEach(cell -> {
+            titleMap.put(cell.getStringCellValue(), cell.getColumnIndex());
+        });
         for (Field field : targetClass.getDeclaredFields()) {
             ExcelData annotation = field.getAnnotation(ExcelData.class);
             if (annotation != null) {
-                //存放字段信息
-                readPropertyMap.put(annotation.column()
-                        , new ReadProperty<T>(field.getName(), field.getType(), field, BeanUtils.getWriterMethod(targetClass, field.getName(), field.getType()))
-                );
+                ExcelData.SwitchType type = annotation.type();
+                switch (type) {
+                    case COLUMN_NUM: {
+                        //存放字段信息
+                        readPropertyMap.put(annotation.column(),
+                                new ReadProperty(field.getName(),
+                                        field.getType(), field,
+                                        ReflectUtils.getWriterMethod(targetClass, field.getName(), field.getType())
+                                ));
+                        break;
+                    }
+                    case COLUMN_TITLE: {
+                        Integer index = titleMap.get(annotation.columnTitle());
+                        if (index != null) {
+                            readPropertyMap.put(index,
+                                    new ReadProperty(field.getName(),
+                                            field.getType(), field,
+                                            ReflectUtils.getWriterMethod(targetClass, field.getName(), field.getType())
+                                    ));
+                        }
+                    }
+                }
             }
         }
         if (readPropertyMap.size() < 1) {

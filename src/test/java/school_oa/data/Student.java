@@ -1,8 +1,9 @@
 package school_oa.data;
 
 import POIUtils.annotation.ExcelData;
-import POIUtils.annotation.ExcelHead;
 import lombok.Data;
+
+import static POIUtils.annotation.ExcelData.SwitchType.COLUMN_NUM;
 
 /**
  * @author cheney
@@ -11,23 +12,23 @@ import lombok.Data;
 @Data
 public class Student {
 
-    @ExcelData(column = 0)
+    @ExcelData(column = 0, type = COLUMN_NUM)
     private String c1;
-    @ExcelData(column = 1)
+    @ExcelData(column = 1, type = COLUMN_NUM)
     private String c2;
-    @ExcelData(column = 2)
+    @ExcelData(column = 2, type = COLUMN_NUM)
     private String c3;
-    @ExcelData(column = 3)
+    @ExcelData(column = 3, type = COLUMN_NUM)
     private String c4;
-    @ExcelData(column = 4)
+    @ExcelData(column = 4, type = COLUMN_NUM)
     private String c5;
-    @ExcelData(column = 5)
+    @ExcelData(column = 5, type = COLUMN_NUM)
     private String c6;
-    @ExcelData(column = 6)
+    @ExcelData(column = 6, type = COLUMN_NUM)
     private String c7;
-    @ExcelData(column = 7)
+    @ExcelData(column = 7, type = COLUMN_NUM)
     private String c8;
-    @ExcelData(column = 8)
+    @ExcelData(column = 8, type = COLUMN_NUM)
     private String c9;
 
 }

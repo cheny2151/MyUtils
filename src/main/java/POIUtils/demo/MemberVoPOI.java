@@ -6,27 +6,29 @@ import POIUtils.annotation.ExcelHead;
 
 import java.io.Serializable;
 
+import static POIUtils.annotation.ExcelData.SwitchType.COLUMN_NUM;
+
 /**
  * Created by hboxs011 on 2017/8/21.
  */
-@ExcelHead(title = "这是一个标题")
+@ExcelHead(headTitle = "这是一个标题")
 public class MemberVoPOI implements Serializable {
 
     private static final long serialVersionUID = 5312112449334866041L;
 
-    @ExcelData(column = 0)
+    @ExcelData(column = 0, type = COLUMN_NUM)
     @ExcelCell(name = "微信微信微信")
     private String wechat;
 
-    @ExcelData(column = 1)
+    @ExcelData(column = 1, type = COLUMN_NUM)
     @ExcelCell(name = "姓名姓名姓名")
     private String name;
 
-    @ExcelData(column = 2)
+    @ExcelData(column = 2, type = COLUMN_NUM)
     @ExcelCell(name = "地址地址地址")
     private String address;
 
-    @ExcelData(column = 3)
+    @ExcelData(column = 3, type = COLUMN_NUM)
     @ExcelCell(name = "电话号码")
     private String phone;
 

@@ -4,6 +4,8 @@ import POIUtils.annotation.ExcelData;
 import lombok.ToString;
 import org.apache.commons.lang.StringUtils;
 
+import static POIUtils.annotation.ExcelData.SwitchType.COLUMN_NUM;
+
 /**
  * @author cheney
  * @date 2019-11-27
@@ -11,29 +13,29 @@ import org.apache.commons.lang.StringUtils;
 @ToString
 public class Teacher {
 
-    @ExcelData(column = 0)
+    @ExcelData(column = 0, type = COLUMN_NUM)
     private String tid;
-    @ExcelData(column = 1)
+    @ExcelData(column = 1, type = COLUMN_NUM)
     private String name;
-    @ExcelData(column = 2)
+    @ExcelData(column = 2, type = COLUMN_NUM)
     private String gender;
-    @ExcelData(column = 3)
+    @ExcelData(column = 3, type = COLUMN_NUM)
     private String cardId;
-    @ExcelData(column = 4)
+    @ExcelData(column = 4, type = COLUMN_NUM)
     private String birthday;
     // 政治面貌
-    @ExcelData(column = 8)
+    @ExcelData(column = 8, type = COLUMN_NUM)
     private String political;
     // 学历
-    @ExcelData(column = 9)
+    @ExcelData(column = 9, type = COLUMN_NUM)
     private String education;
-    @ExcelData(column = 16)
+    @ExcelData(column = 16, type = COLUMN_NUM)
     private String subject;
-    @ExcelData(column = 17)
+    @ExcelData(column = 17, type = COLUMN_NUM)
     private String phone;
-    @ExcelData(column = 18)
+    @ExcelData(column = 18, type = COLUMN_NUM)
     private String shortPhone;
-    @ExcelData(column = 20)
+    @ExcelData(column = 20, type = COLUMN_NUM)
     private String married;
 
     public String getTid() {

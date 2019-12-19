@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 /**
  * 存放有@ExcelData注解的字段信息
  */
-public class ReadProperty<T> {
+public class ReadProperty {
 
     private String name;
 
@@ -42,7 +42,7 @@ public class ReadProperty<T> {
         return writerMethod;
     }
 
-    public synchronized void writerUnknownTypeValue(T t, Object value) throws InvocationTargetException, IllegalAccessException {
+    public synchronized void writerUnknownTypeValue(Object t, Object value) throws InvocationTargetException, IllegalAccessException {
         value = TypeSwitchChain.getTypeSwitchChain().startTransform(this.getPropertyClass(), value);
         this.getWriterMethod().invoke(t, value);
     }

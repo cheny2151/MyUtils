@@ -69,8 +69,8 @@ public class HSSFWorkbookBuilder {
         //若有标题则第一行用于放标题
         String title = null;
         int startRowNumber = 0;
-        if (excelHead != null && !"".equals(excelHead.title())) {
-            title = excelHead.title();
+        if (excelHead != null && !"".equals(excelHead.headTitle())) {
+            title = excelHead.headTitle();
             startRowNumber++;
         }
 
