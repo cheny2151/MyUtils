@@ -20,9 +20,9 @@ public class TypeSwitchChain {
 
         static {
             TYPE_SWITCH_CHAIN = new TypeSwitchChain();
-            DoubleSwitch end = new DoubleSwitch();
+            DateTypeSwitch end = new DateTypeSwitch();
             TYPE_SWITCH_CHAIN.end = end;
-            TYPE_SWITCH_CHAIN.start = new StringSwitch(new IntegerSwitch(new BooleanSwitch(new DateTypeSwitch(end))));
+            TYPE_SWITCH_CHAIN.start = new StringSwitch(new NumberSwitch(new BooleanSwitch(end)));
         }
 
     }

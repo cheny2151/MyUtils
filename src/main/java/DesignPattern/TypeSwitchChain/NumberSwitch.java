@@ -1,14 +1,16 @@
 package DesignPattern.TypeSwitchChain;
 
+import java.math.BigDecimal;
+
 /**
  * Integer类型转换器
  */
-public class IntegerSwitch extends BaseTypeSwitch {
+public class NumberSwitch extends BaseTypeSwitch {
 
-    public IntegerSwitch() {
+    public NumberSwitch() {
     }
 
-    public IntegerSwitch(BaseTypeSwitch next) {
+    public NumberSwitch(BaseTypeSwitch next) {
         super(next);
     }
 
@@ -18,12 +20,18 @@ public class IntegerSwitch extends BaseTypeSwitch {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T transform(Class<T> target, Object value) {
-        if (Integer.class.isAssignableFrom(target)) {
+        if (Integer.class == target) {
             String transform = value.toString();
             if (transform.contains(".")) {
                 transform = transform.substring(0, transform.indexOf("."));
             }
             return (T) Integer.valueOf(transform);
+        }
+        if (Double.class == target) {
+            return (T) Double.valueOf(value.toString());
+        }
+        if (BigDecimal.class == target) {
+            return (T) new BigDecimal(value.toString());
         }
         return hasNext() ? getNext().transform(target, value) : null;
     }
