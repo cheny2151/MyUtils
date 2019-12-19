@@ -2,7 +2,6 @@ package POIUtils.worker;
 
 import POIUtils.annotation.ExcelCell;
 import POIUtils.annotation.ExcelHead;
-import beanUtils.BeanUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -10,6 +9,7 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.ss.util.RegionUtil;
+import reflect.ReflectUtils;
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
@@ -149,11 +149,11 @@ public class HSSFWorkbookBuilder {
             int column = 0;
             Integer size = null;
             if (listField != null) {
-                List values = (List) BeanUtils.readValue(object, listField);
+                List<?> values = (List<?>) ReflectUtils.readValue(object, listField);
                 size = values.size();
             }
             for (Map.Entry<String, Object> entry : headInfo.entrySet()) {
-                Object value = BeanUtils.readValue(object, entry.getKey());
+                Object value = ReflectUtils.readValue(object, entry.getKey());
                 if (value == null) {
                     value = "-";
                 }
