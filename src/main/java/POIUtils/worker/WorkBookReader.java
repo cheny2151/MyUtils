@@ -131,7 +131,11 @@ public class WorkBookReader {
         Map<Integer, ReadProperty> readPropertyMap = new HashMap<>();
         Map<String, Integer> titleMap = new HashMap<>();
         titleRow.forEach(cell -> {
-            titleMap.put(cell.getStringCellValue(), cell.getColumnIndex());
+            String title = cell.getStringCellValue();
+            if (titleMap.containsKey(title)) {
+                throw new WorkBookReadException("duplicate title value:" + title);
+            }
+            titleMap.put(title, cell.getColumnIndex());
         });
         for (Field field : targetClass.getDeclaredFields()) {
             ExcelData annotation = field.getAnnotation(ExcelData.class);
