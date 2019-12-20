@@ -76,4 +76,13 @@ public class Main {
         expressionExecutor.execute(env);
     }
 
+    @Test
+    public void test6() {
+        ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(toJson(a)+toJson(2))");
+        HashMap<String, Object> env = new HashMap<>();
+        env.put("a", 1);
+        expressionExecutor.execute(env);
+    }
+
 }

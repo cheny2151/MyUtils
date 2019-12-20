@@ -9,7 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import static expression.cheney.BaseExpressionExecutor.OPERATORS;
+import static expression.cheney.CharConstants.*;
 
 /**
  * 表达式解析器抽象接口,提供基础的解析方法实现
@@ -28,21 +28,6 @@ import static expression.cheney.BaseExpressionExecutor.OPERATORS;
  * @date 2019-12-07
  */
 public abstract class BaseExpressionParser implements ExpressionParser {
-
-    private final static char COMMA_CHAR = ",".toCharArray()[0];
-
-    private final static char BRACKETS_LEFT_CHAR = "(".toCharArray()[0];
-
-    private final static char BRACKETS_RIGHT_CHAR = ")".toCharArray()[0];
-
-    private final static char APOSTROPHE_CHAR = "'".toCharArray()[0];
-
-    private final static char SPACE_CHAR = " ".toCharArray()[0];
-
-    /**
-     * 可为结尾的字符
-     */
-    private final static char[] END_CHAR = new char[]{COMMA_CHAR, BRACKETS_RIGHT_CHAR, APOSTROPHE_CHAR};
 
     public abstract ExpressionExecutor parseExpression(String expression);
 

@@ -5,7 +5,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+
+import static expression.cheney.CharConstants.NUMBER;
+import static expression.cheney.CharConstants.OPERATORS;
 
 /**
  * 表达式执行器
@@ -14,12 +16,6 @@ import java.util.regex.Pattern;
  * @date 2019-12-06
  */
 public abstract class BaseExpressionExecutor implements ExpressionExecutor {
-
-    // 运算符正则
-    final static Pattern OPERATORS = Pattern.compile(".*([+\\-*/%?><=|&!]).*");
-
-    // 数字正则
-    final static Pattern NUMBER = Pattern.compile("\\d+(\\.?\\d+)?");
 
     // 表达式
     protected String express;
