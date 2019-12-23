@@ -64,9 +64,8 @@ public class ReflectExpressionParser extends BaseExpressionParser {
 
     public ExpressionExecutor parseExpression(String expression) {
         ParseResult parseResult = parse(expression);
-        return parseResult.isNoFunc() ? AviatorExpressionParser.getInstance().parseExpression(expression)
-                : new ReflectExpressionExecutor(expression, parseResult.getFuncName(),
-                parseResult.getArgs(), this.methodHolderFactory, this.functionClasses);
+        return parseResult.isOrigin() ? AviatorExpressionParser.getInstance().parseExpression(expression)
+                : new ReflectExpressionExecutor(expression, parseResult, this.methodHolderFactory, this.functionClasses);
     }
 
     /**

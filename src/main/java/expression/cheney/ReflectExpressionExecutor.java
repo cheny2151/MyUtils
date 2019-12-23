@@ -29,9 +29,9 @@ public class ReflectExpressionExecutor extends BaseExpressionExecutor {
      */
     private Set<Class<?>> functionClasses;
 
-    ReflectExpressionExecutor(String express, String functionName, List<BaseExpressionParser.Arg> args,
+    ReflectExpressionExecutor(String express, BaseExpressionParser.ParseResult parseResult,
                               MethodHolderFactory methodHolderFactory, Set<Class<?>> functionClasses) {
-        super(express, functionName, args);
+        super(express, parseResult);
         this.methodHolderFactory = methodHolderFactory;
         if (functionClasses == null) {
             functionClasses = new HashSet<>();
@@ -43,7 +43,7 @@ public class ReflectExpressionExecutor extends BaseExpressionExecutor {
 
     @Override
     public Object execute(Map<String, Object> env) {
-        return executeFunc(functionName, args, env);
+        return executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
     }
 
     @Override

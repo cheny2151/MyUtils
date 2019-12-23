@@ -7,6 +7,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,14 +49,34 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     protected static class ParseResult {
         private String funcName;
         private List<Arg> args;
-        private boolean noFunc;
+        private short type;
+        // 类型枚举值
+        public final static short FUNC = 1;
+        public final static short ORIGIN = 2;
+        public final static short OPERATOR_FUNC = 3;
 
-        public static ParseResult noFunc() {
-            return new ParseResult(null, null, true);
+        public static ParseResult origin() {
+            return new ParseResult(null, null, ORIGIN);
         }
 
         public static ParseResult func(String funcName, List<Arg> args) {
-            return new ParseResult(funcName, args, false);
+            return new ParseResult(funcName, args, FUNC);
+        }
+
+        public static ParseResult funcOperator(Arg arg) {
+            return new ParseResult(null, Collections.singletonList(arg), OPERATOR_FUNC);
+        }
+
+        public boolean isOrigin() {
+            return ORIGIN == type;
+        }
+
+        public boolean isFunc() {
+            return FUNC == type;
+        }
+
+        public boolean isOperatorFunc() {
+            return OPERATOR_FUNC == type;
         }
     }
 
@@ -90,9 +111,9 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         }
         int start = expression.indexOf("(");
         int length = expression.length();
-        if (start == -1 || start == 0 || ")".toCharArray()[0] != expression.charAt(length - 1)) {
-            // 不包含()则不为函数
-            return ParseResult.noFunc();
+        if (start == -1 || start == 0) {
+            // 不包含(则不为函数
+            return ParseResult.origin();
         }
         List<Arg> args = parseArg(expression.substring(start + 1, length - 1));
 
@@ -202,7 +223,10 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             // 参数为函数
             String function = (String) value;
             String funcName = function.substring(0, function.indexOf("(")).trim();
-            if (OPERATOR_START_PATTERN.matcher(funcName).matches()) {
+            if (OPERATOR_PATTERN.matcher(funcName).matches()) {
+                type = ORIGIN;
+                value = ((String) value).trim();
+            } else if (OPERATOR_START_PATTERN.matcher(funcName).matches()) {
                 /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数':
                  * List中按源运算表达式顺序存放两种arg实体,一种为运算符OPERATOR(type:4),一种存函数FUNC(type:1)*/
                 Object[] results = extractOperators(funcName);

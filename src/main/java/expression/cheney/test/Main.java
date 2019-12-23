@@ -95,4 +95,12 @@ public class Main {
         expressionExecutor.execute(env);
     }
 
+    @Test
+    public void test8() {
+        ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(-abs(-2))");
+        HashMap<String, Object> env = new HashMap<>();
+        env.put("a", 1);
+        System.out.println(expressionExecutor.execute(env));
+    }
 }

@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import static expression.cheney.BaseExpressionParser.Arg.*;
+import static expression.cheney.CharConstants.CONTAINS_OPERATOR_PATTERN;
 import static expression.cheney.CharConstants.NUMBER;
-import static expression.cheney.CharConstants.OPERATOR_PATTERN;
 
 /**
  * 表达式执行器
@@ -23,15 +23,11 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
     protected String express;
 
     // 方法名
-    protected String functionName;
+    protected BaseExpressionParser.ParseResult parseResult;
 
-    // 参数
-    protected List<BaseExpressionParser.Arg> args;
-
-    BaseExpressionExecutor(String express, String functionName, List<BaseExpressionParser.Arg> args) {
+    BaseExpressionExecutor(String express, BaseExpressionParser.ParseResult parseResult) {
         this.express = express;
-        this.functionName = functionName;
-        this.args = args;
+        this.parseResult = parseResult;
     }
 
     /**
@@ -72,7 +68,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                 Object envArg = env.get(valueStr);
                 if (envArg != null) {
                     return envArg;
-                } else if (OPERATOR_PATTERN.matcher(valueStr).matches()) {
+                } else if (CONTAINS_OPERATOR_PATTERN.matcher(valueStr).matches()) {
                     // 结合Aviator,将含运算符的arg丢给Aviator执行
                     return executeOperation(valueStr, env);
                 }

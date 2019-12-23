@@ -3,6 +3,7 @@ package expression.cheney.test;
 import jsonUtils.JsonUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -37,6 +38,10 @@ public class TestFunction {
 
     public static boolean contains(String text, String content) {
         return text.contains(content);
+    }
+
+    public static BigDecimal abs(Object value) {
+        return new BigDecimal(value.toString()).abs();
     }
 
 }
