@@ -35,4 +35,8 @@ public class TestFunction {
         return "error";
     }
 
+    public static boolean contains(String text, String content) {
+        return text.contains(content);
+    }
+
 }

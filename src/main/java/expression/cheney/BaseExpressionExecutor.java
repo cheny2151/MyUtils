@@ -3,11 +3,13 @@ package expression.cheney;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static expression.cheney.BaseExpressionParser.Arg.*;
 import static expression.cheney.CharConstants.NUMBER;
-import static expression.cheney.CharConstants.OPERATORS;
+import static expression.cheney.CharConstants.OPERATOR_PATTERN;
 
 /**
  * 表达式执行器
@@ -39,22 +41,38 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
      * @param env  实际参数
      * @return 参数数组
      */
+    @SuppressWarnings("unchecked")
     protected Object[] loadArgs(List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
         return CollectionUtils.isEmpty(args) ? null : args.stream().map(arg -> {
             Object value = arg.getValue();
+            short type = arg.getType();
             if (value == null) {
                 return null;
-            } else if (arg.isConstant()) {
+            } else if (type == CONSTANT) {
                 return value;
-            } else if (arg.isFunc()) {
+            } else if (type == FUNC) {
                 BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) value;
                 return executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
+            } else if (type == OPERATOR_FUNC) {
+                // 函数嵌套运算
+                ArrayList<BaseExpressionParser.Arg> funcArgs = (ArrayList<BaseExpressionParser.Arg>) value;
+                String operatorExpression = "";
+                for (BaseExpressionParser.Arg funcArg : funcArgs) {
+                    Object argValue = funcArg.getValue();
+                    if (funcArg.getType() == FUNC) {
+                        BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) argValue;
+                        operatorExpression += executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
+                    } else {
+                        operatorExpression += funcArg.getValue();
+                    }
+                }
+                return executeOperation(operatorExpression, env);
             } else {
                 String valueStr = (String) value;
                 Object envArg = env.get(valueStr);
                 if (envArg != null) {
                     return envArg;
-                } else if (OPERATORS.matcher(valueStr).matches()) {
+                } else if (OPERATOR_PATTERN.matcher(valueStr).matches()) {
                     // 结合Aviator,将含运算符的arg丢给Aviator执行
                     return executeOperation(valueStr, env);
                 }

@@ -85,4 +85,14 @@ public class Main {
         expressionExecutor.execute(env);
     }
 
+    @Test
+    public void test7() {
+        ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(contains(a,'x') && contains(b,'b'))");
+        HashMap<String, Object> env = new HashMap<>();
+        env.put("a", "testa");
+        env.put("b", "testb");
+        expressionExecutor.execute(env);
+    }
+
 }
