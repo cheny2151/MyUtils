@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static expression.cheney.BaseExpressionParser.Arg.ORIGIN;
 import static expression.cheney.CharConstants.*;
 
 /**
@@ -107,7 +106,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @param expression 表达式
      * @return 解析结果 ParseResult实体
      */
-    protected static ParseResult parse(String expression) {
+    protected ParseResult parse(String expression) {
         expression = expression.trim();
         if (StringUtils.isEmpty(expression)) {
             throw new ExpressionParseException("expression can not be empty");
@@ -129,7 +128,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @param expression 方法的参数段类,例:ifs(a>b,c)-->'a>b,c'
      * @return 参数解析结果 Arg集合
      */
-    private static List<Arg> parseArg(String expression) {
+    private List<Arg> parseArg(String expression) {
         expression = expression.trim();
         char[] chars = expression.toCharArray();
         int length = chars.length;
@@ -200,7 +199,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     String part = expression.substring(startIndex, i);
                     // 段落尾部非法字符检查检查
                     checkEndPartChar(part, c, end);
-                    partLast = createArg(result, partLast, part, ORIGIN);
+                    partLast = createArg(result, partLast, part, Arg.ORIGIN);
                 }
                 if (count == 0) {
                     // 匹配结束符并且count为0时,标识段落结束
@@ -231,7 +230,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @return 最新arg
      */
     @SuppressWarnings("unchecked")
-    private static Arg createArg(List<Arg> argResult, Arg partLast, Object value, short type) {
+    private Arg createArg(List<Arg> argResult, Arg partLast, Object value, short type) {
         boolean createNew = true;
         if (Arg.FUNC == type) {
             // 参数为函数
@@ -253,9 +252,9 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                         args.addAll(operatorArgs);
                     }
                     String expression = function.substring(startIndex, function.length() - 1);
-                    args.add(new Arg(expression, ORIGIN));
+                    args.add(new Arg(expression, Arg.ORIGIN));
                 } else {
-                    type = ORIGIN;
+                    type = Arg.ORIGIN;
                     value = ((String) value).trim();
                 }
             } else if (OPERATOR_START_PATTERN.matcher(funcName).matches()) {
@@ -308,7 +307,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @param expression 表达式
      * @return 0:List<Arg> 1:运算符结束index
      */
-    private static Object[] extractOperators(String expression) {
+    private Object[] extractOperators(String expression) {
         if ("".equals(expression)) {
             return new Object[]{null, 0};
         }
@@ -355,13 +354,13 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @return OperatorFunc类型参数value
      */
     @SuppressWarnings("unchecked")
-    private static List<Arg> argToOperatorFunc(Arg arg) {
+    private List<Arg> argToOperatorFunc(Arg arg) {
         Object partLastValue = arg.getValue();
         short partLastType = arg.getType();
         ArrayList<Arg> args;
         if (partLastValue.getClass() == ArrayList.class) {
             args = (ArrayList<Arg>) partLastValue;
-        } else if (partLastValue.getClass() == ParseResult.class || partLastType == ORIGIN) {
+        } else if (partLastValue.getClass() == ParseResult.class || partLastType == Arg.ORIGIN) {
             // 必须为函数才可嵌套运算符
             args = new ArrayList<>();
             args.add(new Arg(partLastValue, partLastType));
@@ -382,7 +381,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @param endChar 尾部char
      * @param end     是否表达式结尾
      */
-    private static void checkEndPartChar(String part, char endChar, boolean end) {
+    private void checkEndPartChar(String part, char endChar, boolean end) {
         if (endChar == BRACKETS_RIGHT_CHAR) {
             throw new ExpressionParseException(patch(part, endChar, end) + " : miss start char \"" + BRACKETS_LEFT_CHAR + "\"");
         } else if (endChar == APOSTROPHE_CHAR) {
@@ -393,7 +392,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     /**
      * 补充结尾char，不全日志所需符号
      */
-    private static String patch(String part, char endChar, boolean end) {
+    private String patch(String part, char endChar, boolean end) {
         if (!end) {
             part += endChar;
         }
