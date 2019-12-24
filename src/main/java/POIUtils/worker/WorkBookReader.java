@@ -6,6 +6,7 @@ import POIUtils.annotation.ExcelWriteBack;
 import POIUtils.entity.ReadProperty;
 import POIUtils.entity.ReadResult;
 import POIUtils.exception.WorkBookReadException;
+import lombok.Data;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -13,7 +14,10 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import reflect.ReflectUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -24,22 +28,6 @@ import java.util.stream.Collectors;
  * excel表读取者
  */
 public class WorkBookReader {
-
-    /**
-     * 文件excel读取数据入口
-     *
-     * @param file        文件
-     * @param targetClass 目标类型
-     * @param <T>         目标类型泛型
-     * @return 读取结果
-     */
-    public <T> ReadResult<T> read(File file, Class<T> targetClass) {
-        try {
-            return read(file.getName(), new FileInputStream(file), targetClass);
-        } catch (FileNotFoundException e) {
-            throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
-        }
-    }
 
     /**
      * 文件excel数据流入口
@@ -63,6 +51,47 @@ public class WorkBookReader {
         } catch (Exception e) {
             throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
         }
+    }
+
+
+    public <T> ReadResult<T> readAsMap(String fileName, InputStream inputStream, ExcelInfo excelInfo) {
+        try {
+            Workbook workbook;
+            if (fileName.contains("xlsx")) {
+                workbook = new XSSFWorkbook(inputStream);
+            } else {
+                workbook = new HSSFWorkbook(inputStream);
+            }
+            Sheet sheet;
+            //数据出现行数,从0开始算
+            int titleRowNum = excelInfo.getTitleRow();
+            sheet = workbook.getSheet(excelInfo.getSheetName());
+            int startRowNumber = titleRowNum + 1;
+            // 分析excel列表映射字段信息
+            Row titleRow = sheet.getRow(titleRowNum);
+            List<Map<String, Object>> results = new ArrayList<>();
+            Map<Integer, Map<String, Object>> resultWithRow = new HashMap<>();
+            for (int i = startRowNumber; i <= sheet.getLastRowNum(); i++) {
+                Map<String, Object> rowData = new HashMap<>();
+                results.add(rowData);
+                resultWithRow.put(i, rowData);
+            }
+//            return new ReadResult<>(results, resultWithRow, workbook, sheet, titleRow.getLastCellNum() - 1, titleRowNum, targetClass);
+            return null;
+        } catch (Exception e) {
+            throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * excel读取信息
+     */
+    @Data
+    public static class ExcelInfo {
+        private String sheetName;
+        private int titleRow;
+        private List<String> writeBackKeys;
+        private HSSFColor.HSSFColorPredefined writeBackColumnColor;
     }
 
     /**

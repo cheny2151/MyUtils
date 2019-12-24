@@ -59,10 +59,9 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                     if (funcArgType == FUNC) {
                         BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) argValue;
                         operatorExpression += executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
-                    } else if (funcArgType == ORIGIN) {
-                        operatorExpression += executeOperation((String) argValue, env);
                     } else {
-                        operatorExpression += funcArg.getValue();
+                        // 运算符或者原始类型，直接拼接
+                        operatorExpression += argValue;
                     }
                 }
                 return executeOperation(operatorExpression, env);

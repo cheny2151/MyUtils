@@ -1,12 +1,15 @@
 package POIUtils;
 
 import POIUtils.entity.ReadResult;
+import POIUtils.exception.WorkBookReadException;
 import POIUtils.worker.HSSFWorkbookBuilder;
 import POIUtils.worker.WorkBookReader;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -67,7 +70,11 @@ public class PoiUtils {
      * @return
      */
     public static <T> ReadResult<T> readFormFile(File file, Class<T> targetClass) {
-        return getWorkBookReader().read(file, targetClass);
+        try {
+            return getWorkBookReader().read(file.getName(), new FileInputStream(file), targetClass);
+        } catch (FileNotFoundException e) {
+            throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
+        }
     }
 
     /**
