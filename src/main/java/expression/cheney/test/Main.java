@@ -52,7 +52,7 @@ public class Main {
         env.put("b1", BigDecimal.valueOf(1));
         env.put("c1", 100);
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("ifs(!(a>b-a),c1-c,a1>b1,c-c1)");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("ifs((a>b-a),(c1-c),(a1>b1),(c-c1))");
         System.out.println(expressionExecutor.execute(env));
     }
 
@@ -88,7 +88,7 @@ public class Main {
     @Test
     public void test7() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(contains(a,'x') && contains(b,'b'))");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(contains(a,'x') || contains(b,'b'))");
         HashMap<String, Object> env = new HashMap<>();
         env.put("a", "testa");
         env.put("b", "testb");
@@ -98,9 +98,9 @@ public class Main {
     @Test
     public void test8() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(-abs(-2))");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print((2-1)+abs(-2))");
         HashMap<String, Object> env = new HashMap<>();
         env.put("a", 1);
-        System.out.println(expressionExecutor.execute(env));
+        expressionExecutor.execute(env);
     }
 }

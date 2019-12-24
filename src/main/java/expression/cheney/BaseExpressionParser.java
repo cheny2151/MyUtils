@@ -28,8 +28,10 @@ import static expression.cheney.CharConstants.*;
  * 元素Arg中的成员变量{@link Arg.value}为funB解析结果的实体{@link ParseResult}，形成嵌套。
  *
  * 1.1 新增支持运算符嵌套函数解析,见{@link BaseExpressionParser#createArg(List, Arg, Object, short)} }
+ * 1.2 新增支持解析方法名为运算符--运算符表达式,见{@link BaseExpressionParser#createArg(List, Arg, Object, short)} };
+ *     优化关键字符',(缺失/位置非法时时抛出异常。
  *
- * @version 1.1
+ * @version 1.2
  * @author cheney
  * @date 2019-12-07
  */
@@ -106,6 +108,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @return 解析结果 ParseResult实体
      */
     protected static ParseResult parse(String expression) {
+        expression = expression.trim();
         if (StringUtils.isEmpty(expression)) {
             throw new ExpressionParseException("expression can not be empty");
         }
@@ -127,11 +130,13 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @return 参数解析结果 Arg集合
      */
     private static List<Arg> parseArg(String expression) {
+        expression = expression.trim();
         char[] chars = expression.toCharArray();
         int length = chars.length;
         int endIndex = length - 1;
         // 语句开始位置
         Integer startIndex = null;
+        Character startChar = null;
         // 语句结尾检查字符
         Character endCheck = null;
         int count = 0;
@@ -146,9 +151,14 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             if (startIndex == null && COMMA_CHAR != c) {
                 // 段落开始
                 startIndex = i;
+                startChar = chars[startIndex];
             }
             if (APOSTROPHE_CHAR == c && (endCheck == null || endCheck == APOSTROPHE_CHAR)) {
                 // 当前char为'
+                if (startChar != null && startChar != APOSTROPHE_CHAR) {
+                    // 1.2:'出现在段落中间时，抛出异常
+                    throw new ExpressionParseException("error expression :\"" + expression.substring(startIndex) + "\",cause char \"'\"");
+                }
                 endCheck = APOSTROPHE_CHAR;
                 count++;
             }
@@ -161,7 +171,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             }
             boolean end = i == endIndex;
             if ((ArrayUtils.contains(END_CHAR, c) || end) && startIndex != null) {
-                // 结束
+                // 匹配结束符
                 if (endCheck != null) {
                     if (c == endCheck) {
                         if (APOSTROPHE_CHAR == endCheck) {
@@ -180,7 +190,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     }
                     if (end && count != 0) {
                         // 到达结尾时，无法匹配完endCheck时抛出异常
-                        throw new ExpressionParseException("end char miss \"" + endCheck + "\"");
+                        throw new ExpressionParseException(expression.substring(startIndex, i + 1) + " : miss end char \"" + endCheck + "\"");
                     }
                 } else {
                     // 不需要endCheck
@@ -189,17 +199,22 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     } else if (startIndex == i) {
                         continue;
                     }
-                    partLast = createArg(result, partLast, expression.substring(startIndex, i), ORIGIN);
+                    String part = expression.substring(startIndex, i);
+                    // 段落尾部非法字符检查检查
+                    checkEndPartChar(part, c, end);
+                    partLast = createArg(result, partLast, part, ORIGIN);
                 }
                 if (count == 0) {
                     // 匹配结束符并且count为0时,标识段落结束
                     startIndex = null;
                     endCheck = null;
                     if (c == COMMA_CHAR) {
-                        // 段落结束
                         partLast = null;
                     }
                 }
+            } else if (c == COMMA_CHAR && count == 0) {
+                // 段落结束
+                partLast = null;
             }
         }
         return result;
@@ -208,7 +223,8 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     /**
      * 创建arg/添加arg，并返回最新的arg
      * <p>
-     * version1.1新增
+     * version1.1 新增
+     * version1.2 新增解析 方法名为运算符:运算符表达式
      *
      * @param argResult arg集合
      * @param partLast  此段落上一个arg
@@ -222,41 +238,45 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         if (Arg.FUNC == type) {
             // 参数为函数
             String function = (String) value;
-            String funcName = function.substring(0, function.indexOf("(")).trim();
-            if (OPERATOR_PATTERN.matcher(funcName).matches()) {
-                type = ORIGIN;
-                value = ((String) value).trim();
+            int startIndex = function.indexOf("(");
+            String funcName = function.substring(0, startIndex).trim();
+            if ("".equals(funcName) || OPERATOR_PATTERN.matcher(funcName).matches()) {
+                /* 方法名为运算符，即不为函数，为原生ORIGIN(type:2)
+                 * 1:partLast(此段落前一个arg)不为空，该运算表达式作为'段落(OPERATOR_FUNC)'的一部分
+                   2:partLast为空，为原生ORIGIN(type:2)*/
+                if (partLast != null) {
+                    createNew = false;
+                    List<Arg> args = argToOperatorFunc(partLast);
+                    Object[] results = extractOperators(funcName);
+                    List<String> operators = (List<String>) results[0];
+                    if (operators != null) {
+                        // 运算符存为OPERATOR(type:4)
+                        List<Arg> operatorArgs = operators.stream().map(operator -> new Arg(operator, Arg.OPERATOR)).collect(Collectors.toList());
+                        args.addAll(operatorArgs);
+                    }
+                    String expression = function.substring(startIndex, function.length() - 1);
+                    args.add(new Arg(expression, ORIGIN));
+                } else {
+                    type = ORIGIN;
+                    value = ((String) value).trim();
+                }
             } else if (OPERATOR_START_PATTERN.matcher(funcName).matches()) {
-                /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数':
+                /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数(OPERATOR_FUNC)':
                  * List中按源运算表达式顺序存放两种arg实体,一种为运算符OPERATOR(type:4),一种存函数FUNC(type:1)*/
                 Object[] results = extractOperators(funcName);
                 List<String> operators = (List<String>) results[0];
                 // 运算符存为OPERATOR(type:4)
                 List<Arg> operatorArgs = operators.stream().map(operator -> new Arg(operator, Arg.OPERATOR)).collect(Collectors.toList());
-                // 解析去除运算符后的函数表达式
+                // 解析去除运算符后的函数表达式,解析结果存为函数FUNC(type:1)
                 ParseResult func = parse(function.substring((Integer) results[1]).trim());
-                // 解析结果存为函数FUNC(type:1)
                 Arg funcArg = new Arg(func, Arg.FUNC);
                 /* 最后将新生成的函数arg与运算符arg放入对应的List中
-                 * 1:partLast(此段落前一个arg)不为空，则以partLast为List存入运算符arg与函数arg
+                 * 1:partLast(此段落前一个arg)不为空，该运算符嵌套函数表达式作为'段落(OPERATOR_FUNC)'的一部分
                    2:partLast为空，则新建List存入运算符arg与函数arg作为新arg*/
                 if (partLast != null) {
                     // 此段落前一个arg不为空
                     createNew = false;
-                    Object partLastValue = partLast.getValue();
-                    short partLastType = partLast.getType();
-                    ArrayList<Arg> args;
-                    if (partLastValue.getClass() == ArrayList.class) {
-                        args = (ArrayList<Arg>) partLastValue;
-                    } else if (partLastValue.getClass() == ParseResult.class) {
-                        // 必须为函数才可嵌套运算符
-                        args = new ArrayList<>();
-                        args.add(new Arg(partLastValue, partLastType));
-                        partLast.setValue(args);
-                    } else {
-                        throw new ExpressionParseException("error type of last Arg:" + partLastValue);
-                    }
-                    partLast.setType(Arg.OPERATOR_FUNC);
+                    List<Arg> args = argToOperatorFunc(partLast);
                     args.addAll(operatorArgs);
                     args.add(funcArg);
                 } else {
@@ -291,6 +311,9 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @return 0:List<Arg> 1:运算符结束index
      */
     private static Object[] extractOperators(String expression) {
+        if ("".equals(expression)) {
+            return new Object[]{null, 0};
+        }
         List<String> operators = new ArrayList<>();
         int index = 0;
         char[] chars = expression.toCharArray();
@@ -324,6 +347,59 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             }
         }
         return new Object[]{operators, index};
+    }
+
+
+    /**
+     * 将参数格式化为OperatorFunc类型
+     *
+     * @param arg Arg参数
+     * @return OperatorFunc类型参数value
+     */
+    @SuppressWarnings("unchecked")
+    private static List<Arg> argToOperatorFunc(Arg arg) {
+        Object partLastValue = arg.getValue();
+        short partLastType = arg.getType();
+        ArrayList<Arg> args;
+        if (partLastValue.getClass() == ArrayList.class) {
+            args = (ArrayList<Arg>) partLastValue;
+        } else if (partLastValue.getClass() == ParseResult.class || partLastType == ORIGIN) {
+            // 必须为函数才可嵌套运算符
+            args = new ArrayList<>();
+            args.add(new Arg(partLastValue, partLastType));
+            arg.setValue(args);
+            arg.setType(Arg.OPERATOR_FUNC);
+        } else {
+            throw new ExpressionParseException("error type of last Arg:" + partLastValue);
+        }
+        return args;
+    }
+
+    /**
+     * 段落尾部检查
+     * <p>
+     * 1.2 新增
+     *
+     * @param part    段落
+     * @param endChar 尾部char
+     * @param end     是否表达式结尾
+     */
+    private static void checkEndPartChar(String part, char endChar, boolean end) {
+        if (endChar == BRACKETS_RIGHT_CHAR) {
+            throw new ExpressionParseException(patch(part, endChar, end) + " : miss start char \"" + BRACKETS_LEFT_CHAR + "\"");
+        } else if (endChar == APOSTROPHE_CHAR) {
+            throw new ExpressionParseException(patch(part, endChar, end) + " : miss start char \"" + APOSTROPHE_CHAR + "\"");
+        }
+    }
+
+    /**
+     * 补充结尾char，不全日志所需符号
+     */
+    private static String patch(String part, char endChar, boolean end) {
+        if (!end) {
+            part += endChar;
+        }
+        return "\"" + part + "\"";
     }
 
 }

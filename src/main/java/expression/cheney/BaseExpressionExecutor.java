@@ -55,9 +55,12 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                 String operatorExpression = "";
                 for (BaseExpressionParser.Arg funcArg : funcArgs) {
                     Object argValue = funcArg.getValue();
-                    if (funcArg.getType() == FUNC) {
+                    short funcArgType = funcArg.getType();
+                    if (funcArgType == FUNC) {
                         BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) argValue;
                         operatorExpression += executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
+                    } else if (funcArgType == ORIGIN) {
+                        operatorExpression += executeOperation((String) argValue, env);
                     } else {
                         operatorExpression += funcArg.getValue();
                     }
