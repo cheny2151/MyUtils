@@ -13,9 +13,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import reflect.ReflectUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -27,34 +25,75 @@ import java.util.stream.Collectors;
  */
 public class WorkBookReader {
 
-    public <T> ReadResult<T> read(File file, Class<T> targetClass) throws WorkBookReadException {
+    /**
+     * 文件excel读取数据入口
+     *
+     * @param file        文件
+     * @param targetClass 目标类型
+     * @param <T>         目标类型泛型
+     * @return 读取结果
+     */
+    public <T> ReadResult<T> read(File file, Class<T> targetClass) {
         try {
-            Workbook workbook = judgeWorkBook(file);
-            Sheet sheet;
-            //数据出现行数,从0开始算
-            ExcelHead excelHead = targetClass.getAnnotation(ExcelHead.class);
-            int titleRowNum = 1;
-            if (excelHead != null) {
-                titleRowNum = excelHead.titleRow();
-                sheet = workbook.getSheet(excelHead.sheetName());
+            return read(file.getName(), new FileInputStream(file), targetClass);
+        } catch (FileNotFoundException e) {
+            throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 文件excel数据流入口
+     *
+     * @param fileName    原始文件名
+     * @param inputStream 输入流
+     * @param targetClass 目标类型
+     * @param <T>         目标类型泛型
+     * @return 读取结果
+     * @throws WorkBookReadException
+     */
+    public <T> ReadResult<T> read(String fileName, InputStream inputStream, Class<T> targetClass) {
+        try {
+            Workbook workbook;
+            if (fileName.contains("xlsx")) {
+                workbook = new XSSFWorkbook(inputStream);
             } else {
-                sheet = workbook.getSheetAt(0);
+                workbook = new HSSFWorkbook(inputStream);
             }
-            int startRowNumber = titleRowNum + 1;
-            // 分析excel列表映射字段信息
-            Row titleRow = sheet.getRow(titleRowNum);
-            Map<Integer, ReadProperty> readPropertyMap = analysisAnnotation(targetClass, titleRow);
-            List<T> results = new ArrayList<>();
-            Map<Integer, T> resultWithRow = new HashMap<>();
-            for (int i = startRowNumber; i <= sheet.getLastRowNum(); i++) {
-                T t = createTarget(targetClass, readPropertyMap, sheet.getRow(i));
-                results.add(t);
-                resultWithRow.put(i, t);
-            }
-            return new ReadResult<>(results, resultWithRow, workbook, sheet, titleRow.getLastCellNum() - 1, titleRowNum, targetClass);
+            return read(workbook, targetClass);
         } catch (Exception e) {
             throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 从workbook读取数据
+     *
+     * @param workbook    poi Workbook
+     * @param targetClass 目标类型
+     */
+    private <T> ReadResult<T> read(Workbook workbook, Class<T> targetClass) throws IllegalAccessException, InvocationTargetException {
+        Sheet sheet;
+        //数据出现行数,从0开始算
+        ExcelHead excelHead = targetClass.getAnnotation(ExcelHead.class);
+        int titleRowNum = 1;
+        if (excelHead != null) {
+            titleRowNum = excelHead.titleRow();
+            sheet = workbook.getSheet(excelHead.sheetName());
+        } else {
+            sheet = workbook.getSheetAt(0);
+        }
+        int startRowNumber = titleRowNum + 1;
+        // 分析excel列表映射字段信息
+        Row titleRow = sheet.getRow(titleRowNum);
+        Map<Integer, ReadProperty> readPropertyMap = analysisAnnotation(targetClass, titleRow);
+        List<T> results = new ArrayList<>();
+        Map<Integer, T> resultWithRow = new HashMap<>();
+        for (int i = startRowNumber; i <= sheet.getLastRowNum(); i++) {
+            T t = createTarget(targetClass, readPropertyMap, sheet.getRow(i));
+            results.add(t);
+            resultWithRow.put(i, t);
+        }
+        return new ReadResult<>(results, resultWithRow, workbook, sheet, titleRow.getLastCellNum() - 1, titleRowNum, targetClass);
     }
 
     /**
@@ -120,10 +159,10 @@ public class WorkBookReader {
      * @param <T>             目标泛型
      * @return
      * @throws IllegalAccessException
-     * @throws InstantiationException
      * @throws InvocationTargetException
      */
-    private <T> T createTarget(Class<T> targetClass, Map<Integer, ReadProperty> readPropertyMap, Row row) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private <T> T createTarget(Class<T> targetClass, Map<Integer, ReadProperty> readPropertyMap, Row row)
+            throws IllegalAccessException, InvocationTargetException {
         T t = ReflectUtils.newObject(targetClass, null, null);
         for (Map.Entry<Integer, ReadProperty> entry : readPropertyMap.entrySet()) {
             ReadProperty readProperty = entry.getValue();

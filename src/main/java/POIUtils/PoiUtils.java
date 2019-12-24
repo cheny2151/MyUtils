@@ -7,6 +7,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -67,6 +68,19 @@ public class PoiUtils {
      */
     public static <T> ReadResult<T> readFormFile(File file, Class<T> targetClass) {
         return getWorkBookReader().read(file, targetClass);
+    }
+
+    /**
+     * 读取数据
+     *
+     * @param fileName    文件名称(用作判断为xls/xlsx)
+     * @param inputStream 输入流
+     * @param targetClass 目标类型
+     * @param <T>         类型
+     * @return
+     */
+    public static <T> ReadResult<T> readForStream(String fileName, InputStream inputStream, Class<T> targetClass) {
+        return getWorkBookReader().read(fileName, inputStream, targetClass);
     }
 
     /**
