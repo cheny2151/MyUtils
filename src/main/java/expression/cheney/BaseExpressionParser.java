@@ -29,8 +29,9 @@ import static expression.cheney.CharConstants.*;
  * 1.1 新增支持运算符嵌套函数解析,见{@link BaseExpressionParser#createArg(List, Arg, Object, short)} }
  * 1.2 新增支持解析方法名为运算符--运算符表达式,见{@link BaseExpressionParser#createArg(List, Arg, Object, short)} };
  *     优化关键字符',(缺失/位置非法时时抛出异常。
+ * 1.3 新增支持原始类型嵌套
  *
- * @version 1.2
+ * @version 1.3
  * @author cheney
  * @date 2019-12-07
  */
@@ -233,7 +234,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     private Arg createArg(List<Arg> argResult, Arg partLast, Object value, short type) {
         boolean createNew = true;
         if (Arg.FUNC == type) {
-            // 参数为函数
+            // 函数
             String function = (String) value;
             int startIndex = function.indexOf("(");
             String funcName = function.substring(0, startIndex).trim();
@@ -245,13 +246,11 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     createNew = false;
                     List<Arg> args = argToOperatorFunc(partLast);
                     Object[] results = extractOperators(funcName);
-                    List<String> operators = (List<String>) results[0];
+                    List<Arg> operators = (List<Arg>) results[0];
                     if (operators != null) {
-                        // 运算符存为OPERATOR(type:4)
-                        List<Arg> operatorArgs = operators.stream().map(operator -> new Arg(operator, Arg.OPERATOR)).collect(Collectors.toList());
-                        args.addAll(operatorArgs);
+                        args.addAll(operators);
                     }
-                    String expression = function.substring(startIndex, function.length() - 1);
+                    String expression = function.substring(startIndex);
                     args.add(new Arg(expression, Arg.ORIGIN));
                 } else {
                     type = Arg.ORIGIN;
@@ -261,9 +260,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数(OPERATOR_FUNC)':
                  * List中按源运算表达式顺序存放两种arg实体,一种为运算符OPERATOR(type:4),一种存函数FUNC(type:1)*/
                 Object[] results = extractOperators(funcName);
-                List<String> operators = (List<String>) results[0];
-                // 运算符存为OPERATOR(type:4)
-                List<Arg> operatorArgs = operators.stream().map(operator -> new Arg(operator, Arg.OPERATOR)).collect(Collectors.toList());
+                List<Arg> operators = (List<Arg>) results[0];
                 // 解析去除运算符后的函数表达式,解析结果存为函数FUNC(type:1)
                 ParseResult func = parse(function.substring((Integer) results[1]).trim());
                 Arg funcArg = new Arg(func, Arg.FUNC);
@@ -274,23 +271,35 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     // 此段落前一个arg不为空
                     createNew = false;
                     List<Arg> args = argToOperatorFunc(partLast);
-                    args.addAll(operatorArgs);
+                    args.addAll(operators);
                     args.add(funcArg);
                 } else {
                     // 此段落的前一个arg为空，则新建一个List存放运算符与函数
                     type = Arg.OPERATOR_FUNC;
-                    operatorArgs.add(funcArg);
-                    value = operatorArgs;
+                    operators.add(funcArg);
+                    value = operators;
                 }
             } else {
                 // 参数为单独一个函数表达式,执行方法表达式解析
                 value = parse(function);
             }
-        } else if (type != Arg.CONSTANT) {
-            // 不为方法不为常类的arg，去除前后的空格
+        } else if (type == Arg.ORIGIN) {
+            // 原始类型
             value = ((String) value).trim();
+            if (partLast != null) {
+                // 1.3 支持原始类型嵌套
+                String valueStr = (String) value;
+                createNew = false;
+                Object[] results = extractOperators((String) value);
+                List<Arg> operators = (List<Arg>) results[0];
+                if (operators == null) {
+                    throw new ExpressionParseException("miss operators before \"" + value + "\"");
+                }
+                List<Arg> args = argToOperatorFunc(partLast);
+                args.addAll(operators);
+                args.add(new Arg(valueStr.substring((int) results[1]), Arg.ORIGIN));
+            }
         }
-
         if (createNew) {
             Arg newArg = new Arg(value, type);
             argResult.add(newArg);
@@ -343,7 +352,13 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 }
             }
         }
-        return new Object[]{operators, index};
+        if (operators.size() != 0) {
+            // 运算符存为OPERATOR(type:4)
+            List<Arg> operatorArgs = operators.stream().map(operator -> new Arg(operator, Arg.OPERATOR)).collect(Collectors.toList());
+            return new Object[]{operatorArgs, index};
+        } else {
+            return new Object[]{null, index};
+        }
     }
 
 
