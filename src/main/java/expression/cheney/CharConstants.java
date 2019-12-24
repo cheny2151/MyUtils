@@ -47,7 +47,7 @@ public final class CharConstants {
     final static char[] END_CHAR = new char[]{COMMA_CHAR, BRACKETS_RIGHT_CHAR, APOSTROPHE_CHAR};
 
     // 运算符正则
-    final static Pattern OPERATOR_PATTERN = Pattern.compile("([+\\-*/%?><!]|==|>=|<=|&{1,2}|\\|{1,2})");
+    final static Pattern OPERATOR_PATTERN = Pattern.compile("^([+\\-*/%?><!]|==|>=|<=|&{1,2}|\\|{1,2})(\\s*([+\\-*/%?><!]|==|>=|<=|&{1,2}|\\|{1,2}))?");
 
     // 包含运算符正则
     final static Pattern CONTAINS_OPERATOR_PATTERN = Pattern.compile(".*([+\\-*/%?><=|&!]).*");
