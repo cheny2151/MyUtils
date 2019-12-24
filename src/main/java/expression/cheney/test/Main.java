@@ -52,7 +52,7 @@ public class Main {
         env.put("b1", BigDecimal.valueOf(1));
         env.put("c1", 100);
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("ifs((a>b-a),(c1-c),(a1>b1),(c-c1))");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("ifs((a>b-a),(c1-c),(a1>b1),c-c1)");
         System.out.println(expressionExecutor.execute(env));
     }
 

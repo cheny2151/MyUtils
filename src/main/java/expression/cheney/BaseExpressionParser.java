@@ -136,7 +136,6 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         int endIndex = length - 1;
         // 语句开始位置
         Integer startIndex = null;
-        Character startChar = null;
         // 语句结尾检查字符
         Character endCheck = null;
         int count = 0;
@@ -151,11 +150,10 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             if (startIndex == null && COMMA_CHAR != c) {
                 // 段落开始
                 startIndex = i;
-                startChar = chars[startIndex];
             }
             if (APOSTROPHE_CHAR == c && (endCheck == null || endCheck == APOSTROPHE_CHAR)) {
                 // 当前char为'
-                if (startChar != null && startChar != APOSTROPHE_CHAR) {
+                if (startIndex != null && chars[startIndex] != APOSTROPHE_CHAR) {
                     // 1.2:'出现在段落中间时，抛出异常
                     throw new ExpressionParseException("error expression :\"" + expression.substring(startIndex) + "\",cause char \"'\"");
                 }
