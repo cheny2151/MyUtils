@@ -210,7 +210,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                         partLast = null;
                     }
                 }
-            } else if (c == COMMA_CHAR && count == 0) {
+            } else if (c == COMMA_CHAR && count == 0 && partLast != null) {
                 // 段落结束
                 partLast = null;
             }
