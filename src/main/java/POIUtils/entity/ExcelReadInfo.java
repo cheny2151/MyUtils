@@ -33,10 +33,10 @@ public class ExcelReadInfo {
         return new ExcelReadInfo(sheetName, titleRow, endRow, null, null, cellStopFunction);
     }
 
-    public static ExcelReadInfo readInfo(String sheetName, Integer titleRow,
-                                         Integer endRow, CellStopFunction cellStopFunction,
-                                         List<String> writeBackKeys,
-                                         HSSFColor.HSSFColorPredefined writeBackColumnColor) {
+    public static ExcelReadInfo withWriteBack(String sheetName, Integer titleRow,
+                                              Integer endRow, CellStopFunction cellStopFunction,
+                                              List<String> writeBackKeys,
+                                              HSSFColor.HSSFColorPredefined writeBackColumnColor) {
         if (CollectionUtils.isEmpty(writeBackKeys)) {
             throw new IllegalArgumentException("writeBackKeys can not be empty");
         }
@@ -45,6 +45,11 @@ public class ExcelReadInfo {
         excelReadInfo.setWriteBackKeys(writeBackKeys);
         excelReadInfo.setWriteBackColumnColor(writeBackColumnColor);
         return excelReadInfo;
+    }
+
+    public static ExcelReadInfo withWriteBack(List<String> writeBackKeys,
+                                              HSSFColor.HSSFColorPredefined writeBackColumnColor) {
+        return withWriteBack(null, null, null, null, writeBackKeys, writeBackColumnColor);
     }
 
     @FunctionalInterface

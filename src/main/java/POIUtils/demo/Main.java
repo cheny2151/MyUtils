@@ -84,7 +84,7 @@ public class Main {
     @Test
     public void test5() throws IOException {
         File file = new File("D://支付宝账单-200217-201906（1）.xlsx");
-        ReadResult<Map<String, Object>> readResult = PoiUtils.readAsMap(file, ExcelReadInfo.readInfo(null, 4, null,
+        ReadResult<Map<String, Object>> readResult = PoiUtils.readAsMap(file, ExcelReadInfo.withWriteBack(null, 4, null,
                 row -> {
                     Cell cell = row.getCell(0);
                     return cell.getCellTypeEnum().equals(CellType.STRING) && cell.getStringCellValue().contains("账务明细列表结束");
