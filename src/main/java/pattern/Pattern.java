@@ -78,9 +78,23 @@ public class Pattern {
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = matcher.group(2);
-            map.put(key,value);
+            map.put(key, value);
         }
         System.out.println(map);
+    }
+
+    /**
+     * 捕获组名命
+     * (?<p1>...) 捕获此()组,名命为p1
+     */
+    @Test
+    public void test3() {
+        java.util.regex.Pattern OPERATOR_PATTERN =
+                java.util.regex.Pattern.compile("(?<p1>([+\\-*/%?]|>=?|<=?)\\s*)|(?<p2>(!=|==|&{1,2}|\\|{1,2})(\\s*!*)?)");
+        Matcher matcher = OPERATOR_PATTERN.matcher("== !");
+        System.out.println(matcher.matches());
+        System.out.println(matcher.group("p1"));
+        System.out.println(matcher.group("p2"));
     }
 
 }
