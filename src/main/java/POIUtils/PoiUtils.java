@@ -1,5 +1,6 @@
 package POIUtils;
 
+import POIUtils.entity.ExcelReadInfo;
 import POIUtils.entity.ReadResult;
 import POIUtils.exception.WorkBookReadException;
 import POIUtils.worker.HSSFWorkbookBuilder;
@@ -12,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 /**
  * create by cheny
@@ -88,6 +90,35 @@ public class PoiUtils {
      */
     public static <T> ReadResult<T> readForStream(String fileName, InputStream inputStream, Class<T> targetClass) {
         return getWorkBookReader().read(fileName, inputStream, targetClass);
+    }
+
+    /**
+     * 读取数据
+     *
+     * @param file        文件
+     * @param targetClass 目标类型
+     * @param <T>         类型
+     * @return
+     */
+    public static ReadResult<Map<String, Object>> readAsMap(File file, ExcelReadInfo excelReadInfo) {
+        try {
+            return getWorkBookReader().readAsMap(file.getName(), new FileInputStream(file), excelReadInfo);
+        } catch (FileNotFoundException e) {
+            throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 读取数据
+     *
+     * @param fileName    文件名称(用作判断为xls/xlsx)
+     * @param inputStream 输入流
+     * @param targetClass 目标类型
+     * @param <T>         类型
+     * @return
+     */
+    public static ReadResult<Map<String, Object>> readAsMap(String fileName, InputStream inputStream, ExcelReadInfo excelReadInfo) {
+        return getWorkBookReader().readAsMap(fileName, inputStream, excelReadInfo);
     }
 
     /**

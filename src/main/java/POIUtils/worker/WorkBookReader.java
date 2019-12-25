@@ -3,10 +3,10 @@ package POIUtils.worker;
 import POIUtils.annotation.ExcelData;
 import POIUtils.annotation.ExcelHead;
 import POIUtils.annotation.ExcelWriteBack;
+import POIUtils.entity.ExcelReadInfo;
 import POIUtils.entity.ReadProperty;
 import POIUtils.entity.ReadResult;
 import POIUtils.exception.WorkBookReadException;
-import lombok.Data;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -53,8 +53,7 @@ public class WorkBookReader {
         }
     }
 
-
-    public <T> ReadResult<T> readAsMap(String fileName, InputStream inputStream, ExcelInfo excelInfo) {
+    public ReadResult<Map<String, Object>> readAsMap(String fileName, InputStream inputStream, ExcelReadInfo excelInfo) {
         try {
             Workbook workbook;
             if (fileName.contains("xlsx")) {
@@ -65,33 +64,37 @@ public class WorkBookReader {
             Sheet sheet;
             //数据出现行数,从0开始算
             int titleRowNum = excelInfo.getTitleRow();
-            sheet = workbook.getSheet(excelInfo.getSheetName());
+            if (excelInfo.getSheetName() == null) {
+                sheet = workbook.getSheetAt(0);
+            } else {
+                sheet = workbook.getSheet(excelInfo.getSheetName());
+            }
             int startRowNumber = titleRowNum + 1;
-            // 分析excel列表映射字段信息
+            // 分析excel列表title
             Row titleRow = sheet.getRow(titleRowNum);
+            Map<Integer, String> titleMap = new HashMap<>();
+            titleRow.forEach(cell -> {
+                String title = cell.getStringCellValue();
+                titleMap.put(cell.getColumnIndex(), title);
+            });
             List<Map<String, Object>> results = new ArrayList<>();
             Map<Integer, Map<String, Object>> resultWithRow = new HashMap<>();
-            for (int i = startRowNumber; i <= sheet.getLastRowNum(); i++) {
+            int lastRowNum = excelInfo.getEndRow() == null ? sheet.getLastRowNum() : excelInfo.getEndRow();
+            ExcelReadInfo.CellStopFunction cellStopFunction = excelInfo.getCellStopFunction();
+            for (int i = startRowNumber; i <= lastRowNum; i++) {
+                Row row = sheet.getRow(i);
+                if (cellStopFunction != null && cellStopFunction.stop(row)) {
+                    break;
+                }
                 Map<String, Object> rowData = new HashMap<>();
+                row.forEach(cell -> rowData.put(titleMap.get(cell.getColumnIndex()), getCellValue(cell)));
                 results.add(rowData);
                 resultWithRow.put(i, rowData);
             }
-//            return new ReadResult<>(results, resultWithRow, workbook, sheet, titleRow.getLastCellNum() - 1, titleRowNum, targetClass);
-            return null;
+            return new ReadResult<>(results, resultWithRow, workbook, sheet, titleRow.getLastCellNum() - 1, titleRowNum, excelInfo);
         } catch (Exception e) {
             throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
         }
-    }
-
-    /**
-     * excel读取信息
-     */
-    @Data
-    public static class ExcelInfo {
-        private String sheetName;
-        private int titleRow;
-        private List<String> writeBackKeys;
-        private HSSFColor.HSSFColorPredefined writeBackColumnColor;
     }
 
     /**
@@ -105,11 +108,18 @@ public class WorkBookReader {
         //数据出现行数,从0开始算
         ExcelHead excelHead = targetClass.getAnnotation(ExcelHead.class);
         int titleRowNum = 1;
+        int lastRowNum;
         if (excelHead != null) {
             titleRowNum = excelHead.titleRow();
-            sheet = workbook.getSheet(excelHead.sheetName());
+            if ("".equals(excelHead.sheetName())) {
+                sheet = workbook.getSheetAt(0);
+            } else {
+                sheet = workbook.getSheet(excelHead.sheetName());
+            }
+            lastRowNum = excelHead.endRow();
         } else {
             sheet = workbook.getSheetAt(0);
+            lastRowNum = -1;
         }
         int startRowNumber = titleRowNum + 1;
         // 分析excel列表映射字段信息
@@ -117,7 +127,9 @@ public class WorkBookReader {
         Map<Integer, ReadProperty> readPropertyMap = analysisAnnotation(targetClass, titleRow);
         List<T> results = new ArrayList<>();
         Map<Integer, T> resultWithRow = new HashMap<>();
-        for (int i = startRowNumber; i <= sheet.getLastRowNum(); i++) {
+        // lastRowNum==-1,则无指定结尾行
+        lastRowNum = lastRowNum == -1 ? sheet.getLastRowNum() : lastRowNum;
+        for (int i = startRowNumber; i <= lastRowNum; i++) {
             T t = createTarget(targetClass, readPropertyMap, sheet.getRow(i));
             results.add(t);
             resultWithRow.put(i, t);
@@ -131,7 +143,22 @@ public class WorkBookReader {
      * @param readResult 读取的数据结果实体
      * @param <T>        数据类型
      */
+    @SuppressWarnings("unchecked")
     public <T> void writeBack(ReadResult<T> readResult) {
+        if (readResult.isReadAsMap()) {
+            writeBackIsMap((ReadResult<Map<String, Object>>) readResult);
+        } else {
+            writeBackNoMap(readResult);
+        }
+    }
+
+    /**
+     * 回写非Map类型数据
+     *
+     * @param readResult 读取的数据结果实体
+     * @param <T>        数据类型
+     */
+    public <T> void writeBackNoMap(ReadResult<T> readResult) {
         Sheet sheet = readResult.getSheet();
         Workbook workbook = readResult.getWorkbook();
         int titleCount = readResult.getTitleCount();
@@ -176,7 +203,41 @@ public class WorkBookReader {
                 }
             }
         });
+    }
 
+    /**
+     * 回写Map类型数据
+     *
+     * @param readResult 读取的Map类型数据结果实体
+     */
+    public void writeBackIsMap(ReadResult<Map<String, Object>> readResult) {
+        Sheet sheet = readResult.getSheet();
+        Workbook workbook = readResult.getWorkbook();
+        int titleCount = readResult.getTitleCount();
+        int titleRowNum = readResult.getTitleRowNum();
+        ExcelReadInfo excelReadInfo = readResult.getExcelReadInfo();
+        // 负责回写的字段
+        List<String> writeBackKeys = excelReadInfo.getWriteBackKeys();
+        HSSFColor.HSSFColorPredefined color = excelReadInfo.getWriteBackColumnColor();
+        // 写入标题
+        int currentColumnNum = titleCount + 1;
+        for (String title : writeBackKeys) {
+            Cell cell = sheet.getRow(titleRowNum).createCell(currentColumnNum++);
+            cell.setCellValue(title);
+            setFontColor(workbook, color, cell);
+        }
+        // 写数据
+        Map<Integer, Map<String, Object>> dataIndexMap = readResult.getDataIndexMap();
+        dataIndexMap.forEach((index, value) -> {
+            int _currentColumnNum = titleCount + 1;
+            for (String key : writeBackKeys) {
+                Object cellValue = value.get(key);
+                if (cellValue != null) {
+                    Cell cell = sheet.getRow(index).createCell(_currentColumnNum++);
+                    cell.setCellValue(cellValue.toString());
+                }
+            }
+        });
     }
 
     /**

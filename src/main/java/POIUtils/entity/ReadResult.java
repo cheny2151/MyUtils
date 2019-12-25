@@ -36,7 +36,14 @@ public class ReadResult<T> {
     // 数据类型
     private Class<T> dataClass;
 
-    public ReadResult(List<T> data, Map<Integer, T> dataIndexMap, Workbook workbook, Sheet sheet, int titleCount,int titleRowNum, Class<T> dataClass) {
+    // excel读取信息
+    private ExcelReadInfo excelReadInfo;
+
+    private boolean readAsMap;
+
+    public ReadResult(List<T> data, Map<Integer, T> dataIndexMap,
+                      Workbook workbook, Sheet sheet, int titleCount,
+                      int titleRowNum, Class<T> dataClass) {
         this.data = data;
         this.workbook = workbook;
         this.sheet = sheet;
@@ -44,5 +51,21 @@ public class ReadResult<T> {
         this.titleCount = titleCount;
         this.titleRowNum = titleRowNum;
         this.dataClass = dataClass;
+        this.readAsMap = false;
     }
+
+    @SuppressWarnings("unchecked")
+    public ReadResult(List<Map<String, Object>> data, Map<Integer, Map<String, Object>> dataIndexMap,
+                      Workbook workbook, Sheet sheet, int titleCount,
+                      int titleRowNum, ExcelReadInfo excelReadInfo) {
+        this.data = (List<T>) data;
+        this.workbook = workbook;
+        this.sheet = sheet;
+        this.dataIndexMap = (Map<Integer, T>) dataIndexMap;
+        this.titleCount = titleCount;
+        this.titleRowNum = titleRowNum;
+        this.excelReadInfo = excelReadInfo;
+        this.readAsMap = true;
+    }
+
 }
