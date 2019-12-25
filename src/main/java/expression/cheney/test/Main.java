@@ -100,7 +100,7 @@ public class Main {
     @Test
     public void test7() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(contains(a,'x') && contains(b,'b') || false &&contains(b,'b') )");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(contains(a,'x') && contains(b,'b') || ! false &&contains(b,'b') )");
         HashMap<String, Object> env = new HashMap<>();
         env.put("a", "testa");
         env.put("b", "testb");
@@ -110,7 +110,7 @@ public class Main {
     @Test
     public void test8() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print((2-1)+abs(-2)-1+2+abs(-5)+1)");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print((2-1)+abs(-a)-1+2+abs(-5)+1)");
         HashMap<String, Object> env = new HashMap<>();
         env.put("a", 1);
         expressionExecutor.execute(env);

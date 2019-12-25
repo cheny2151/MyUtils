@@ -228,7 +228,6 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @param type      新arg类型
      * @return 最新arg
      */
-    @SuppressWarnings("unchecked")
     private Arg createArg(List<Arg> argResult, Arg partLast, Object value, short type) {
         boolean createNew = true;
         if (Arg.FUNC == type) {
@@ -238,7 +237,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             String funcName = function.substring(0, startIndex).trim();
             if ("".equals(funcName) || OPERATOR_PATTERN.matcher(funcName).matches()) {
                 /* 方法名为运算符，即不为函数，为原生ORIGIN(type:2)
-                 * 1:partLast(此段落前一个arg)不为空，该运算表达式作为'段落(OPERATOR_FUNC)'的一部分
+                   1:partLast(此段落前一个arg)不为空，该运算表达式作为'段落(OPERATOR_FUNC)'的一部分
                    2:partLast为空，为原生ORIGIN(type:2)*/
                 if (partLast != null) {
                     createNew = false;
@@ -250,14 +249,14 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 }
             } else if (OPERATOR_START_PATTERN.matcher(funcName).matches()) {
                 /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数(OPERATOR_FUNC)':
-                 * List中按源运算表达式顺序存放两种arg实体,一种为原生ORIGIN(type:2),一种存函数FUNC(type:1)*/
+                   List中按源运算表达式顺序存放两种arg实体,一种为原生ORIGIN(type:2),一种存函数FUNC(type:1)*/
                 int splitIndex = findLastOperatorIndex(funcName) + 1;
                 Arg operator = new Arg(function.substring(0, splitIndex).trim(), Arg.ORIGIN);
                 // 解析去除运算符后的函数表达式,解析结果存为函数FUNC(type:1)
                 ParseResult func = parse(function.substring(splitIndex).trim());
                 Arg funcArg = new Arg(func, Arg.FUNC);
                 /* 最后将新生成的函数arg与运算符arg放入对应的List中
-                 * 1:partLast(此段落前一个arg)不为空，该运算符嵌套函数表达式作为'段落(OPERATOR_FUNC)'的一部分
+                   1:partLast(此段落前一个arg)不为空，该运算符嵌套函数表达式作为'段落(OPERATOR_FUNC)'的一部分
                    2:partLast为空，则新建List存入运算符arg与函数arg作为新arg*/
                 if (partLast != null) {
                     createNew = false;
@@ -306,9 +305,6 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @return 0:List<Arg> 1:运算符结束index
      */
     private int findLastOperatorIndex(String expression) {
-        if ("".equals(expression)) {
-            return 0;
-        }
         char[] chars = expression.toCharArray();
         int lastOperatorIndex = 0;
         for (int index = 0; index < chars.length; index++) {
