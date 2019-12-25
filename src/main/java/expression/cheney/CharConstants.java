@@ -46,8 +46,15 @@ public final class CharConstants {
      */
     final static char[] END_CHAR = new char[]{COMMA_CHAR, BRACKETS_RIGHT_CHAR, APOSTROPHE_CHAR};
 
-    // 运算符正则
+    // 运算符结尾正则
+    final static Pattern ORIGIN_PATTERN = Pattern.compile(".*[+\\-*/%?&|><=!]$");
+
+    // 单个运算符正则
     final static Pattern OPERATOR_PATTERN = Pattern.compile("(([+\\-*/%?]|>=?|<=?)\\s*)|((==|!=?|&{1,2}|\\|{1,2})(\\s*!*)?)");
+
+    // 一个或多个合法运算符正则(运算符前后不能重复出现运算符)
+    final static Pattern LEGITIMATE_OPERATOR_PATTERN
+            = Pattern.compile("(((?![+\\-*/%?&|><=]).)*((([+\\-*/%?]|>=?|<=?)\\s*)|((==|!=?|&{1,2}|\\|{1,2})(\\s*!*)?))((?![+\\-*/%?&|><=]).)+)+");
 
     // 包含运算符正则
     final static Pattern CONTAINS_OPERATOR_PATTERN = Pattern.compile(".*([+\\-*/%?><=|&!]).*");

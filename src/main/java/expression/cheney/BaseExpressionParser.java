@@ -235,8 +235,8 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             String function = (String) value;
             int startIndex = function.indexOf("(");
             String funcName = function.substring(0, startIndex).trim();
-            if ("".equals(funcName) || OPERATOR_PATTERN.matcher(funcName).matches()) {
-                /* 方法名为运算符，即不为函数，为原生ORIGIN(type:2)
+            if ("".equals(funcName) || ORIGIN_PATTERN.matcher(funcName).matches()) {
+                /* 方法名为运算符结尾，即不为函数，为原生ORIGIN(type:2)
                    1:partLast(此段落前一个arg)不为空，该运算表达式作为'段落(OPERATOR_FUNC)'的一部分
                    2:partLast为空，为原生ORIGIN(type:2)*/
                 if (partLast != null) {
@@ -297,7 +297,8 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     }
 
     /**
-     * 提取表达式开头的运算符,用List存放
+     * 返回最后一个运算符的index
+     * 优化为从后往前查找,提高性能
      * <p>
      * version1.1新增
      *
@@ -306,15 +307,12 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      */
     private int findLastOperatorIndex(String expression) {
         char[] chars = expression.toCharArray();
-        int lastOperatorIndex = 0;
-        for (int index = 0; index < chars.length; index++) {
-            // 包含运算符
-            char currentChar = chars[index];
-            if (ArrayUtils.contains(OPERATORS, currentChar)) {
-                lastOperatorIndex = index;
+        for (int index = chars.length - 1; index >= 0; index--) {
+            if (ArrayUtils.contains(OPERATORS, chars[index])) {
+                return index;
             }
         }
-        return lastOperatorIndex;
+        return -1;
     }
 
 

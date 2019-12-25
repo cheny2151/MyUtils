@@ -110,7 +110,7 @@ public class Main {
     @Test
     public void test8() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print((2-1)+abs(-a)-1+2+abs(-5)+1)");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print((2-1)+abs(-a)-1+(2-1)+abs(-5)+ (-a))");
         HashMap<String, Object> env = new HashMap<>();
         env.put("a", 1);
         expressionExecutor.execute(env);
