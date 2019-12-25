@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static expression.cheney.BaseExpressionParser.Arg.*;
+import static expression.cheney.BaseExpressionParser.Arg.FUNC;
 import static expression.cheney.CharConstants.CONTAINS_OPERATOR_PATTERN;
 import static expression.cheney.CharConstants.NUMBER;
 
@@ -44,12 +44,12 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
             short type = arg.getType();
             if (value == null) {
                 return null;
-            } else if (type == CONSTANT) {
+            } else if (type == BaseExpressionParser.Arg.CONSTANT) {
                 return value;
-            } else if (type == FUNC) {
+            } else if (type == BaseExpressionParser.Arg.FUNC) {
                 BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) value;
                 return executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
-            } else if (type == OPERATOR_FUNC) {
+            } else if (type == BaseExpressionParser.Arg.OPERATOR_FUNC) {
                 // 函数嵌套运算
                 ArrayList<BaseExpressionParser.Arg> funcArgs = (ArrayList<BaseExpressionParser.Arg>) value;
                 String operatorExpression = "";
