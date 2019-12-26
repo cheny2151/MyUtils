@@ -121,10 +121,11 @@ public class Main {
     public void test9() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor =
-                expressionParser.parseExpression("print(业务类型=='交易分账'|| 业务类型=='转账'&&contains(备注,'A买就返A积分软件服务费退款（售中）'))");
+//                expressionParser.parseExpression("'交易分账' == 业务类型 || 业务类型=='转账'&&contains(备注,'A买就返A积分软件服务费退款（售中）')");
+                expressionParser.parseExpression("业务类型=='在线支付'||业务类型=='交易付款'||(业务类型=='转账'&&contains(备注,'基金代发任务'))||(业务类型=='交易分账'&&contains(备注,'境内商户结算'))");
         HashMap<String, Object> env = new HashMap<>();
         env.put("业务类型", "交易分账");
-        env.put("备注", "A买就返A积分软件服务费退款（售中）");
-        expressionExecutor.execute(env);
+        env.put("备注", "境内商户结算");
+        System.out.println(expressionExecutor.execute(env));
     }
 }

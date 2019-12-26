@@ -1,5 +1,6 @@
 package expression.cheney;
 
+import expression.cheney.func.InternalFunction;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static expression.cheney.CharConstants.*;
+import static expression.cheney.func.InternalFunction.OUT_PUT_FUNC_NAME;
 
 /**
  * 表达式解析器抽象接口,提供基础的解析方法实现
@@ -25,11 +27,12 @@ import static expression.cheney.CharConstants.*;
  * 例如funcA(funcB()，解析结果ParseResult实体中，其成员变量args{@link ParseResult.args}为单个元素的{@link Arg}，
  * 元素Arg中的成员变量{@link Arg.value}为funB解析结果的实体{@link ParseResult}，形成嵌套。
  *
- * 1.1 新增支持运算符嵌套函数解析,见{@link BaseExpressionParser#createArg(List, Arg, Object, short)} }
- * 1.2 新增支持解析方法名为运算符--运算符表达式,见{@link BaseExpressionParser#createArg(List, Arg, Object, short)} };
+ * 1.1 新增支持运算符嵌套函数解析,见{@link #createArg(List, Arg, Object, short)}}
+ * 1.2 新增支持解析方法名为运算符--运算符表达式,见{@link #createArg(List, Arg, Object, short)}};
  *     优化关键字符',(缺失/位置非法时时抛出异常。
- * 1.3 完美支持原始类型(包含运算符)与函数的组合（组合段落）
- * 1.4 组合段落新支持常量，组合段落支持常量、原始类型、函数与运算符之间的组合（COMBINATION组合段落）
+ * 1.3 完美支持原始类型(包含运算符)与函数的组合（组合段落）。
+ * 1.4 组合段落新支持常量，组合段落支持常量、原始类型、函数与运算符之间的组合（COMBINATION组合段落）。
+ * 1.5 支持最外层为段落组合:见{@link #parse(java.lang.String)};
  *
  * @version 1.3
  * @author cheney
@@ -90,6 +93,11 @@ public abstract class BaseExpressionParser implements ExpressionParser {
 
     /**
      * 解析方法表达式
+     * <p>
+     * 1.判断表达式不存在'(',则为原始类型ParseResult.ORIGIN
+     * 2.（1.5新增）表达式首个'('前存在运算符，则表达式为段落，则拼接输出函数{@link InternalFunction#output(java.lang.Object)}，
+     * 再执行解析{@link #parseArg(java.lang.String)}
+     * 3.表达式首个'('前不存在运算符,则为函数直接执行解析{@link #parseArg(java.lang.String)}。
      *
      * @param expression 表达式
      * @return 解析结果 ParseResult实体
@@ -105,9 +113,18 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             // 不包含(则不为函数
             return ParseResult.origin();
         }
-        List<Arg> args = parseArg(expression.substring(start + 1, length - 1));
+        String funcName = expression.substring(0, start);
+        String content;
+        if (CONTAINS_OPERATOR_PATTERN.matcher(funcName).matches()) {
+            // 1.5：表达式为段落，则拼接输出函数
+            funcName = OUT_PUT_FUNC_NAME;
+            content = expression;
+        } else {
+            content = expression.substring(start + 1, length - 1);
+        }
+        List<Arg> args = parseArg(content);
 
-        return ParseResult.func(expression.substring(0, start), args);
+        return ParseResult.func(funcName, args);
     }
 
     /**

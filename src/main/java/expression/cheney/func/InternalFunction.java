@@ -13,6 +13,8 @@ import java.util.Map;
  */
 public class InternalFunction {
 
+    public final static String OUT_PUT_FUNC_NAME = "output";
+
     public static void println(Object obj) {
         System.out.println(obj);
     }
