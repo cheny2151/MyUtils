@@ -121,7 +121,7 @@ public class Main {
     public void test9() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor =
-                expressionParser.parseExpression("!(业务类型=='在线支付'||业务类型=='交易付款')||(业务类型=='转账'&&contains(备注,'基金代发任务'))||(业务类型=='交易分账'&&contains(备注,'境内商户结算'))");
+                expressionParser.parseExpression("(业务类型=='在线支付'||业务类型=='交易付款')||(业务类型=='转账'&&contains(备注,'基金代发任务'))||(业务类型=='交易分账'&&contains(备注,'境内商户结算'))");
         HashMap<String, Object> env = new HashMap<>();
         env.put("业务类型", "交易分账");
         env.put("备注", "境内商户结算");

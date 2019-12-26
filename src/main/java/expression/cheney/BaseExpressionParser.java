@@ -246,10 +246,13 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             String function = (String) value;
             int startIndex = function.indexOf("(");
             String funcName = function.substring(0, startIndex).trim();
-            if ("".equals(funcName) || ORIGIN_PATTERN.matcher(funcName).matches()) {
-                /* 方法名为运算符结尾，则function为原生ORIGIN(type:2)+无名函数content
-                   1:partLast(此段落前一个arg)不为空，该原生ORIGIN(type:2)与无名函数arg作为'组合段落(COMBINATION)'的一部分
-                   2:partLast为空，则新建List存入原生ORIGIN(type:2)与无名函数arg作为新arg*/
+            boolean emptyFuncName = "".equals(funcName);
+            if (emptyFuncName || ORIGIN_PATTERN.matcher(funcName).matches()) {
+                /* 方法名为运算符结尾，则function为原生ORIGIN(type:2)+'无名函数'(content),
+                    content不包含函数则为原生ORIGIN(type:2)
+                    content包含函数则拼接输出函数作为FUNC(type:1)
+                   1:partLast(此段落前一个arg)不为空，该原生ORIGIN(type:2)与count作为'组合段落(COMBINATION)'的一部分
+                   2:partLast为空，则新建List存入原生ORIGIN(type:2)与count作为新arg*/
                 String content = function.substring(startIndex);
                 List<Arg> args;
                 if (partLast != null) {
@@ -260,9 +263,16 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     args = new ArrayList<>();
                     value = args;
                 }
-                args.add(new Arg(funcName, Arg.ORIGIN));
-                // 无名函数content拼接输出函数名，形成一个输出结果的函数
-                args.add(new Arg(parse(OUT_PUT_FUNC_NAME + content), Arg.FUNC));
+                if (!emptyFuncName) {
+                    args.add(new Arg(funcName, Arg.ORIGIN));
+                }
+                if (!CONTAINS_FUNC.matcher(content).find()) {
+                    // 不包含函数，则为原始类型
+                    args.add(new Arg(content, Arg.ORIGIN));
+                } else {
+                    // 包含函数的content拼接输出函数名，形成一个输出结果的函数
+                    args.add(new Arg(parse(OUT_PUT_FUNC_NAME + content), Arg.FUNC));
+                }
             } else if (CONTAINS_OPERATOR_PATTERN.matcher(funcName).find()) {
                 /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数组合段落(COMBINATION)':
                    List中按源运算表达式顺序存放两种arg实体,一种为原生ORIGIN(type:2),一种存函数FUNC(type:1)*/
