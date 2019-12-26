@@ -95,9 +95,11 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * 解析方法表达式
      * <p>
      * 1.判断表达式不存在'(',则为原始类型ParseResult.ORIGIN
-     * 2.（1.5新增）表达式首个'('前存在运算符，则表达式为段落，则拼接输出函数{@link InternalFunction#output(java.lang.Object)}，
+     * 2.（1.5新增）表达式首个非空字符为'('，则拼接输出函数{@link InternalFunction#output(java.lang.Object)}，
      * 再执行解析{@link #parseArg(java.lang.String)}
-     * 3.表达式首个'('前不存在运算符,则为函数直接执行解析{@link #parseArg(java.lang.String)}。
+     * 3.（1.5新增）表达式首个'('前存在运算符，则表达式为段落，则拼接输出函数{@link InternalFunction#output(java.lang.Object)}，
+     * 再执行解析{@link #parseArg(java.lang.String)}
+     * 4.表达式首个'('前不存在运算符,则为函数直接执行解析{@link #parseArg(java.lang.String)}。
      *
      * @param expression 表达式
      * @return 解析结果 ParseResult实体
@@ -109,13 +111,17 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         }
         int start = expression.indexOf("(");
         int length = expression.length();
-        if (start == -1 || start == 0) {
+        if (start == -1) {
             // 不包含(则不为函数
             return ParseResult.origin();
         }
         String funcName = expression.substring(0, start);
         String content;
-        if (CONTAINS_OPERATOR_PATTERN.matcher(funcName).matches()) {
+        if ("".equals(funcName)) {
+            // 1.5：表达式开头为(，则拼接输出函数
+            funcName = OUT_PUT_FUNC_NAME;
+            content = expression.substring(start + 1, length - 1);
+        } else if (CONTAINS_OPERATOR_PATTERN.matcher(funcName).matches()) {
             // 1.5：表达式为段落，则拼接输出函数
             funcName = OUT_PUT_FUNC_NAME;
             content = expression;
@@ -243,17 +249,21 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             int startIndex = function.indexOf("(");
             String funcName = function.substring(0, startIndex).trim();
             if ("".equals(funcName) || ORIGIN_PATTERN.matcher(funcName).matches()) {
-                /* 方法名为运算符结尾，即不为函数，为原生ORIGIN(type:2)
-                   1:partLast(此段落前一个arg)不为空，该运算表达式作为'组合段落(COMBINATION)'的一部分
-                   2:partLast为空，为原生ORIGIN(type:2)*/
+                /* 方法名为运算符结尾，则function为原生ORIGIN(type:2)+无名函数content
+                   1:partLast(此段落前一个arg)不为空，该原生ORIGIN(type:2)与无名函数arg作为'组合段落(COMBINATION)'的一部分
+                   2:partLast为空，则新建List存入原生ORIGIN(type:2)与无名函数arg作为新arg*/
+                String content = function.substring(startIndex);
+                List<Arg> args;
                 if (partLast != null) {
                     createNew = false;
-                    List<Arg> args = argToOperatorFunc(partLast);
-                    args.add(new Arg(function, Arg.ORIGIN));
+                    args = argToOperatorFunc(partLast);
                 } else {
-                    type = Arg.ORIGIN;
-                    value = ((String) value).trim();
+                    type = Arg.COMBINATION;
+                    args = new ArrayList<>();
+                    value = args;
                 }
+                args.add(new Arg(funcName, Arg.ORIGIN));
+                args.add(new Arg(parse(content), Arg.FUNC));
             } else if (OPERATOR_START_PATTERN.matcher(funcName).matches()) {
                 /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数组合段落(COMBINATION)':
                    List中按源运算表达式顺序存放两种arg实体,一种为原生ORIGIN(type:2),一种存函数FUNC(type:1)*/
