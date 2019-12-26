@@ -27,6 +27,7 @@ public class Main {
         test6();
         test7();
         test8();
+        test9();
     }
 
     @Test
@@ -110,9 +111,20 @@ public class Main {
     @Test
     public void test8() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
-        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print((2-1)+abs(-a)-1+(2-1)+abs(-5)+ (-a))");
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(abs(-a)-1+(2-1)+abs(-5)+ (-a))");
         HashMap<String, Object> env = new HashMap<>();
         env.put("a", 1);
+        expressionExecutor.execute(env);
+    }
+
+    @Test
+    public void test9() {
+        ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
+        ExpressionExecutor expressionExecutor =
+                expressionParser.parseExpression("print(业务类型=='交易分账'|| 业务类型=='转账'&&contains(备注,'A买就返A积分软件服务费退款（售中）'))");
+        HashMap<String, Object> env = new HashMap<>();
+        env.put("业务类型", "交易分账");
+        env.put("备注", "A买就返A积分软件服务费退款（售中）");
         expressionExecutor.execute(env);
     }
 }

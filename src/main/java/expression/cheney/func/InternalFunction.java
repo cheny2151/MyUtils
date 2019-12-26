@@ -33,4 +33,8 @@ public class InternalFunction {
         return JSON.parseArray(json);
     }
 
+    public static Object output(Object object) {
+        return object;
+    }
+
 }

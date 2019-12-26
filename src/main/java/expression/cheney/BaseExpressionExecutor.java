@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static expression.cheney.BaseExpressionParser.Arg.CONSTANT;
 import static expression.cheney.BaseExpressionParser.Arg.FUNC;
 import static expression.cheney.CharConstants.CONTAINS_OPERATOR_PATTERN;
 import static expression.cheney.CharConstants.NUMBER;
@@ -49,7 +50,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
             } else if (type == BaseExpressionParser.Arg.FUNC) {
                 BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) value;
                 return executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
-            } else if (type == BaseExpressionParser.Arg.OPERATOR_FUNC) {
+            } else if (type == BaseExpressionParser.Arg.COMBINATION) {
                 // 函数嵌套运算
                 ArrayList<BaseExpressionParser.Arg> funcArgs = (ArrayList<BaseExpressionParser.Arg>) value;
                 String operatorExpression = "";
@@ -59,6 +60,9 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                     if (funcArgType == FUNC) {
                         BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) argValue;
                         operatorExpression += executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
+                    } else if (funcArgType == CONSTANT) {
+                        // 常量则加上'
+                        operatorExpression += "'" + argValue + "'";
                     } else {
                         // 运算符或者原始类型，直接拼接
                         operatorExpression += argValue;

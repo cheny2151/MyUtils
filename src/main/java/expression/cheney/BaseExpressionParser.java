@@ -28,7 +28,8 @@ import static expression.cheney.CharConstants.*;
  * 1.1 新增支持运算符嵌套函数解析,见{@link BaseExpressionParser#createArg(List, Arg, Object, short)} }
  * 1.2 新增支持解析方法名为运算符--运算符表达式,见{@link BaseExpressionParser#createArg(List, Arg, Object, short)} };
  *     优化关键字符',(缺失/位置非法时时抛出异常。
- * 1.3 完美支持原始类型(包含运算符)嵌套函数
+ * 1.3 完美支持原始类型(包含运算符)与函数的组合（组合段落）
+ * 1.4 组合段落新支持常量，组合段落支持常量、原始类型、函数与运算符之间的组合（COMBINATION组合段落）
  *
  * @version 1.3
  * @author cheney
@@ -54,7 +55,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         // 类型枚举值
         public final static short FUNC = 1;
         public final static short ORIGIN = 2;
-        public final static short OPERATOR_FUNC = 3;
+        public final static short COMBINATION = 3;
 
         public static ParseResult origin() {
             return new ParseResult(null, null, ORIGIN);
@@ -65,19 +66,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         }
 
         public static ParseResult funcOperator(Arg arg) {
-            return new ParseResult(null, Collections.singletonList(arg), OPERATOR_FUNC);
-        }
-
-        public boolean isOrigin() {
-            return ORIGIN == type;
-        }
-
-        public boolean isFunc() {
-            return FUNC == type;
-        }
-
-        public boolean isOperatorFunc() {
-            return OPERATOR_FUNC == type;
+            return new ParseResult(null, Collections.singletonList(arg), COMBINATION);
         }
     }
 
@@ -90,13 +79,13 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     static class Arg {
         // 值
         private Object value;
-        // 类型：0:常量,1:函数,2:运算,3:函数嵌套运算
+        // 类型：0:常量,1:函数,2:运算,3:组合段落
         private short type;
         // 类型枚举值
         public final static short CONSTANT = 0;
         public final static short FUNC = 1;
         public final static short ORIGIN = 2;
-        public final static short OPERATOR_FUNC = 3;
+        public final static short COMBINATION = 3;
     }
 
     /**
@@ -152,8 +141,9 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             if (APOSTROPHE_CHAR == c && (endCheck == null || endCheck == APOSTROPHE_CHAR)) {
                 // 当前char为'
                 if (startIndex != null && chars[startIndex] != APOSTROPHE_CHAR) {
-                    // 1.2:'出现在段落中间时，抛出异常
-                    throw new ExpressionParseException("error expression :\"" + expression.substring(startIndex) + "\",cause char \"'\"");
+                    // 1.2:'出现在段落中间时，之前的段落为原始类型的COMBINATION段落组合
+                    partLast = createArg(result, partLast, expression.substring(startIndex, i), Arg.ORIGIN);
+                    startIndex = i;
                 }
                 endCheck = APOSTROPHE_CHAR;
                 count++;
@@ -237,7 +227,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             String funcName = function.substring(0, startIndex).trim();
             if ("".equals(funcName) || ORIGIN_PATTERN.matcher(funcName).matches()) {
                 /* 方法名为运算符结尾，即不为函数，为原生ORIGIN(type:2)
-                   1:partLast(此段落前一个arg)不为空，该运算表达式作为'段落(OPERATOR_FUNC)'的一部分
+                   1:partLast(此段落前一个arg)不为空，该运算表达式作为'组合段落(COMBINATION)'的一部分
                    2:partLast为空，为原生ORIGIN(type:2)*/
                 if (partLast != null) {
                     createNew = false;
@@ -248,7 +238,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     value = ((String) value).trim();
                 }
             } else if (OPERATOR_START_PATTERN.matcher(funcName).matches()) {
-                /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数(OPERATOR_FUNC)':
+                /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数组合段落(COMBINATION)':
                    List中按源运算表达式顺序存放两种arg实体,一种为原生ORIGIN(type:2),一种存函数FUNC(type:1)*/
                 int splitIndex = findLastOperatorIndex(funcName) + 1;
                 Arg operator = new Arg(function.substring(0, splitIndex).trim(), Arg.ORIGIN);
@@ -256,7 +246,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 ParseResult func = parse(function.substring(splitIndex).trim());
                 Arg funcArg = new Arg(func, Arg.FUNC);
                 /* 最后将新生成的函数arg与运算符arg放入对应的List中
-                   1:partLast(此段落前一个arg)不为空，该运算符嵌套函数表达式作为'段落(OPERATOR_FUNC)'的一部分
+                   1:partLast(此段落前一个arg)不为空，该运算符嵌套函数表达式作为'组合段落(COMBINATION)'的一部分
                    2:partLast为空，则新建List存入运算符arg与函数arg作为新arg*/
                 if (partLast != null) {
                     createNew = false;
@@ -264,7 +254,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     args.add(operator);
                     args.add(funcArg);
                 } else {
-                    type = Arg.OPERATOR_FUNC;
+                    type = Arg.COMBINATION;
                     List<Arg> newArgs = new ArrayList<>();
                     newArgs.add(operator);
                     newArgs.add(funcArg);
@@ -274,7 +264,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 // 参数为单独一个函数表达式,执行方法表达式解析
                 value = parse(function);
             }
-        } else if (type == Arg.ORIGIN) {
+        } else if (Arg.ORIGIN == type) {
             // 原始类型
             value = ((String) value).trim();
             if (partLast != null) {
@@ -287,7 +277,13 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 List<Arg> args = argToOperatorFunc(partLast);
                 args.add(new Arg(expression, Arg.ORIGIN));
             }
+        } else if (Arg.CONSTANT == type && partLast != null) {
+            // 1.4:常量并且partLast不为空时，拼接成组合段落(COMBINATION)
+            createNew = false;
+            List<Arg> args = argToOperatorFunc(partLast);
+            args.add(new Arg(value, Arg.CONSTANT));
         }
+
         if (createNew) {
             Arg newArg = new Arg(value, type);
             argResult.add(newArg);
@@ -329,12 +325,12 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         ArrayList<Arg> args;
         if (partLastValue.getClass() == ArrayList.class) {
             args = (ArrayList<Arg>) partLastValue;
-        } else if (partLastValue.getClass() == ParseResult.class || partLastType == Arg.ORIGIN) {
+        } else if (partLastValue.getClass() == ParseResult.class || partLastType == Arg.ORIGIN || partLastType == Arg.CONSTANT) {
             // 必须为函数才可嵌套运算符
             args = new ArrayList<>();
             args.add(new Arg(partLastValue, partLastType));
             arg.setValue(args);
-            arg.setType(Arg.OPERATOR_FUNC);
+            arg.setType(Arg.COMBINATION);
         } else {
             throw new ExpressionParseException("error type of last Arg:" + partLastValue);
         }
