@@ -18,19 +18,6 @@ import java.util.Map;
 public class Main {
 
     @Test
-    public void testAll() {
-        test();
-        test2();
-        test3();
-        test4();
-        test5();
-        test6();
-        test7();
-        test8();
-        test9();
-    }
-
-    @Test
     public void test() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(toJson(date_format(date,noArg())))");
