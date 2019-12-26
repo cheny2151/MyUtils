@@ -9,8 +9,7 @@ import java.util.Map;
 
 import static expression.cheney.BaseExpressionParser.Arg.CONSTANT;
 import static expression.cheney.BaseExpressionParser.Arg.FUNC;
-import static expression.cheney.CharConstants.CONTAINS_OPERATOR_PATTERN;
-import static expression.cheney.CharConstants.NUMBER;
+import static expression.cheney.CharConstants.*;
 
 /**
  * 表达式执行器
@@ -59,10 +58,11 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                     short funcArgType = funcArg.getType();
                     if (funcArgType == FUNC) {
                         BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) argValue;
-                        operatorExpression += executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
+                        operatorExpression += parseResult.isFunc() ? executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env)
+                                : executeOperation(parseResult.getFuncName(), env);
                     } else if (funcArgType == CONSTANT) {
                         // 常量则加上'
-                        operatorExpression += "'" + argValue + "'";
+                        operatorExpression += APOSTROPHE_STRING + argValue + APOSTROPHE_STRING;
                     } else {
                         // 运算符或者原始类型，直接拼接
                         operatorExpression += argValue;
@@ -74,7 +74,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                 Object envArg = env.get(valueStr);
                 if (envArg != null) {
                     return envArg;
-                } else if (CONTAINS_OPERATOR_PATTERN.matcher(valueStr).matches()) {
+                } else if (CONTAINS_OPERATOR_PATTERN.matcher(valueStr).find()) {
                     // 结合Aviator,将含运算符的arg丢给Aviator执行
                     return executeOperation(valueStr, env);
                 }

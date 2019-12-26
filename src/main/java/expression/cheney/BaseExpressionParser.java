@@ -8,7 +8,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static expression.cheney.CharConstants.*;
@@ -32,7 +31,7 @@ import static expression.cheney.func.InternalFunction.OUT_PUT_FUNC_NAME;
  *     优化关键字符',(缺失/位置非法时时抛出异常。
  * 1.3 完美支持原始类型(包含运算符)与函数的组合（组合段落）。
  * 1.4 组合段落新支持常量，组合段落支持常量、原始类型、函数与运算符之间的组合（COMBINATION组合段落）。
- * 1.5 支持最外层为段落组合:见{@link #parse(java.lang.String)};
+ * 1.5 支持最外层为段落组合，通过拼接输出函数{@link InternalFunction#output(java.lang.Object)}实现，代码见{@link #parse(java.lang.String)}。
  *
  * @version 1.3
  * @author cheney
@@ -58,18 +57,22 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         // 类型枚举值
         public final static short FUNC = 1;
         public final static short ORIGIN = 2;
-        public final static short COMBINATION = 3;
 
-        public static ParseResult origin() {
-            return new ParseResult(null, null, ORIGIN);
+        /**
+         * 原始类型时,funcName作为完整的原始类型表达式
+         *
+         * @param expression 表达式
+         */
+        public static ParseResult origin(String expression) {
+            return new ParseResult(expression, null, ORIGIN);
         }
 
         public static ParseResult func(String funcName, List<Arg> args) {
             return new ParseResult(funcName, args, FUNC);
         }
 
-        public static ParseResult funcOperator(Arg arg) {
-            return new ParseResult(null, Collections.singletonList(arg), COMBINATION);
+        public boolean isFunc() {
+            return FUNC == this.type;
         }
     }
 
@@ -94,12 +97,11 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     /**
      * 解析方法表达式
      * <p>
-     * 1.判断表达式不存在'(',则为原始类型ParseResult.ORIGIN
-     * 2.（1.5新增）表达式首个非空字符为'('，则拼接输出函数{@link InternalFunction#output(java.lang.Object)}，
-     * 再执行解析{@link #parseArg(java.lang.String)}
-     * 3.（1.5新增）表达式首个'('前存在运算符，则表达式为段落，则拼接输出函数{@link InternalFunction#output(java.lang.Object)}，
-     * 再执行解析{@link #parseArg(java.lang.String)}
-     * 4.表达式首个'('前不存在运算符,则为函数直接执行解析{@link #parseArg(java.lang.String)}。
+     * 1.判断表达式不存在函数(不匹配正则'字母 ('),则为原始类型ParseResult.ORIGIN
+     * 2.（1.5新增）
+     * 表达式首个非空字符为'(',或者达式首个'('前存在运算符，则拼接输出函数{@link InternalFunction#output(java.lang.Object)}，
+     * 再执行解析{@link #parseArg(java.lang.String)}。
+     * 3.表达式首个'('前不存在运算符,则为函数直接执行解析{@link #parseArg(java.lang.String)}。
      *
      * @param expression 表达式
      * @return 解析结果 ParseResult实体
@@ -109,20 +111,16 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         if (StringUtils.isEmpty(expression)) {
             throw new ExpressionParseException("expression can not be empty");
         }
+        if (!CONTAINS_FUNC.matcher(expression).find()) {
+            // 不包含函数，则为原始类型
+            return ParseResult.origin(expression);
+        }
         int start = expression.indexOf("(");
         int length = expression.length();
-        if (start == -1) {
-            // 不包含(则不为函数
-            return ParseResult.origin();
-        }
         String funcName = expression.substring(0, start);
         String content;
-        if ("".equals(funcName)) {
-            // 1.5：表达式开头为(，则拼接输出函数
-            funcName = OUT_PUT_FUNC_NAME;
-            content = expression.substring(start + 1, length - 1);
-        } else if (CONTAINS_OPERATOR_PATTERN.matcher(funcName).matches()) {
-            // 1.5：表达式为段落，则拼接输出函数
+        if ("".equals(funcName) || CONTAINS_OPERATOR_PATTERN.matcher(funcName).find()) {
+            // 1.5：表达式以'('开头或者表达式为段落，则拼接输出函数
             funcName = OUT_PUT_FUNC_NAME;
             content = expression;
         } else {
@@ -263,8 +261,9 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     value = args;
                 }
                 args.add(new Arg(funcName, Arg.ORIGIN));
-                args.add(new Arg(parse(content), Arg.FUNC));
-            } else if (OPERATOR_START_PATTERN.matcher(funcName).matches()) {
+                // 无名函数content拼接输出函数名，形成一个输出结果的函数
+                args.add(new Arg(parse(OUT_PUT_FUNC_NAME + content), Arg.FUNC));
+            } else if (CONTAINS_OPERATOR_PATTERN.matcher(funcName).find()) {
                 /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数组合段落(COMBINATION)':
                    List中按源运算表达式顺序存放两种arg实体,一种为原生ORIGIN(type:2),一种存函数FUNC(type:1)*/
                 int splitIndex = findLastOperatorIndex(funcName) + 1;
