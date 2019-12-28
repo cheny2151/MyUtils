@@ -19,6 +19,8 @@ import static expression.cheney.CharConstants.*;
  */
 public abstract class BaseExpressionExecutor implements ExpressionExecutor {
 
+    // 系统创建的环境值key
+    public static final String NEW_ENV_KEY = "_ENV_KEY";
     // 表达式
     protected String express;
 
@@ -44,22 +46,26 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
             short type = arg.getType();
             if (value == null) {
                 return null;
-            } else if (type == BaseExpressionParser.Arg.CONSTANT) {
+            } else if (type == CONSTANT) {
                 return value;
-            } else if (type == BaseExpressionParser.Arg.FUNC) {
+            } else if (type == FUNC) {
                 BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) value;
                 return executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
             } else if (type == BaseExpressionParser.Arg.COMBINATION) {
                 // 函数嵌套运算
                 ArrayList<BaseExpressionParser.Arg> funcArgs = (ArrayList<BaseExpressionParser.Arg>) value;
                 String operatorExpression = "";
+                int newEnvIndex = 0;
                 for (BaseExpressionParser.Arg funcArg : funcArgs) {
                     Object argValue = funcArg.getValue();
                     short funcArgType = funcArg.getType();
                     if (funcArgType == FUNC) {
                         BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) argValue;
-                        operatorExpression += parseResult.isFunc() ? executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env)
-                                : executeOperation(parseResult.getFuncName(), env);
+                        Object expression = executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
+                        // 函数执行结果作为env的值，缓存最终形成的表达式解析结果
+                        String newEnvKey = NEW_ENV_KEY + newEnvIndex++;
+                        env.put(newEnvKey, expression);
+                        operatorExpression += newEnvKey;
                     } else if (funcArgType == CONSTANT) {
                         // 常量则加上'
                         operatorExpression += APOSTROPHE_STRING + argValue + APOSTROPHE_STRING;
@@ -68,7 +74,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                         operatorExpression += argValue;
                     }
                 }
-                return executeOperation(operatorExpression, env);
+                return executeOperation(operatorExpression, env, true);
             } else {
                 String valueStr = (String) value;
                 Object envArg = env.get(valueStr);
@@ -76,7 +82,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                     return envArg;
                 } else if (CONTAINS_OPERATOR_PATTERN.matcher(valueStr).find()) {
                     // 结合Aviator,将含运算符的arg丢给Aviator执行
-                    return executeOperation(valueStr, env);
+                    return executeOperation(valueStr, env, true);
                 }
                 return castToBasic(valueStr);
             }
@@ -111,7 +117,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
      * @param env        实际参数
      * @return 表达式执行结果
      */
-    protected abstract Object executeOperation(String expression, Map<String, Object> env);
+    protected abstract Object executeOperation(String expression, Map<String, Object> env, boolean cache);
 
     /**
      * 提供额外的表达式执行方法

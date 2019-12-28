@@ -65,7 +65,7 @@ public class ReflectExpressionParser extends BaseExpressionParser {
     public ExpressionExecutor parseExpression(String expression) {
         ParseResult parseResult = parse(expression);
         return parseResult.isFunc() ? new ReflectExpressionExecutor(expression, parseResult, this.methodHolderFactory, this.functionClasses)
-                : AviatorExpressionParser.getInstance().parseExpression(expression);
+                : AviatorExpressionParser.getInstance().parseExpressionWithCache(expression);
     }
 
     /**

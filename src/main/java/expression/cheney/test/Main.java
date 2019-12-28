@@ -18,6 +18,23 @@ import java.util.Map;
 public class Main {
 
     @Test
+    public void test0() {
+        long l = System.currentTimeMillis();
+        for (int i = 0; i < 10000; i++) {
+            test();
+            test2();
+            test3();
+            test4();
+            test5();
+            test6();
+            test7();
+            test8();
+            test9();
+        }
+        System.out.println((System.currentTimeMillis() - l) / 1000);
+    }
+
+    @Test
     public void test() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor = expressionParser.parseExpression("print(toJson(date_format(date,noArg())))");
@@ -113,5 +130,12 @@ public class Main {
         env.put("业务类型", "交易分账");
         env.put("备注", "境内商户结算");
         System.out.println(expressionExecutor.execute(env));
+
+        ExpressionExecutor expressionExecutor2 =
+                expressionParser.parseExpression("(业务类型=='在线支付'||业务类型=='交易付款')||(业务类型=='转账'&&contains(备注,'基金代发任务'))||(业务类型=='交易分账'&&contains(备注,'境内商户结算'))");
+        HashMap<String, Object> env2 = new HashMap<>();
+        env2.put("业务类型", "其他分账");
+        env2.put("备注", "其他结算");
+        System.out.println(expressionExecutor2.execute(env2));
     }
 }

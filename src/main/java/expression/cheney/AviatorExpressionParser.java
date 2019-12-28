@@ -37,6 +37,16 @@ public class AviatorExpressionParser implements ExpressionParser {
 
     @Override
     public ExpressionExecutor parseExpression(String expression) {
+        return new AviatorExpressionExecutor(aviatorEvaluator.compile(expression, false));
+    }
+
+    /**
+     * 默认的解析方法不带缓存{@link #parseExpression(java.lang.String)}，提供此方法解析表达式并缓存解析结果
+     *
+     * @param expression 表达式
+     * @return 表达式解析结果
+     */
+    public ExpressionExecutor parseExpressionWithCache(String expression) {
         return new AviatorExpressionExecutor(aviatorEvaluator.compile(expression, true));
     }
 
