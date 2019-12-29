@@ -138,4 +138,11 @@ public class Main {
         env2.put("备注", "其他结算");
         System.out.println(expressionExecutor2.execute(env2));
     }
+
+    @Test
+    public void test10() {
+        ReflectExpressionParser expressionParser = ReflectExpressionParser.getInstance();
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("replace('10.00元','元','')");
+        System.out.println(expressionExecutor.execute(null));
+    }
 }

@@ -40,6 +40,10 @@ public class TestFunction {
         return text.contains(content);
     }
 
+    public static String replace(String text, String oldChar, String replacement) {
+        return text.replace(oldChar, replacement);
+    }
+
     public static BigDecimal abs(Object value) {
         return new BigDecimal(value.toString()).abs();
     }
