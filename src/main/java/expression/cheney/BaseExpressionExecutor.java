@@ -19,12 +19,19 @@ import static expression.cheney.CharConstants.*;
  */
 public abstract class BaseExpressionExecutor implements ExpressionExecutor {
 
-    // 系统创建的环境值key
+    /**
+     * 系统创建的环境值key
+     */
     public static final String NEW_ENV_KEY = "_ENV_KEY";
-    // 表达式
+
+    /**
+     * 表达式
+     */
     protected String express;
 
-    // 方法名
+    /**
+     * 表达式解析结果
+     */
     protected BaseExpressionParser.ParseResult parseResult;
 
     BaseExpressionExecutor(String express, BaseExpressionParser.ParseResult parseResult) {
@@ -93,7 +100,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
      * 尝试将变量转换基本类型数据
      *
      * @param valueStr 待转换的值
-     * @return
+     * @return 转换结果
      */
     private static Object castToBasic(String valueStr) {
         if ("null".equals(valueStr) || "nil".equals(valueStr)) {
@@ -115,6 +122,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
      *
      * @param expression 运算表达式
      * @param env        实际参数
+     * @param cache      是否使用缓存
      * @return 表达式执行结果
      */
     protected abstract Object executeOperation(String expression, Map<String, Object> env, boolean cache);

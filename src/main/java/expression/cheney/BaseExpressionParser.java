@@ -116,7 +116,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             // 不包含函数，则为原始类型
             return ParseResult.origin(expression);
         }
-        int start = expression.indexOf("(");
+        int start = expression.indexOf(BRACKETS_LEFT_STRING);
         int length = expression.length();
         String funcName = expression.substring(0, start);
         String content;
@@ -245,7 +245,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         if (Arg.FUNC == type) {
             // 函数
             String function = (String) value;
-            int startIndex = function.indexOf("(");
+            int startIndex = function.indexOf(BRACKETS_LEFT_STRING);
             String funcName = function.substring(0, startIndex).trim();
             boolean emptyFuncName = "".equals(funcName);
             if (emptyFuncName || ORIGIN_PATTERN.matcher(funcName).matches()) {
