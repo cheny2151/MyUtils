@@ -39,6 +39,7 @@ import static expression.cheney.func.InternalFunction.OUT_PUT_FUNC_NAME;
  */
 public abstract class BaseExpressionParser implements ExpressionParser {
 
+    @Override
     public abstract ExpressionExecutor parseExpression(String expression);
 
     /**
