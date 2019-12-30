@@ -1,6 +1,7 @@
 package expression.cheney;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -103,7 +104,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
      * @return 转换结果
      */
     private static Object castToBasic(String valueStr) {
-        if ("null".equals(valueStr) || "nil".equals(valueStr)) {
+        if (ArrayUtils.contains(NULL_VALUES, valueStr)) {
             return null;
         } else if ("false".equals(valueStr) || "true".equals(valueStr)) {
             return Boolean.valueOf(valueStr);

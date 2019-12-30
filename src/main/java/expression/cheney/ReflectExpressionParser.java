@@ -12,6 +12,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import static expression.cheney.BaseExpressionParser.ParseResult.FUNC;
+import static expression.cheney.BaseExpressionParser.ParseResult.NULL_VALUE;
+
 /**
  * 反射表达式解析器
  * 通过解析表达式后用反射的方式结合Aviator执行表达式
@@ -65,8 +68,18 @@ public class ReflectExpressionParser extends BaseExpressionParser {
     @Override
     public ExpressionExecutor parseExpression(String expression) {
         ParseResult parseResult = parse(expression);
-        return parseResult.isFunc() ? new ReflectExpressionExecutor(expression, parseResult, this.methodHolderFactory, this.functionClasses)
-                : AviatorExpressionParser.getInstance().parseExpressionWithCache(expression);
+        switch (parseResult.getType()) {
+            case FUNC: {
+                return new ReflectExpressionExecutor(expression, parseResult, this.methodHolderFactory, this.functionClasses);
+            }
+            case NULL_VALUE: {
+                // 1.6 新增，处理'null'表达式解析结果
+                return NullExpressionExecutor.getInstance();
+            }
+            default: {
+                return AviatorExpressionParser.getInstance().parseExpressionWithCache(expression);
+            }
+        }
     }
 
     /**

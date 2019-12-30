@@ -31,7 +31,8 @@ import static expression.cheney.func.InternalFunction.OUT_PUT_FUNC_NAME;
  *     优化关键字符',(缺失/位置非法时时抛出异常。
  * 1.3 完美支持原始类型(包含运算符)与函数的组合（组合段落）。
  * 1.4 组合段落新支持常量，组合段落支持常量、原始类型、函数与运算符之间的组合（COMBINATION组合段落）。
- * 1.5 支持最外层为段落组合，通过拼接输出函数{@link InternalFunction#output(java.lang.Object)}实现，代码见{@link #parse(java.lang.String)}。
+ * 1.5 支持最外层为段落组合，通过拼接输出函数{@link InternalFunction#output(java.lang.Object)}实现，代码见{@link #executeParse(java.lang.String)}。
+ * 1.6 新增解析前置方法{@link #parse(java.lang.String)},用于处理'null'表达式等。
  *
  * @version 1.3
  * @author cheney
@@ -52,12 +53,21 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     @Data
     @AllArgsConstructor
     protected static class ParseResult {
+        /**
+         * 类型枚举值
+         */
+        public final static short FUNC = 1;
+        public final static short ORIGIN = 2;
+        public final static short NULL_VALUE = -1;
+
+        /**
+         * 解析结果为NULL
+         */
+        public final static ParseResult NULL_RESULT = new ParseResult(null, null, NULL_VALUE);
+
         private String funcName;
         private List<Arg> args;
         private short type;
-        // 类型枚举值
-        public final static short FUNC = 1;
-        public final static short ORIGIN = 2;
 
         /**
          * 原始类型时,funcName作为完整的原始类型表达式
@@ -96,6 +106,27 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     }
 
     /**
+     * 执行解析前的操作，对于不需要内层递归执行的代码在此方法只执行一次,
+     * 相当于开始执行解析前置方法
+     * <p>
+     * 1.6新增
+     *
+     * @param expression 表达式
+     * @return 解析结果 ParseResult实体
+     */
+    protected ParseResult parse(String expression) {
+        if (expression == null) {
+            throw new ExpressionParseException("expression can not be null");
+        }
+        expression = expression.trim();
+        if (ArrayUtils.contains(NULL_VALUES, expression)) {
+            // 返回NULL
+            return ParseResult.NULL_RESULT;
+        }
+        return executeParse(expression);
+    }
+
+    /**
      * 解析方法表达式
      * <p>
      * 1.判断表达式不存在函数(不匹配正则'字母 ('),则为原始类型ParseResult.ORIGIN
@@ -107,7 +138,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @param expression 表达式
      * @return 解析结果 ParseResult实体
      */
-    protected ParseResult parse(String expression) {
+    protected ParseResult executeParse(String expression) {
         expression = expression.trim();
         if (StringUtils.isEmpty(expression)) {
             throw new ExpressionParseException("expression can not be empty");
@@ -272,7 +303,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                     args.add(new Arg(content, Arg.ORIGIN));
                 } else {
                     // 包含函数的content拼接输出函数名，形成一个输出结果的函数
-                    args.add(new Arg(parse(OUT_PUT_FUNC_NAME + content), Arg.FUNC));
+                    args.add(new Arg(executeParse(OUT_PUT_FUNC_NAME + content), Arg.FUNC));
                 }
             } else if (CONTAINS_OPERATOR_PATTERN.matcher(funcName).find()) {
                 /* 方法名包含运算符，则将arg解析为一个List用来存'运算符嵌套函数组合段落(COMBINATION)':
@@ -280,7 +311,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 int splitIndex = findLastOperatorIndex(funcName) + 1;
                 Arg operator = new Arg(function.substring(0, splitIndex).trim(), Arg.ORIGIN);
                 // 解析去除运算符后的函数表达式,解析结果存为函数FUNC(type:1)
-                ParseResult func = parse(function.substring(splitIndex).trim());
+                ParseResult func = executeParse(function.substring(splitIndex).trim());
                 Arg funcArg = new Arg(func, Arg.FUNC);
                 /* 最后将新生成的函数arg与运算符arg放入对应的List中
                    1:partLast(此段落前一个arg)不为空，该运算符嵌套函数表达式作为'组合段落(COMBINATION)'的一部分
@@ -299,7 +330,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 }
             } else {
                 // 参数为单独一个函数表达式,执行方法表达式解析
-                value = parse(function);
+                value = executeParse(function);
             }
         } else if (Arg.ORIGIN == type) {
             // 原始类型

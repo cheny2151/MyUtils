@@ -30,6 +30,8 @@ public class Main {
             test7();
             test8();
             test9();
+            test10();
+            test11();
         }
         System.out.println((System.currentTimeMillis() - l) / 1000);
     }
@@ -143,6 +145,13 @@ public class Main {
     public void test10() {
         ReflectExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor = expressionParser.parseExpression("replace('10.00元','元','')");
+        System.out.println(expressionExecutor.execute(null));
+    }
+
+    @Test
+    public void test11(){
+        ReflectExpressionParser expressionParser = ReflectExpressionParser.getInstance();
+        ExpressionExecutor expressionExecutor = expressionParser.parseExpression("nil");
         System.out.println(expressionExecutor.execute(null));
     }
 }

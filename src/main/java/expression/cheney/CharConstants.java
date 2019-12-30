@@ -44,6 +44,8 @@ public final class CharConstants {
 
     final static String BRACKETS_LEFT_STRING = "(";
 
+    final static String[] NULL_VALUES = new String[]{"null", "nil"};
+
     /**
      * 可为结尾的字符
      */
