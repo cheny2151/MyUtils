@@ -251,9 +251,15 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                         partLast = null;
                     }
                 }
-            } else if (c == COMMA_CHAR && count == 0 && partLast != null) {
-                // 段落结束
-                partLast = null;
+            } else if (c == COMMA_CHAR && count == 0) {
+                // 此时startIndex必定为null
+                if (partLast != null) {
+                    // 第一次匹配段落结束标识:','
+                    partLast = null;
+                } else {
+                    // 第二次匹配段落结束标识:','，说明两个','之间无内容
+                    throw new ExpressionParseException(expression + " : error expression,miss param between \",\"");
+                }
             }
         }
         return result;
