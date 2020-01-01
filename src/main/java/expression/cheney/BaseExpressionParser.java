@@ -94,6 +94,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     @NoArgsConstructor
     @AllArgsConstructor
     static class Arg {
+        private final static List<Arg> EMPTY_ARG = new ArrayList<>(0);
         // 值
         private Object value;
         // 类型：0:常量,1:函数,2:运算,3:组合段落
@@ -173,6 +174,10 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         expression = expression.trim();
         char[] chars = expression.toCharArray();
         int length = chars.length;
+        if (length == 0) {
+            // 空参
+            return Arg.EMPTY_ARG;
+        }
         int endIndex = length - 1;
         // 语句开始位置
         Integer startIndex = null;
@@ -253,12 +258,12 @@ public abstract class BaseExpressionParser implements ExpressionParser {
                 }
             } else if (c == COMMA_CHAR && count == 0) {
                 // 此时startIndex必定为null
-                if (partLast != null) {
-                    // 第一次匹配段落结束标识:','
-                    partLast = null;
+                if (partLast == null || end) {
+                    // 匹配段落结束标识','并且段落无上一部分，说明段落为空
+                    throw new ExpressionParseException(expression + " : error expression , miss arg in func");
                 } else {
-                    // 第二次匹配段落结束标识:','，说明两个','之间无内容
-                    throw new ExpressionParseException(expression + " : error expression,miss param between \",\"");
+                    // 匹配段落结束标识','，则将上一部分重置为空
+                    partLast = null;
                 }
             }
         }
