@@ -20,13 +20,13 @@ public class main {
     @Test
     public void test() throws IOException {
         String path = "D:\\test.zip";
-        ZipFile zf = new ZipFile(path, Charset.forName("gbk"));
-        Enumeration<? extends ZipEntry> entries = zf.entries();
-        ZipEntry ze;
+        ZipFile zipFile = new ZipFile(path, Charset.forName("gbk"));
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        ZipEntry zipEntry;
         while (entries.hasMoreElements()) {
-            ze = entries.nextElement();
-            if (!ze.getName().contains("汇总")) {
-                InputStream inputStream = zf.getInputStream(ze);
+            zipEntry = entries.nextElement();
+            if (!zipEntry.getName().contains("汇总")) {
+                InputStream inputStream = zipFile.getInputStream(zipEntry);
                 BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("gbk")));
                 String line;
                 while ((line = br.readLine()) != null) {
@@ -35,7 +35,7 @@ public class main {
                 br.close();
             }
         }
-        zf.close();
+        zipFile.close();
     }
 
 }
