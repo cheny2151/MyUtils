@@ -1,5 +1,6 @@
 package reflect.methodHolder;
 
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import reflect.methodHolder.exception.MethodHolderInvokeException;
 import reflect.methodHolder.exception.NoSuchMethodException;
@@ -48,7 +49,8 @@ public abstract class BaseMethodHolder implements MethodHolder {
                 return method.invoke(obj, args);
             }
         } catch (Exception e) {
-            throw new MethodHolderInvokeException(holdClass.getSimpleName() + "执行方法#" + methodName + "异常", e);
+            throw new MethodHolderInvokeException("执行方法" + holdClass.getSimpleName() + "#" + methodName + "异常，" +
+                    "方法入参:" + JSON.toJSONString(args), e);
         }
     }
 
