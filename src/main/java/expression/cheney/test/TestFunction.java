@@ -22,28 +22,6 @@ public class TestFunction {
         return "yyyy-MM-dd";
     }
 
-    public static String date_format(Date date, String format) {
-        return DateFormatUtils.format(date, format);
-    }
-
-    public static Object ifs(Object... objs) {
-        System.out.println(JsonUtils.toJson(objs));
-        for (int i = 0; i < objs.length; i++) {
-            if ((i & 1) == 0 && (boolean) objs[i]) {
-                return objs[i + 1];
-            }
-        }
-        return "error";
-    }
-
-    public static boolean contains(String text, String content) {
-        return text.contains(content);
-    }
-
-    public static String replace(String text, String oldChar, String replacement) {
-        return text.replace(oldChar, replacement);
-    }
-
     public static BigDecimal abs(Object value) {
         return new BigDecimal(value.toString()).abs();
     }
