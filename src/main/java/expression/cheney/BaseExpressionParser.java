@@ -33,8 +33,9 @@ import static expression.cheney.func.InternalFunction.OUT_PUT_FUNC_NAME;
  * 1.4 组合段落新支持常量，组合段落支持常量、原始类型、函数与运算符之间的组合（COMBINATION组合段落）。
  * 1.5 支持最外层为段落组合，通过拼接输出函数{@link InternalFunction#output(java.lang.Object)}实现，代码见{@link #executeParse(java.lang.String)}。
  * 1.6 新增解析前置方法{@link #parse(java.lang.String)},用于处理'null'表达式等。
+ * 1.7 表达式测试接口
  *
- * @version 1.3
+ * @version 1.7
  * @author cheney
  * @date 2019-12-07
  */
@@ -104,6 +105,41 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         public final static short FUNC = 1;
         public final static short ORIGIN = 2;
         public final static short COMBINATION = 3;
+    }
+
+    /**
+     * 表达式测试结果
+     * 1.7新增
+     */
+    @Data
+    @AllArgsConstructor
+    static class TestResult {
+        private String errorMsg;
+        private boolean passed;
+
+        public static TestResult success() {
+            return new TestResult("success", true);
+        }
+
+        public static TestResult fail(String expression, Exception e) {
+            return new TestResult("表达式 " + expression + " 测试不通过:" + e.getMessage(), false);
+        }
+    }
+
+    /**
+     * 表达式测试
+     * 1.7新增
+     *
+     * @param expression 表达式
+     * @return 测试结果
+     */
+    public TestResult test(String expression) {
+        try {
+            parse(expression);
+            return TestResult.success();
+        } catch (RuntimeException e) {
+            return TestResult.fail(expression, e);
+        }
     }
 
     /**
