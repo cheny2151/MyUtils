@@ -113,7 +113,7 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      */
     @Data
     @AllArgsConstructor
-    static class TestResult {
+    public static class TestResult {
         private String errorMsg;
         private boolean passed;
 
