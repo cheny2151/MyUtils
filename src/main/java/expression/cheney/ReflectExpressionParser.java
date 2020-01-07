@@ -77,7 +77,7 @@ public class ReflectExpressionParser extends BaseExpressionParser {
                 return NullExpressionExecutor.getInstance();
             }
             default: {
-                return AviatorExpressionParser.getInstance().parseExpressionWithCache(expression);
+                return parseOriginExpressionWithCache(expression);
             }
         }
     }

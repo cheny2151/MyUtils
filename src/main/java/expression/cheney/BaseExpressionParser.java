@@ -135,7 +135,10 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      */
     public TestResult test(String expression) {
         try {
-            parse(expression);
+            ParseResult parseResult = parse(expression);
+            if (parseResult.getType() == ParseResult.ORIGIN) {
+                parseOriginExpression(expression);
+            }
             return TestResult.success();
         } catch (RuntimeException e) {
             return TestResult.fail(expression, e);
@@ -477,6 +480,26 @@ public abstract class BaseExpressionParser implements ExpressionParser {
             part += endChar;
         }
         return "\"" + part + "\"";
+    }
+
+    /**
+     * 解析ORIGIN类型表达式
+     *
+     * @param expression 表达式
+     * @return 表达式解析结果
+     */
+    protected ExpressionExecutor parseOriginExpression(String expression) {
+        return AviatorExpressionParser.getInstance().parseExpression(expression);
+    }
+
+    /**
+     * 解析ORIGIN类型表达式并缓存
+     *
+     * @param expression 表达式
+     * @return 表达式解析结果
+     */
+    protected ExpressionExecutor parseOriginExpressionWithCache(String expression) {
+        return AviatorExpressionParser.getInstance().parseExpressionWithCache(expression);
     }
 
 }
