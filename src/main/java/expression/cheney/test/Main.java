@@ -156,7 +156,7 @@ public class Main {
     }
 
     @Test
-    public void test12(){
+    public void test12() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor2 =
                 expressionParser.parseExpression("ifs(业务类型=='其它'&&contains(备注,'天猫物流破损险'),substring(备注,21,18),业务类型=='转账'&&contains(备注,'基金代发任务'),substring(备注,5,18),业务类型=='其它'&&(contains(备注,'售后支付')||contains(备注,'商家保证金理赔')||contains(备注,'保证金退款'))||(业务类型=='转账'&&(contains(备注,'天天特卖')||contains(备注,'售后退款'))),substring(商户订单号,5,18),true,业务基础订单号)");
@@ -164,6 +164,17 @@ public class Main {
         env2.put("业务类型", "其他分账");
         env2.put("备注", "其他结算其他结算其他结算其他结算其他结算其他结算其他结算其他结算其他结算其他结算其他结算其他结算其他结算");
         env2.put("商户订单号", "商户订单号商户订单号商户订单号商户订单号商户订单号商户订单号商户订单号商户订单号商户订单号商户订单号");
+        System.out.println(expressionExecutor2.execute(env2));
+    }
+
+    @Test
+    public void test13() {
+        ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
+        ExpressionExecutor expressionExecutor2 =
+                expressionParser.parseExpression("to_number(服务费)");
+        HashMap<String, Object> env2 = new HashMap<>();
+        env2.put("服务费", "1");
+        env2.put("团长佣金", "2");
         System.out.println(expressionExecutor2.execute(env2));
     }
 }

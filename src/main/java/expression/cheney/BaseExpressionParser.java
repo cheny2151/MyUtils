@@ -34,8 +34,9 @@ import static expression.cheney.func.InternalFunction.OUT_PUT_FUNC_NAME;
  * 1.5 支持最外层为段落组合，通过拼接输出函数{@link InternalFunction#output(java.lang.Object)}实现，代码见{@link #executeParse(java.lang.String)}。
  * 1.6 新增解析前置方法{@link #parse(java.lang.String)},用于处理'null'表达式等。
  * 1.7 表达式测试接口
+ * 1.8 放弃1.5逻辑，改为最外层调用方法{@link #parse(java.lang.String)}时所有非空非原始类型表达式拼接{@link InternalFunction#output(java.lang.Object)}
  *
- * @version 1.7
+ * @version 1.8
  * @author cheney
  * @date 2019-12-07
  */
@@ -150,6 +151,8 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * 相当于开始执行解析前置方法
      * <p>
      * 1.6新增
+     * 1.8更新：
+     * 判断表达式不包含函数，则为原始类型ParseResult.ORIGIN
      *
      * @param expression 表达式
      * @return 解析结果 ParseResult实体
@@ -162,18 +165,18 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         if (ArrayUtils.contains(NULL_VALUES, expression)) {
             // 返回NULL
             return ParseResult.NULL_RESULT;
+        } else if (!CONTAINS_FUNC.matcher(expression).find()) {
+            // 不包含函数，则为原始类型
+            return ParseResult.origin(expression);
         }
-        return executeParse(expression);
+        // 拼接output执行解析
+        return executeParse(OUT_PUT_FUNC_NAME + BRACKETS_LEFT_CHAR + expression + BRACKETS_RIGHT_CHAR);
     }
 
     /**
      * 解析方法表达式
      * <p>
-     * 1.判断表达式不存在函数(不匹配正则'字母 ('),则为原始类型ParseResult.ORIGIN
-     * 2.（1.5新增）
-     * 表达式首个非空字符为'(',或者达式首个'('前存在运算符，则拼接输出函数{@link InternalFunction#output(java.lang.Object)}，
-     * 再执行解析{@link #parseArg(java.lang.String)}。
-     * 3.表达式首个'('前不存在运算符,则为函数直接执行解析{@link #parseArg(java.lang.String)}。
+     * 1.8更新：调用此方法的表达式必为函数类型
      *
      * @param expression 表达式
      * @return 解析结果 ParseResult实体
@@ -183,21 +186,10 @@ public abstract class BaseExpressionParser implements ExpressionParser {
         if (StringUtils.isEmpty(expression)) {
             throw new ExpressionParseException("expression can not be empty");
         }
-        if (!CONTAINS_FUNC.matcher(expression).find()) {
-            // 不包含函数，则为原始类型
-            return ParseResult.origin(expression);
-        }
         int start = expression.indexOf(BRACKETS_LEFT_STRING);
         int length = expression.length();
         String funcName = expression.substring(0, start);
-        String content;
-        if ("".equals(funcName) || CONTAINS_OPERATOR_PATTERN.matcher(funcName).find()) {
-            // 1.5：表达式以'('开头或者表达式为段落，则拼接输出函数
-            funcName = OUT_PUT_FUNC_NAME;
-            content = expression;
-        } else {
-            content = expression.substring(start + 1, length - 1);
-        }
+        String content = expression.substring(start + 1, length - 1);
         List<Arg> args = parseArg(content);
 
         return ParseResult.func(funcName, args);

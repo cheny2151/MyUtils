@@ -1,10 +1,8 @@
 package expression.cheney.test;
 
 import jsonUtils.JsonUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * @author cheney
@@ -26,4 +24,10 @@ public class TestFunction {
         return new BigDecimal(value.toString()).abs();
     }
 
+    public static BigDecimal to_number(Object object) {
+        if (object == null) {
+            throw new NullPointerException();
+        }
+        return new BigDecimal(object.toString());
+    }
 }
