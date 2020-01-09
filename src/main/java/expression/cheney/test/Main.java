@@ -1,9 +1,6 @@
 package expression.cheney.test;
 
-import expression.cheney.AviatorExpressionParser;
-import expression.cheney.ExpressionExecutor;
-import expression.cheney.ExpressionParser;
-import expression.cheney.ReflectExpressionParser;
+import expression.cheney.*;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -171,7 +168,7 @@ public class Main {
     public void test13() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor2 =
-                expressionParser.parseExpression("to_number(服务费)");
+                expressionParser.parseExpression("to_number(服务费)+to_number(团长佣金)");
         HashMap<String, Object> env2 = new HashMap<>();
         env2.put("服务费", "1");
         env2.put("团长佣金", "2");
