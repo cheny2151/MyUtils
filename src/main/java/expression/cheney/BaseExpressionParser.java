@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,10 +157,9 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      * @return 解析结果 ParseResult实体
      */
     protected ParseResult parse(String expression) {
-        if (expression == null) {
-            throw new ExpressionParseException("expression can not be null");
+        if (expression == null || (expression = expression.trim()).length() == 0) {
+            throw new ExpressionParseException("expression can not be empty");
         }
-        expression = expression.trim();
         if (ArrayUtils.contains(NULL_VALUES, expression)) {
             // 返回NULL
             return ParseResult.NULL_RESULT;
@@ -183,9 +181,6 @@ public abstract class BaseExpressionParser implements ExpressionParser {
      */
     protected ParseResult executeParse(String expression) {
         expression = expression.trim();
-        if (StringUtils.isEmpty(expression)) {
-            throw new ExpressionParseException("expression can not be empty");
-        }
         int start = expression.indexOf(BRACKETS_LEFT_STRING);
         int length = expression.length();
         String funcName = expression.substring(0, start);
