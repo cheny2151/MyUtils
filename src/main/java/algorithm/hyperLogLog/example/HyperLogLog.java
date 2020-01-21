@@ -134,9 +134,9 @@ public class HyperLogLog {
     }
 
     public static void main(String[] args) {
-        HyperLogLog hyperLogLog = new HyperLogLog(0.1325);//64个桶
+        HyperLogLog hyperLogLog = new HyperLogLog(14);
         //集合中只有下面这些元素
-        for (int i = 0; i < 10238; i++) {
+        for (int i = 0; i < 1023800; i++) {
             hyperLogLog.offer(i);
         }
         //估算基数

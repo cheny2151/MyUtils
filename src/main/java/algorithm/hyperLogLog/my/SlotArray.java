@@ -23,7 +23,7 @@ public class SlotArray {
     /**
      * 桶个数
      */
-    private final static int SLOT_SIZE = 1 << 14;
+    public final static int SLOT_SIZE = 1 << 14;
 
     /**
      * ({@link SLOT_BIT} * {@link SLOT_SIZE})/{@link Long#SIZE}
@@ -50,10 +50,10 @@ public class SlotArray {
     }
 
     public int getValue(int index) {
-        if (index > SLOT_SIZE) {
-            throw new IllegalArgumentException("max index is " + SLOT_SIZE);
+        if (index < 0 || index >= SLOT_SIZE) {
+            throw new IllegalArgumentException("index must [0," + SLOT_SIZE + ") ,but is " + index);
         }
-        int preSlotLength = (index - 1) * SLOT_BIT;
+        int preSlotLength = index * SLOT_BIT;
         int preSlotIndex = preSlotLength / Long.SIZE;
         long offset = preSlotLength % Long.SIZE;
         long hitBitArray = slotBits[preSlotIndex];
@@ -71,7 +71,7 @@ public class SlotArray {
     }
 
     private void putVal(int index, int value) {
-        int preSlotLength = (index - 1) * SLOT_BIT;
+        int preSlotLength = index * SLOT_BIT;
         int preSlotIndex = preSlotLength / Long.SIZE;
         long offset = preSlotLength % Long.SIZE;
         long hitBitArray = slotBits[preSlotIndex];
