@@ -84,7 +84,6 @@ public class HyperLogLog {
             dv += 1.0 / (1 << value);
         }
         // 0值桶为 1/2^0 =1,补充0值
-        System.out.println(zeroc);
         dv = dv + zeroc;
         dv = constant * (1 / dv);
 
