@@ -40,6 +40,9 @@ public class SlotArray {
     }
 
     public void putValue(int index, int value) {
+        if (value == 0) {
+            return;
+        }
         if (value > MAX_SIX_BIT) {
             throw new IllegalArgumentException("max value is " + MAX_SIX_BIT);
         }
@@ -77,8 +80,8 @@ public class SlotArray {
         long hitBitArray = slotBits[preSlotIndex];
         if (offset <= Long.SIZE - SLOT_BIT) {
             /* (MAX_SIX_BIT << offset | hitBitArray) : 将offset前6位值设为1；
-             * ~(~vl << offset) : 值二进制位取反左移offer位后反转回去 */
-            slotBits[preSlotIndex] = (MAX_SIX_BIT << offset | hitBitArray) & ~(~(long) value << offset);
+             * ~(MAX_SIX_BIT << offset) | ((long) value << offset) : 获得value二进制左移offset后前后补1的64位二进制 */
+            slotBits[preSlotIndex] = (MAX_SIX_BIT << offset | hitBitArray) & ~(MAX_SIX_BIT << offset) | ((long) value << offset);
         } else {
             // 当偏移量大于58时，需要将额外的值存放到下一位long
             long nextBitArray = slotBits[preSlotIndex + 1];
@@ -88,7 +91,8 @@ public class SlotArray {
             slotBits[preSlotIndex] = (bit0 << offset | hitBitArray) & ~(~(bit0 & (long) value) << offset);
             long bit1 = MAX_SIX_BIT ^ bit0;
             // 将vl高(6-existsBit位)赋值到下一个long的低(6-existsBit位)
-            slotBits[preSlotIndex + 1] = (bit1 >>> existsBit | nextBitArray) & ((long) value & bit1) >>> existsBit;
+            long bit2 = bit1 >>> existsBit;
+            slotBits[preSlotIndex + 1] = (bit2 | nextBitArray) & (~bit2 | ((long) value >>> existsBit));
         }
     }
 
