@@ -1,6 +1,10 @@
 package javaagent.javassist.api;
 
-import javassist.*;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.CtNewMethod;
+import org.junit.Test;
 
 import java.lang.reflect.Method;
 
@@ -10,7 +14,8 @@ import java.lang.reflect.Method;
  */
 public class JavassistTestMain {
 
-    public static void main(String[] args) throws Exception {
+    @Test
+    public void test() throws Exception {
         ClassPool pool = ClassPool.getDefault();
         CtClass ctClass = pool.get("javaagent.javassist.api.JavassistTest");
         CtMethod export = ctClass.getDeclaredMethod("test");
@@ -31,6 +36,30 @@ public class JavassistTestMain {
         Method test2M = javassistTest.getClass().getMethod("test2");
         Object invoke2 = test2M.invoke(javassistTest);
         System.out.println(invoke2);
+    }
+
+    /**
+     * 方法代理demo
+     */
+    @Test
+    public void test2() throws Exception {
+        ClassPool pool = ClassPool.getDefault();
+        CtClass cc = pool.get("javaagent.javassist.api.JavassistTest");
+        CtMethod test2 = cc.getDeclaredMethod("test2", new CtClass[]{CtClass.intType});
+        String resultTypeName = test2.getReturnType().getName();
+        System.out.println(resultTypeName);
+        String methodName = test2.getName() + "$agent";
+        CtMethod agentMethod = CtNewMethod.copy(test2, methodName, cc, null);
+        cc.addMethod(agentMethod);
+        test2.setBody("{" +
+                "System.out.println(\"before\");" +
+                resultTypeName + " r ="+methodName + "($$);" +
+                "System.out.println(\"after\");" +
+                "return r;"+
+                "}");
+        cc.toClass();
+        JavassistTest javassistTest = new JavassistTest();
+        System.out.println(javassistTest.test2(3));
     }
 
 }
