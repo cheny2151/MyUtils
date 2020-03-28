@@ -11,6 +11,9 @@ public class JavassistTest {
     }
     public int test2(int test) {
         System.out.println("=========");
+        if (test == 0) {
+            throw new RuntimeException("throw test");
+        }
         return test;
     }
 

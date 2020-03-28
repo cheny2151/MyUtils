@@ -53,13 +53,18 @@ public class JavassistTestMain {
         cc.addMethod(agentMethod);
         test2.setBody("{" +
                 "System.out.println(\"before\");" +
-                resultTypeName + " r ="+methodName + "($$);" +
+                resultTypeName + " r = -1;" +
+                "try {" +
+                "r=" + methodName + "($$);" +
+                "}catch(Throwable e) {" +
+                "System.out.println(\"catch exception:\"+e.getMessage());" +
+                "}" +
                 "System.out.println(\"after\");" +
-                "return r;"+
+                "return r;" +
                 "}");
         cc.toClass();
         JavassistTest javassistTest = new JavassistTest();
-        System.out.println(javassistTest.test2(3));
+        System.out.println(javassistTest.test2(0));
     }
 
 }
