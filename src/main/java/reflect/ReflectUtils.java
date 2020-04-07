@@ -251,7 +251,7 @@ public class ReflectUtils {
      * @param stop  终止递归父类
      * @return
      */
-    public static List<Field> getAllFields(Class clazz, Class stop) {
+    public static List<Field> getAllFields(Class<?> clazz, Class<?> stop) {
         List<Field> fields = new ArrayList<>();
         for (; clazz != stop; clazz = clazz.getSuperclass()) {
             for (Field field : clazz.getDeclaredFields()) {
@@ -269,7 +269,7 @@ public class ReflectUtils {
      * @param clazz 所属对象class
      * @return
      */
-    public static Set<String> getAllFieldNames(Class clazz) {
+    public static Set<String> getAllFieldNames(Class<?> clazz) {
         List<Field> fields = getAllFields(clazz, Object.class);
         TreeSet<String> names = new TreeSet<>();
         fields.forEach(field ->

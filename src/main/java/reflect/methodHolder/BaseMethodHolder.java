@@ -9,6 +9,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 基础MethodHolder实现类
@@ -54,6 +56,65 @@ public abstract class BaseMethodHolder implements MethodHolder {
         }
     }
 
+    @Override
+    public boolean hasMethod(String methodName) {
+        return methodMap.containsKey(methodName);
+    }
+
+    @Override
+    public Optional<Method> getMethod(String methodName, Class<?> returnType, Class<?>... parameterTypes) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Method> getMethod(String name, Class<?> parameterTypes) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Method> getMethod(String name) {
+        return Optional.ofNullable(methodMap.get(name));
+    }
+
+    /**
+     * 缓存方法
+     *
+     * @param method 方法
+     */
+    public void cacheMethod(Method method) {
+        if (method == null)
+            return;
+        methodMap.put(method.getName(), method);
+    }
+
+    public Class<?> getHoldClass() {
+        return holdClass;
+    }
+
+    /**
+     * 获取方法签名
+     *
+     * @param method         方法
+     * @param withReturnType 是否包含返回类型
+     * @return 方法签名
+     */
+    public static String getSignature(Method method, boolean withReturnType) {
+        StringBuilder builder = new StringBuilder();
+        if (withReturnType) {
+            Class<?> returnType = method.getReturnType();
+            if (returnType != null) {
+                builder.append(returnType.getName()).append("#");
+            }
+        }
+        builder.append(method.getName());
+        if (method.getParameterCount() > 0) {
+            builder.append(":");
+            String args = Stream.of(method.getParameterTypes()).map(Class::getName).collect(Collectors.joining(","));
+            builder.append(args);
+        }
+        return builder.toString();
+    }
+
     /**
      * 修复不定参数,将最后一项参数(不定参数)包装为array，其他参数不变copy出新的Object[]
      *
@@ -89,36 +150,6 @@ public abstract class BaseMethodHolder implements MethodHolder {
             nullArray[i] = null;
         }
         return nullArray;
-    }
-
-    @Override
-    public boolean hasMethod(String methodName) {
-        return methodMap.containsKey(methodName);
-    }
-
-    /**
-     * 通过方法名获取方法
-     *
-     * @param name 方法名
-     * @return 方法
-     */
-    public Optional<Method> getMethod(String name) {
-        return Optional.ofNullable(methodMap.get(name));
-    }
-
-    /**
-     * 缓存方法
-     *
-     * @param method 方法
-     */
-    public void cacheMethod(Method method) {
-        if (method == null)
-            return;
-        methodMap.put(method.getName(), method);
-    }
-
-    public Class<?> getHoldClass() {
-        return holdClass;
     }
 
 }
