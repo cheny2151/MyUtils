@@ -12,6 +12,13 @@ import java.util.Optional;
 public interface MethodHolder {
 
     /**
+     * 缓存方法
+     *
+     * @param method 方法
+     */
+    void cacheMethod(Method method);
+
+    /**
      * 反射调用方法
      *
      * @param methodName 方法名
@@ -37,23 +44,35 @@ public interface MethodHolder {
      * @param parameterTypes 参数类型数组
      * @return 匹配的方法
      */
-    Optional<Method> getMethod(String methodName, Class<?> returnType, Class<?>... parameterTypes);
+    Optional<Method> getMethod(Class<?> returnType, String methodName, Class<?>... parameterTypes);
 
     /**
      * 通过方法名、方法签名定位方法
      *
      * @param methodName     方法名
-     * @param parameterTypes 残念是类型数组
+     * @param parameterTypes 参数类型数组
      * @return 匹配的方法
      */
-    Optional<Method> getMethod(String methodName, Class<?> parameterTypes);
+    Optional<Method> getMethod(String methodName, Class<?>... parameterTypes);
 
     /**
      * 通过方法名获取方法
      *
      * @param methodName 方法名
      * @return 方法
+     * @throws reflect.methodHolder.exception.FindNotUniqueMethodException 查询多个方法时抛出该异常
      */
     Optional<Method> getMethod(String methodName);
+
+    /**
+     * 通过给定方法名和其他参数推测方法
+     *
+     * @param methodName 方法名，必填
+     * @param returnType 返回类型，可为空
+     * @param args       参数类型数组，可为空
+     * @return 方法
+     * @throws reflect.methodHolder.exception.FindNotUniqueMethodException 查询多个方法时抛出该异常
+     */
+    Optional<Method> speculateMethod(String methodName, Class<?> returnType, Class<?>... args);
 
 }

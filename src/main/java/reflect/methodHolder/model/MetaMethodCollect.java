@@ -92,25 +92,12 @@ public class MetaMethodCollect {
      * @return 方法
      * @throws FindNotUniqueMethodException 获取到多个方法时抛异常
      */
-    public Method exactMethod() {
+    public Method exactMethodByName() {
         int size = metaMethods.size();
         if (size > 1) {
             throw new FindNotUniqueMethodException("method name '" + methodName + "' has not unique method in class :" + this.owner.getName());
         }
         return metaMethods.stream().findFirst().map(MetaMethod::getMethod).orElse(null);
-    }
-
-    /**
-     * 通过方法名和参数类型确切获取方法
-     *
-     * @param parameterTypes 参数类型
-     * @return 方法
-     */
-    public Method exactMethodByArgs(Class<?>... parameterTypes) {
-        List<MetaMethod> findResult = metaMethods.stream()
-                .filter(e -> e.getSign().equals(mockSignature(methodName, parameterTypes)))
-                .collect(Collectors.toList());
-        return findResult.size() == 0 ? null : findResult.get(0).getMethod();
     }
 
     /**
@@ -133,23 +120,6 @@ public class MetaMethodCollect {
     }
 
     /**
-     * 完全精确匹配方法：
-     * 通过方法名、返回类型和参数类型，确切获取方法
-     * 此方法必定匹配一个或者匹配不到
-     *
-     * @param parameterTypes 参数类型
-     * @param methodName     方法名
-     * @param returnType     返回类型
-     * @return 方法
-     */
-    public Method exactMethod(Class<?> returnType, Class<?>... parameterTypes) {
-        List<MetaMethod> findResult = metaMethods.stream()
-                .filter(metaMethod -> metaMethod.getSign().equals(mockSignature(methodName, parameterTypes)) && returnType.equals(metaMethod.getReturnType()))
-                .collect(Collectors.toList());
-        return findResult.size() == 0 ? null : findResult.get(0).getMethod();
-    }
-
-    /**
      * 通过方法名和参数个数确切获取方法，获取到多个方法时抛异常
      *
      * @param argsNum 参数个数
@@ -165,6 +135,37 @@ public class MetaMethodCollect {
                     "' and args number = " + argsNum +
                     "' has not unique method in class :" + this.owner.getName());
         }
+        return findResult.size() == 0 ? null : findResult.get(0).getMethod();
+    }
+
+    /**
+     * 完全精确匹配方法:
+     * 通过方法名和参数类型确切获取方法
+     *
+     * @param parameterTypes 参数类型
+     * @return 方法
+     */
+    public Method exactMethodByArgs(Class<?>... parameterTypes) {
+        List<MetaMethod> findResult = metaMethods.stream()
+                .filter(e -> e.getSign().equals(mockSignature(methodName, parameterTypes)))
+                .collect(Collectors.toList());
+        return findResult.size() == 0 ? null : findResult.get(0).getMethod();
+    }
+
+    /**
+     * 完全精确匹配方法：
+     * 通过方法名、返回类型和参数类型，确切获取方法
+     * 此方法必定匹配一个或者匹配不到
+     *
+     * @param parameterTypes 参数类型
+     * @param methodName     方法名
+     * @param returnType     返回类型
+     * @return 方法
+     */
+    public Method exactMethod(Class<?> returnType, Class<?>... parameterTypes) {
+        List<MetaMethod> findResult = metaMethods.stream()
+                .filter(metaMethod -> metaMethod.getSign().equals(mockSignature(methodName, parameterTypes)) && returnType.equals(metaMethod.getReturnType()))
+                .collect(Collectors.toList());
         return findResult.size() == 0 ? null : findResult.get(0).getMethod();
     }
 
@@ -220,7 +221,7 @@ public class MetaMethodCollect {
         }
 
         // 无法通过返回值或者参数类型推断,直接匹配方法名,当有多个方法时抛出异常，信息不足，推断失败。
-        return exactMethod();
+        return exactMethodByName();
     }
 
     /**

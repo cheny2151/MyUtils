@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import reflect.methodHolder.exception.MethodHolderInvokeException;
 import reflect.methodHolder.exception.NoSuchMethodException;
+import reflect.methodHolder.model.MetaMethodCollect;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -25,7 +26,7 @@ public abstract class BaseMethodHolder implements MethodHolder {
     private Class<?> holdClass;
 
     // 方法缓存Map
-    protected ConcurrentHashMap<String, Method> methodMap;
+    protected ConcurrentHashMap<String, MetaMethodCollect> methodMap;
 
     public BaseMethodHolder(Class<?> clazz) {
         this.holdClass = clazz;
@@ -33,8 +34,17 @@ public abstract class BaseMethodHolder implements MethodHolder {
     }
 
     @Override
+    public void cacheMethod(Method method) {
+        if (method == null)
+            return;
+        String name = method.getName();
+        methodMap.computeIfAbsent(name, key -> new MetaMethodCollect(holdClass, key)).add(method);
+    }
+
+    @Override
     public Object invoke(String methodName, Object obj, Object... args) {
-        Optional<Method> methodOpt = getMethod(methodName);
+        Class<?>[] classes = extractClass(args);
+        Optional<Method> methodOpt = speculateMethod(methodName, null, classes);
         Method method = methodOpt.orElseThrow(() -> new NoSuchMethodException(methodName));
         try {
             int parameterCount = method.getParameterCount();
@@ -62,31 +72,34 @@ public abstract class BaseMethodHolder implements MethodHolder {
     }
 
     @Override
-    public Optional<Method> getMethod(String methodName, Class<?> returnType, Class<?>... parameterTypes) {
-        return Optional.empty();
+    public Optional<Method> getMethod(Class<?> returnType, String methodName, Class<?>... parameterTypes) {
+        MetaMethodCollect metaMethodCollect = methodMap.get(methodName);
+        return metaMethodCollect == null ? Optional.empty() : Optional.ofNullable(metaMethodCollect.exactMethod(returnType, parameterTypes));
     }
 
     @Override
-    public Optional<Method> getMethod(String name, Class<?> parameterTypes) {
-        return Optional.empty();
+    public Optional<Method> getMethod(String methodName, Class<?>... parameterTypes) {
+        MetaMethodCollect metaMethodCollect = methodMap.get(methodName);
+        return metaMethodCollect == null ? Optional.empty() : Optional.ofNullable(metaMethodCollect.exactMethodByArgs(parameterTypes));
     }
 
     @Override
     public Optional<Method> getMethod(String name) {
-        return Optional.ofNullable(methodMap.get(name));
+        MetaMethodCollect metaMethodCollect = methodMap.get(name);
+        return metaMethodCollect == null ? Optional.empty() : Optional.ofNullable(metaMethodCollect.exactMethodByName());
+    }
+
+    @Override
+    public Optional<Method> speculateMethod(String methodName, Class<?> returnType, Class<?>... args) {
+        MetaMethodCollect metaMethodCollect = methodMap.get(methodName);
+        return metaMethodCollect == null ? Optional.empty() : Optional.ofNullable(metaMethodCollect.speculateMethod(returnType, args));
     }
 
     /**
-     * 缓存方法
+     * 获取持有方法的类
      *
-     * @param method 方法
+     * @return 缓存方法对应的类
      */
-    public void cacheMethod(Method method) {
-        if (method == null)
-            return;
-        methodMap.put(method.getName(), method);
-    }
-
     public Class<?> getHoldClass() {
         return holdClass;
     }
@@ -136,6 +149,16 @@ public abstract class BaseMethodHolder implements MethodHolder {
         }
         fixArgs[defineNum] = array;
         return fixArgs;
+    }
+
+    /**
+     * 提取出对象数组的类型数组
+     *
+     * @param args 参数集合
+     * @return 参数类型数组
+     */
+    private Class<?>[] extractClass(Object[] args) {
+        return Stream.of(args).map(Object::getClass).toArray(Class[]::new);
     }
 
     /**
