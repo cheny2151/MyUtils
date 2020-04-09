@@ -48,7 +48,7 @@ public abstract class BaseMethodHolder implements MethodHolder {
 
     @Override
     public Object invoke(Class<?> returnType, String methodName, Object obj, Object... args) {
-        Class<?>[] classes = extractClass(args);
+        Class<?>[] classes = args == null ? null : extractClass(args);
         Optional<Method> methodOpt = speculateMethod(methodName, returnType, classes);
         Method method = methodOpt.orElseThrow(() -> new NoSuchMethodException(methodName));
         return invoke(method, obj, args);
@@ -176,7 +176,10 @@ public abstract class BaseMethodHolder implements MethodHolder {
      * @return 参数类型数组
      */
     private Class<?>[] extractClass(Object[] args) {
-        return Stream.of(args).map(Object::getClass).toArray(Class[]::new);
+        return Stream.of(args)
+                // 参数为null时，无法辨别类型，用Object代替
+                .map(arg -> arg == null ? Object.class : arg.getClass())
+                .toArray(Class[]::new);
     }
 
     /**
