@@ -1,10 +1,10 @@
 package reflect.methodHolder.model;
 
-import org.apache.commons.lang.StringUtils;
 import reflect.methodHolder.exception.FindNotUniqueMethodException;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,13 +54,46 @@ public class MetaMethodCollect {
 
     /**
      * 添加方法
+     * 相同的方法签名会通过继承关系，方法所属类等选中最优方法
      *
      * @param method 方法
      * @return 添加结果
+     * @throws IllegalArgumentException 添加方法，出现不合法的相同签名的方法时抛出异常
      */
     public boolean add(Method method) {
         if (equalMethodName(method.getName()) && isOwnerMethod(method)) {
-            return metaMethods.add(new MetaMethod(method));
+            MetaMethod newMethod = new MetaMethod(method);
+            Class<?> returnType = newMethod.getReturnType();
+            Class<?> declaringClass = method.getDeclaringClass();
+            boolean add = true;
+            for (Iterator<MetaMethod> iterator = metaMethods.iterator(); iterator.hasNext(); ) {
+                MetaMethod next = iterator.next();
+                if (next.getSignature().equals(newMethod.getSignature())) {
+                    // 签名相同(方法名，参数类型相同)
+                    Class<?> nextReturnType = next.getReturnType();
+                    if (nextReturnType.equals(returnType)) {
+                        // 返回类型相同,证明存在方法重写，优先取方法所属类是子类重写的方法
+                        Class<?> nextDeclaringClass = next.getMethod().getDeclaringClass();
+                        if (nextDeclaringClass.isAssignableFrom(declaringClass)) {
+                            iterator.remove();
+                        } else if (declaringClass.isAssignableFrom(nextDeclaringClass)) {
+                            add = false;
+                        } else {
+                            throw new IllegalArgumentException("Can not add method.Because the method signature and return type is the same");
+                        }
+                    } else if (nextReturnType.isAssignableFrom(returnType)) {
+                        // 返回类型不同并且存在重写方法并修改返回类型为子类，取子类重写的方法
+                        iterator.remove();
+                    } else if (returnType.isAssignableFrom(nextReturnType)) {
+                        add = false;
+                    } else {
+                        // 一个类中，排除继承方法重写后，不应该出现签名相同，但是返回类型不同的方法
+                        throw new IllegalArgumentException("Can not add method.Because the method signature is the same,but the return type has no parent-child relationship");
+                    }
+                    break;
+                }
+            }
+            return add && metaMethods.add(newMethod);
         }
         return false;
     }
@@ -147,7 +180,7 @@ public class MetaMethodCollect {
      */
     public Method exactMethodByArgs(Class<?>... parameterTypes) {
         List<MetaMethod> findResult = metaMethods.stream()
-                .filter(e -> e.getSign().equals(mockSignature(methodName, parameterTypes)))
+                .filter(e -> e.getSignature().equals(mockSignature(methodName, parameterTypes)))
                 .collect(Collectors.toList());
         return findResult.size() == 0 ? null : findResult.get(0).getMethod();
     }
@@ -164,7 +197,7 @@ public class MetaMethodCollect {
      */
     public Method exactMethod(Class<?> returnType, Class<?>... parameterTypes) {
         List<MetaMethod> findResult = metaMethods.stream()
-                .filter(metaMethod -> metaMethod.getSign().equals(mockSignature(methodName, parameterTypes)) && returnType.equals(metaMethod.getReturnType()))
+                .filter(metaMethod -> metaMethod.getSignature().equals(mockSignature(methodName, parameterTypes)) && returnType.equals(metaMethod.getReturnType()))
                 .collect(Collectors.toList());
         return findResult.size() == 0 ? null : findResult.get(0).getMethod();
     }
@@ -271,14 +304,4 @@ public class MetaMethodCollect {
         return false;
     }
 
-    public static void main(String[] args) throws NoSuchMethodException {
-        Class<StringUtils> clazz = StringUtils.class;
-        MetaMethodCollect methodCollect = new MetaMethodCollect(clazz, clazz.getMethod("strip", String.class));
-        for (Method method : clazz.getMethods()) {
-            methodCollect.add(method);
-            methodCollect.add(method);
-        }
-        Method strip = methodCollect.speculateMethod(null, Object.class);
-        System.out.println(strip);
-    }
 }

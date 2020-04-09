@@ -13,18 +13,31 @@ import java.lang.reflect.Method;
  */
 public class MetaMethod {
 
+    /**
+     * 方法
+     */
     private Method method;
 
+    /**
+     * 返回类型
+     */
     private Class<?> returnType;
 
-    private String sign;
+    /**
+     * 方法签名（不包含返回类型）
+     * eg: methodName:arg1,arg2
+     */
+    private String signature;
 
+    /**
+     * 参数个数
+     */
     private int argsNum;
 
     public MetaMethod(Method method) {
         this.method = method;
         this.returnType = method.getReturnType();
-        this.sign = BaseMethodHolder.getSignature(method, false);
+        this.signature = BaseMethodHolder.getSignature(method, false);
         this.argsNum = method.getParameterCount();
     }
 
@@ -33,8 +46,8 @@ public class MetaMethod {
         return method;
     }
 
-    public String getSign() {
-        return sign;
+    public String getSignature() {
+        return signature;
     }
 
     public Class<?> getReturnType() {
@@ -63,7 +76,7 @@ public class MetaMethod {
         return "MetaMethod{" +
                 "method=" + method.getName() +
                 ", returnType=" + returnType.getName() +
-                ", sign='" + sign + '\'' +
+                ", signature='" + signature + '\'' +
                 ", argsNum=" + argsNum +
                 '}';
     }

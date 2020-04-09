@@ -29,6 +29,16 @@ public interface MethodHolder {
     Object invoke(String methodName, Object obj, Object... args);
 
     /**
+     * 反射调用方法
+     *
+     * @param methodName 方法名
+     * @param obj        实例
+     * @param args       参数
+     * @return 执行结果
+     */
+    Object invoke(Class<?> returnType, String methodName, Object obj, Object... args);
+
+    /**
      * 类是否持有此方法名
      *
      * @param methodName 方法名

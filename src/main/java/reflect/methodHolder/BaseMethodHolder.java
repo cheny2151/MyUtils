@@ -43,9 +43,27 @@ public abstract class BaseMethodHolder implements MethodHolder {
 
     @Override
     public Object invoke(String methodName, Object obj, Object... args) {
+        return invoke(null, methodName, obj, args);
+    }
+
+    @Override
+    public Object invoke(Class<?> returnType, String methodName, Object obj, Object... args) {
         Class<?>[] classes = extractClass(args);
-        Optional<Method> methodOpt = speculateMethod(methodName, null, classes);
+        Optional<Method> methodOpt = speculateMethod(methodName, returnType, classes);
         Method method = methodOpt.orElseThrow(() -> new NoSuchMethodException(methodName));
+        return invoke(method, obj, args);
+    }
+
+
+    /**
+     * 反射调用目标方法
+     *
+     * @param method 方法
+     * @param obj    实例
+     * @param args   参数
+     * @return 返回值
+     */
+    public Object invoke(Method method, Object obj, Object... args) {
         try {
             int parameterCount = method.getParameterCount();
             Class<?> parameterType;
@@ -61,7 +79,7 @@ public abstract class BaseMethodHolder implements MethodHolder {
                 return method.invoke(obj, args);
             }
         } catch (Exception e) {
-            throw new MethodHolderInvokeException("执行方法" + holdClass.getSimpleName() + "#" + methodName + "异常，" +
+            throw new MethodHolderInvokeException("执行方法:" + holdClass.getSimpleName() + "#" + method.getName() + "异常，" +
                     "方法入参:" + JSON.toJSONString(args), e);
         }
     }

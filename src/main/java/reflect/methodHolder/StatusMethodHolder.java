@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Map;
 
 /**
  * 静态方法MethodHolder实现类
@@ -27,7 +26,12 @@ public class StatusMethodHolder extends BaseMethodHolder {
 
     @Override
     public Object invoke(String methodName, Object obj, Object... args) {
-        return super.invoke(methodName, null, args);
+        return super.invoke(methodName, null, args).getClass();
+    }
+
+    @Override
+    public Object invoke(Class<?> returnType, String methodName, Object obj, Object... args) {
+        return super.invoke(returnType, methodName, null, args).getClass();
     }
 
 }
