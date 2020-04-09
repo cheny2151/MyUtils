@@ -80,7 +80,7 @@ public final class CharConstants {
     /**
      * 存在运算符正则
      */
-    final static Pattern CONTAINS_OPERATOR_PATTERN = Pattern.compile("[+\\-*/%?><=|&!]");
+    final static Pattern CONTAINS_OPERATOR_PATTERN = Pattern.compile("[+\\-*/%?><=|&!.]");
 
     /**
      * 存在函数正则
