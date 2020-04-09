@@ -26,12 +26,12 @@ public class StatusMethodHolder extends BaseMethodHolder {
 
     @Override
     public Object invoke(String methodName, Object obj, Object... args) {
-        return super.invoke(methodName, null, args).getClass();
+        return super.invoke(methodName, null, args);
     }
 
     @Override
     public Object invoke(Class<?> returnType, String methodName, Object obj, Object... args) {
-        return super.invoke(returnType, methodName, null, args).getClass();
+        return super.invoke(returnType, methodName, null, args);
     }
 
 }
