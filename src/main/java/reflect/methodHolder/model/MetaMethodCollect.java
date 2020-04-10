@@ -186,7 +186,8 @@ public class MetaMethodCollect {
      * 通过方法名和参数类型确切获取方法
      * 1.完全匹配方法签名（最佳）
      * 2.匹配方法参数是入参类型或入参的父类
-     * 匹配1成功立刻返回，匹配2成功一次后继续尝试匹配1，最终无法匹配1则返回第一次匹配2成功的方法
+     * 3.匹配方法参数小于等于入参个数，并且最后一个参数是array，则猜测为不定参数，尝试匹配最后一个参数之前的所有参数符合2的规则
+     * 匹配1成功立刻返回，匹配2/3成功一次后继续尝试匹配1，最终无法匹配1则返回第一次匹配2/3成功的方法
      *
      * @param metaMethods    用于查询的元方法集合
      * @param parameterTypes 参数类型数组
@@ -216,7 +217,7 @@ public class MetaMethodCollect {
                         }
                     }
                 } else if (parameterTypes != null &&
-                        tarArgCount > argsNum &&
+                        tarArgCount >= argsNum &&
                         curArgTypes[argsNum - 1].isArray()) {
                     // 入参大于方法参数个数并且最后一个参数为数组，则存在不定参数的可能性
                     match = true;
