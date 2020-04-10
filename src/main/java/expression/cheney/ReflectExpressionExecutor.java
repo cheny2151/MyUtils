@@ -3,7 +3,7 @@ package expression.cheney;
 import expression.cheney.model.FunctionClasses;
 import reflect.methodHolder.MethodHolder;
 import reflect.methodHolder.MethodHolderFactory;
-import reflect.methodHolder.StatusMethodHolder;
+import reflect.methodHolder.StaticMethodHolder;
 import reflect.methodHolder.exception.NoSuchMethodException;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public class ReflectExpressionExecutor extends BaseExpressionExecutor {
     @Override
     protected Object executeFunc(String functionName, List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
         for (FunctionClasses.FunctionClass functionClass : functionClasses) {
-            MethodHolder methodHolder = methodHolderFactory.getMethodHolder(functionClass.getFuncClass(), StatusMethodHolder.class);
+            MethodHolder methodHolder = methodHolderFactory.getMethodHolder(functionClass.getFuncClass(), StaticMethodHolder.class);
             if (methodHolder.hasMethod(functionName)) {
                 return methodHolder.invoke(functionName, null, loadArgs(args, env));
             }

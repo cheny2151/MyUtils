@@ -14,7 +14,7 @@ public class TestMain {
     @Test
     public void test() {
         DefaultMethodHolderFactory holderFactory = new DefaultMethodHolderFactory();
-        MethodHolder methodHolder = holderFactory.getMethodHolder(ReflectUtils.class, StatusMethodHolder.class);
+        MethodHolder methodHolder = holderFactory.getMethodHolder(ReflectUtils.class, StaticMethodHolder.class);
         System.out.println(methodHolder.invoke("field", new Object(), DefaultMethodHolderFactory.class, "methodHolderCache"));
     }
 

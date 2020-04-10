@@ -12,9 +12,9 @@ import java.lang.reflect.Modifier;
  * @date 2019-12-05
  */
 @Slf4j
-public class StatusMethodHolder extends BaseMethodHolder {
+public class StaticMethodHolder extends BaseMethodHolder {
 
-    public StatusMethodHolder(Class<?> clazz) {
+    public StaticMethodHolder(Class<?> clazz) {
         super(clazz);
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
