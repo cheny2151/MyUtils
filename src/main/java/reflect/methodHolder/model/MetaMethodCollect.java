@@ -172,17 +172,54 @@ public class MetaMethodCollect {
     }
 
     /**
-     * 完全精确匹配方法:
-     * 通过方法名和参数类型确切获取方法
+     * 桥接方法：桥接{@link #exactMethodByArgs(java.util.Set, java.lang.Class[])}
      *
-     * @param parameterTypes 参数类型
-     * @return 方法
+     * @param parameterTypes 参数类型数组
+     * @return 匹配的方法
      */
     public Method exactMethodByArgs(Class<?>... parameterTypes) {
-        List<MetaMethod> findResult = metaMethods.stream()
-                .filter(e -> e.getSignature().equals(mockSignature(methodName, parameterTypes)))
-                .collect(Collectors.toList());
-        return findResult.size() == 0 ? null : findResult.get(0).getMethod();
+        return exactMethodByArgs(metaMethods, parameterTypes);
+    }
+
+    /**
+     * 完全精确匹配方法:
+     * 通过方法名和参数类型确切获取方法
+     * 1.完全匹配方法签名（最佳）
+     * 2.匹配方法参数是入参类型或入参的父类
+     * 匹配1成功立刻返回，匹配2成功一次后继续尝试匹配1，最终无法匹配1则返回第一次匹配2成功的方法
+     *
+     * @param metaMethods    用于查询的元方法集合
+     * @param parameterTypes 参数类型数组
+     * @return 匹配的方法
+     */
+    private Method exactMethodByArgs(Set<MetaMethod> metaMethods, Class<?>... parameterTypes) {
+        Method bestMatch = null;
+        String targetSignature = mockSignature(methodName, parameterTypes);
+        int tarArgCount = parameterTypes == null ? 0 : parameterTypes.length;
+        for (MetaMethod metaMethod : metaMethods) {
+            if (metaMethod.getSignature().equals(targetSignature)) {
+                // 完全匹配为最匹配,参数个数为0也会在此匹配到
+                bestMatch = metaMethod.getMethod();
+                break;
+            } else if (bestMatch == null) {
+                // 只需匹配过一次
+                if (metaMethod.getArgsNum() == tarArgCount) {
+                    Class<?>[] curArgTypes = metaMethod.getMethod().getParameterTypes();
+                    boolean match = true;
+                    for (int i = 0; i < tarArgCount; i++) {
+                        // 匹配入参是方法参数类型或者方法参数类型的子类
+                        if (!curArgTypes[i].isAssignableFrom(parameterTypes[i])) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        bestMatch = metaMethod.getMethod();
+                    }
+                }
+            }
+        }
+        return bestMatch;
     }
 
     /**
@@ -196,10 +233,8 @@ public class MetaMethodCollect {
      * @return 方法
      */
     public Method exactMethod(Class<?> returnType, Class<?>... parameterTypes) {
-        List<MetaMethod> findResult = metaMethods.stream()
-                .filter(metaMethod -> metaMethod.getSignature().equals(mockSignature(methodName, parameterTypes)) && returnType.equals(metaMethod.getReturnType()))
-                .collect(Collectors.toList());
-        return findResult.size() == 0 ? null : findResult.get(0).getMethod();
+        Set<MetaMethod> selectMethods = metaMethods.stream().filter(e -> e.getReturnType().equals(returnType)).collect(Collectors.toSet());
+        return selectMethods.size() == 0 ? null : exactMethodByArgs(selectMethods, parameterTypes);
     }
 
     /**
@@ -267,7 +302,7 @@ public class MetaMethodCollect {
     public String mockSignature(String methodName, Class<?>... parameterTypes) {
         StringBuilder builder = new StringBuilder();
         builder.append(methodName);
-        if (parameterTypes.length > 0) {
+        if (parameterTypes != null && parameterTypes.length > 0) {
             builder.append(":");
             String args = Stream.of(parameterTypes)
                     .map(Class::getName)
