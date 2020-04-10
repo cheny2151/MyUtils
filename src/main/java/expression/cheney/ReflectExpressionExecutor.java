@@ -1,15 +1,13 @@
 package expression.cheney;
 
-import expression.cheney.func.InternalFunction;
+import expression.cheney.model.FunctionClasses;
 import reflect.methodHolder.MethodHolder;
 import reflect.methodHolder.MethodHolderFactory;
 import reflect.methodHolder.StatusMethodHolder;
 import reflect.methodHolder.exception.NoSuchMethodException;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 解析表达式执行反射方法
@@ -27,17 +25,12 @@ public class ReflectExpressionExecutor extends BaseExpressionExecutor {
     /**
      * 反射的类
      */
-    private Set<Class<?>> functionClasses;
+    private FunctionClasses functionClasses;
 
     ReflectExpressionExecutor(String express, BaseExpressionParser.ParseResult parseResult,
-                              MethodHolderFactory methodHolderFactory, Set<Class<?>> functionClasses) {
+                              MethodHolderFactory methodHolderFactory, FunctionClasses functionClasses) {
         super(express, parseResult);
         this.methodHolderFactory = methodHolderFactory;
-        if (functionClasses == null) {
-            functionClasses = new HashSet<>();
-        }
-        // 添加内置函数类
-        functionClasses.add(InternalFunction.class);
         this.functionClasses = functionClasses;
     }
 
@@ -59,8 +52,8 @@ public class ReflectExpressionExecutor extends BaseExpressionExecutor {
 
     @Override
     protected Object executeFunc(String functionName, List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
-        for (Class<?> clazz : functionClasses) {
-            MethodHolder methodHolder = methodHolderFactory.getMethodHolder(clazz, StatusMethodHolder.class);
+        for (FunctionClasses.FunctionClass functionClass : functionClasses) {
+            MethodHolder methodHolder = methodHolderFactory.getMethodHolder(functionClass.getFuncClass(), StatusMethodHolder.class);
             if (methodHolder.hasMethod(functionName)) {
                 return methodHolder.invoke(functionName, null, loadArgs(args, env));
             }

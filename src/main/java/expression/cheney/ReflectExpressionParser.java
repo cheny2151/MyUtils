@@ -1,5 +1,6 @@
 package expression.cheney;
 
+import expression.cheney.model.FunctionClasses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import reflect.methodHolder.DefaultMethodHolderFactory;
@@ -9,8 +10,6 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import static expression.cheney.BaseExpressionParser.ParseResult.FUNC;
 import static expression.cheney.BaseExpressionParser.ParseResult.NULL_VALUE;
@@ -33,25 +32,33 @@ public class ReflectExpressionParser extends BaseExpressionParser {
     /**
      * 执行反射的类
      */
-    private Set<Class<?>> functionClasses;
+    private FunctionClasses functionClasses;
 
     /**
      * ReflectExpressionParser单例
      */
     private static ReflectExpressionParser defaultReflectExpressionParser;
 
+    /**
+     * 内置方法
+     */
+    private final static FunctionClasses.FunctionClass INTERNAL_FUNCTION = new FunctionClasses.FunctionClass(expression.cheney.func.InternalFunction.class, -999);
+
     private ReflectExpressionParser() {
         ClassLoader classLoader = ReflectExpressionParser.class.getClassLoader();
         InputStream resourceAsStream = classLoader.getResourceAsStream("func-config.conf");
-        functionClasses = new HashSet<>();
+        functionClasses = new FunctionClasses();
+        // 添加内置函数类
+        functionClasses.add(INTERNAL_FUNCTION);
         if (resourceAsStream != null) {
             try {
                 // 读取func-config.conf配置中的类
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(resourceAsStream));
                 String classesStr = bufferedReader.readLine();
                 String[] classStrArray = classesStr.split(",");
-                for (String classStr : classStrArray) {
-                    functionClasses.add(classLoader.loadClass(classStr));
+                for (String s : classStrArray) {
+                    Class<?> fClass = classLoader.loadClass(s);
+                    functionClasses.addFunction(fClass);
                 }
             } catch (Exception e) {
                 log.error("ReflectExpressionParser初始化异常", e);
@@ -62,7 +69,7 @@ public class ReflectExpressionParser extends BaseExpressionParser {
 
     public ReflectExpressionParser(MethodHolderFactory methodHolderFactory, Collection<Class<?>> classes) {
         this.methodHolderFactory = methodHolderFactory;
-        this.functionClasses = new HashSet<>(classes);
+        this.functionClasses = new FunctionClasses(classes);
     }
 
     @Override
@@ -88,7 +95,7 @@ public class ReflectExpressionParser extends BaseExpressionParser {
      * @param clazz 类
      */
     public void addFunctionClass(Class<?> clazz) {
-        functionClasses.add(clazz);
+        functionClasses.addFunction(clazz);
     }
 
     /**
