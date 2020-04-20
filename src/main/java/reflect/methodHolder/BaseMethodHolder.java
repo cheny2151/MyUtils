@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 public abstract class BaseMethodHolder implements MethodHolder {
 
     // 持有方法所属类
-    private Class<?> holdClass;
+    private final Class<?> holdClass;
 
     // 方法缓存Map
     protected ConcurrentHashMap<String, MetaMethodCollect> methodMap;
@@ -37,20 +37,26 @@ public abstract class BaseMethodHolder implements MethodHolder {
     public void cacheMethod(Method method) {
         if (method == null)
             return;
-        String name = method.getName();
-        methodMap.computeIfAbsent(name, key -> new MetaMethodCollect(holdClass, key)).add(method);
+        cacheMethod(method.getName(), method);
     }
 
     @Override
-    public Object invoke(String methodName, Object obj, Object... args) {
-        return invoke(null, methodName, obj, args);
+    public void cacheMethod(String methodKey, Method method) {
+        if (method == null)
+            return;
+        methodMap.computeIfAbsent(methodKey, key -> new MetaMethodCollect(holdClass, key)).add(methodKey, method);
     }
 
     @Override
-    public Object invoke(Class<?> returnType, String methodName, Object obj, Object... args) {
+    public Object invoke(String methodKey, Object obj, Object... args) {
+        return invoke(null, methodKey, obj, args);
+    }
+
+    @Override
+    public Object invoke(Class<?> returnType, String methodKey, Object obj, Object... args) {
         Class<?>[] classes = args == null ? null : extractClass(args);
-        Optional<Method> methodOpt = speculateMethod(methodName, returnType, classes);
-        Method method = methodOpt.orElseThrow(() -> new NoSuchMethodException(methodName));
+        Optional<Method> methodOpt = speculateMethod(methodKey, returnType, classes);
+        Method method = methodOpt.orElseThrow(() -> new NoSuchMethodException(methodKey));
         return invoke(method, obj, args);
     }
 
@@ -85,31 +91,31 @@ public abstract class BaseMethodHolder implements MethodHolder {
     }
 
     @Override
-    public boolean hasMethod(String methodName) {
-        return methodMap.containsKey(methodName);
+    public boolean hasMethod(String methodKey) {
+        return methodMap.containsKey(methodKey);
     }
 
     @Override
-    public Optional<Method> getMethod(Class<?> returnType, String methodName, Class<?>... parameterTypes) {
-        MetaMethodCollect metaMethodCollect = methodMap.get(methodName);
+    public Optional<Method> getMethod(Class<?> returnType, String methodKey, Class<?>... parameterTypes) {
+        MetaMethodCollect metaMethodCollect = methodMap.get(methodKey);
         return metaMethodCollect == null ? Optional.empty() : Optional.ofNullable(metaMethodCollect.exactMethod(returnType, parameterTypes));
     }
 
     @Override
-    public Optional<Method> getMethod(String methodName, Class<?>... parameterTypes) {
-        MetaMethodCollect metaMethodCollect = methodMap.get(methodName);
+    public Optional<Method> getMethod(String methodKey, Class<?>... parameterTypes) {
+        MetaMethodCollect metaMethodCollect = methodMap.get(methodKey);
         return metaMethodCollect == null ? Optional.empty() : Optional.ofNullable(metaMethodCollect.exactMethodByArgs(parameterTypes));
     }
 
     @Override
     public Optional<Method> getMethod(String name) {
         MetaMethodCollect metaMethodCollect = methodMap.get(name);
-        return metaMethodCollect == null ? Optional.empty() : Optional.ofNullable(metaMethodCollect.exactMethodByName());
+        return metaMethodCollect == null ? Optional.empty() : Optional.ofNullable(metaMethodCollect.exactMethodByKey());
     }
 
     @Override
-    public Optional<Method> speculateMethod(String methodName, Class<?> returnType, Class<?>... args) {
-        MetaMethodCollect metaMethodCollect = methodMap.get(methodName);
+    public Optional<Method> speculateMethod(String methodKey, Class<?> returnType, Class<?>... args) {
+        MetaMethodCollect metaMethodCollect = methodMap.get(methodKey);
         return metaMethodCollect == null ? Optional.empty() : Optional.ofNullable(metaMethodCollect.speculateMethod(returnType, args));
     }
 
@@ -126,18 +132,17 @@ public abstract class BaseMethodHolder implements MethodHolder {
      * 获取方法签名
      *
      * @param method         方法
+     * @param methodKey      方法key
      * @param withReturnType 是否包含返回类型
      * @return 方法签名
      */
-    public static String getSignature(Method method, boolean withReturnType) {
+    public static String getSignature(Method method, String methodKey, boolean withReturnType) {
         StringBuilder builder = new StringBuilder();
         if (withReturnType) {
             Class<?> returnType = method.getReturnType();
-            if (returnType != null) {
-                builder.append(returnType.getName()).append("#");
-            }
+            builder.append(returnType.getName()).append("#");
         }
-        builder.append(method.getName());
+        builder.append(methodKey);
         if (method.getParameterCount() > 0) {
             builder.append(":");
             String args = Stream.of(method.getParameterTypes()).map(Class::getName).collect(Collectors.joining(","));

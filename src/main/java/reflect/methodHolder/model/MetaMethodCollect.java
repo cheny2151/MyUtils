@@ -19,9 +19,9 @@ import java.util.stream.Stream;
 public class MetaMethodCollect {
 
     /**
-     * 方法名
+     * 方法key(注意不一定是方法名)
      */
-    private String methodName;
+    private String methodKey;
 
     /**
      * 方法所属类(注意不一定是DeclaringClass)
@@ -33,23 +33,10 @@ public class MetaMethodCollect {
      */
     private Set<MetaMethod> metaMethods;
 
-    public MetaMethodCollect(Class<?> owner, String methodName) {
-        if (owner == null || methodName == null) {
-            throw new IllegalArgumentException();
-        }
+    public MetaMethodCollect(Class<?> owner, String methodKey) {
         this.owner = owner;
-        this.methodName = methodName;
+        this.methodKey = methodKey;
         this.metaMethods = new HashSet<>();
-    }
-
-    public MetaMethodCollect(Class<?> owner, Method method) {
-        if (owner == null || method == null) {
-            throw new IllegalArgumentException();
-        }
-        this.owner = owner;
-        this.methodName = method.getName();
-        this.metaMethods = new HashSet<>();
-        this.metaMethods.add(new MetaMethod(method));
     }
 
     /**
@@ -60,8 +47,8 @@ public class MetaMethodCollect {
      * @return 添加结果
      * @throws IllegalArgumentException 添加方法，出现不合法的相同签名的方法时抛出异常
      */
-    public boolean add(Method method) {
-        if (equalMethodName(method.getName()) && isOwnerMethod(method)) {
+    public boolean add(String methodKey, Method method) {
+        if (equalMethodKey(methodKey) && isOwnerMethod(method)) {
             MetaMethod newMethod = new MetaMethod(method);
             Class<?> returnType = newMethod.getReturnType();
             Class<?> declaringClass = method.getDeclaringClass();
@@ -110,13 +97,13 @@ public class MetaMethodCollect {
     }
 
     /**
-     * 方法名与入参是否相同
+     * 方法key与入参是否相同
      *
-     * @param methodName 方法名
+     * @param methodKey 方法key
      * @return 是否相同
      */
-    public boolean equalMethodName(String methodName) {
-        return this.methodName.equals(methodName);
+    public boolean equalMethodKey(String methodKey) {
+        return this.methodKey.equals(methodKey);
     }
 
     /**
@@ -125,10 +112,10 @@ public class MetaMethodCollect {
      * @return 方法
      * @throws FindNotUniqueMethodException 获取到多个方法时抛异常
      */
-    public Method exactMethodByName() {
+    public Method exactMethodByKey() {
         int size = metaMethods.size();
         if (size > 1) {
-            throw new FindNotUniqueMethodException("method name '" + methodName + "' has not unique method in class :" + this.owner.getName());
+            throw new FindNotUniqueMethodException("method key '" + methodKey + "' has not unique method in class :" + this.owner.getName());
         }
         return metaMethods.stream().findFirst().map(MetaMethod::getMethod).orElse(null);
     }
@@ -145,7 +132,7 @@ public class MetaMethodCollect {
                 .filter(metaMethod -> returnType.equals(metaMethod.getReturnType()))
                 .collect(Collectors.toList());
         if (findResult.size() > 1) {
-            throw new FindNotUniqueMethodException("method name '" + methodName +
+            throw new FindNotUniqueMethodException("method key '" + methodKey +
                     "' and return type '" + returnType.getSimpleName() +
                     "' has not unique method in class :" + this.owner.getName());
         }
@@ -164,7 +151,7 @@ public class MetaMethodCollect {
                 .filter(metaMethod -> metaMethod.getArgsNum() == argsNum)
                 .collect(Collectors.toList());
         if (findResult.size() > 1) {
-            throw new FindNotUniqueMethodException("method name '" + methodName +
+            throw new FindNotUniqueMethodException("method key '" + methodKey +
                     "' and args number = " + argsNum +
                     "' has not unique method in class :" + this.owner.getName());
         }
@@ -195,7 +182,7 @@ public class MetaMethodCollect {
      */
     private Method exactMethodByArgs(Set<MetaMethod> metaMethods, Class<?>... parameterTypes) {
         Method bestMatch = null;
-        String targetSignature = mockSignature(methodName, parameterTypes);
+        String targetSignature = mockSignature(methodKey, parameterTypes);
         int tarArgCount = parameterTypes == null ? 0 : parameterTypes.length;
         for (MetaMethod metaMethod : metaMethods) {
             if (metaMethod.getSignature().equals(targetSignature)) {
@@ -242,7 +229,6 @@ public class MetaMethodCollect {
      * 此方法必定匹配一个或者匹配不到
      *
      * @param parameterTypes 参数类型
-     * @param methodName     方法名
      * @param returnType     返回类型
      * @return 方法
      */
@@ -303,19 +289,19 @@ public class MetaMethodCollect {
         }
 
         // 无法通过返回值或者参数类型推断,直接匹配方法名,当有多个方法时抛出异常，信息不足，推断失败。
-        return exactMethodByName();
+        return exactMethodByKey();
     }
 
     /**
      * 通过方法名与参数类型拼接方法签名，不包含返回类型
      *
-     * @param methodName     方法名
+     * @param methodKey      方法key
      * @param parameterTypes 参数类型
      * @return 方法签名
      */
-    public String mockSignature(String methodName, Class<?>... parameterTypes) {
+    public String mockSignature(String methodKey, Class<?>... parameterTypes) {
         StringBuilder builder = new StringBuilder();
-        builder.append(methodName);
+        builder.append(methodKey);
         if (parameterTypes != null && parameterTypes.length > 0) {
             builder.append(":");
             String args = Stream.of(parameterTypes)
@@ -326,8 +312,8 @@ public class MetaMethodCollect {
         return builder.toString();
     }
 
-    public String getMethodName() {
-        return methodName;
+    public String getMethodKey() {
+        return methodKey;
     }
 
     public Class<?> getOwner() {

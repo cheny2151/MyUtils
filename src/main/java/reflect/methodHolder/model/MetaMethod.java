@@ -19,6 +19,11 @@ public class MetaMethod {
     private Method method;
 
     /**
+     * 方法key（不一定是方法名）
+     */
+    private String methodKey;
+
+    /**
      * 返回类型
      */
     private Class<?> returnType;
@@ -35,10 +40,15 @@ public class MetaMethod {
     private int argsNum;
 
     public MetaMethod(Method method) {
+        this(method, method.getName());
+    }
+
+    public MetaMethod(Method method, String methodKey) {
         this.method = method;
+        this.methodKey = methodKey;
         this.returnType = method.getReturnType();
-        this.signature = BaseMethodHolder.getSignature(method, false);
         this.argsNum = method.getParameterCount();
+        this.signature = BaseMethodHolder.getSignature(method, methodKey, false);
     }
 
 
@@ -48,6 +58,14 @@ public class MetaMethod {
 
     public String getSignature() {
         return signature;
+    }
+
+    public String getMethodKey() {
+        return methodKey;
+    }
+
+    public String getMethodName() {
+        return method.getName();
     }
 
     public Class<?> getReturnType() {
@@ -75,6 +93,7 @@ public class MetaMethod {
     public String toString() {
         return "MetaMethod{" +
                 "method=" + method.getName() +
+                ", methodKey=" + methodKey +
                 ", returnType=" + returnType.getName() +
                 ", signature='" + signature + '\'' +
                 ", argsNum=" + argsNum +

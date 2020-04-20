@@ -19,6 +19,14 @@ public interface MethodHolder {
     void cacheMethod(Method method);
 
     /**
+     * 缓存方法
+     *
+     * @param methodKey 自定义方法key(默认为方法名)
+     * @param method    方法
+     */
+    void cacheMethod(String methodKey, Method method);
+
+    /**
      * 反射调用方法
      *
      * @param methodName 方法名
