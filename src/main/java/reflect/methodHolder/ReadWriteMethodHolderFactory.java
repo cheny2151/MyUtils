@@ -6,7 +6,7 @@ package reflect.methodHolder;
  * @author cheney
  * @date 2019-12-05
  */
-public class WriteReadMethodHolderFactory extends DefaultMethodHolderFactory {
+public class ReadWriteMethodHolderFactory extends DefaultMethodHolderFactory {
 
     public MethodHolder getMethodHolder(Class<?> clazz) {
         return methodHolderCache.computeIfAbsent(clazz, key -> registeredClass(clazz));
