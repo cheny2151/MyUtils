@@ -355,22 +355,13 @@ public class ReflectUtils {
         }
     }
 
-    private static String toUpperFirstLetter(String fieldName) {
-        return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-    }
-
-    private static String toLowerFirstLetter(String fieldName) {
-        return fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
-    }
-
-
     /**
      * 判断是否是read方法
      *
      * @param method 方法
      * @return boolean
      */
-    private static boolean isReadMethod(Method method) {
+    public static boolean isReadMethod(Method method) {
         String methodName = method.getName();
         if (methodName.startsWith(GET_PRE) || methodName.startsWith(IS_PRE)) {
             return method.getParameterCount() == 0 && !void.class.equals(method.getReturnType());
@@ -385,7 +376,7 @@ public class ReflectUtils {
      * @param method 方法
      * @return 属性名
      */
-    private static String extractPropertyName(Method method) {
+    public static String extractPropertyName(Method method) {
         String methodName = method.getName();
         String pre = "";
         if (methodName.startsWith(IS_PRE)) {
@@ -405,12 +396,29 @@ public class ReflectUtils {
      * @param method 方法
      * @return boolean
      */
-    private static boolean isWriteMethod(Method method) {
+    public static boolean isWriteMethod(Method method) {
         String methodName = method.getName();
         if (methodName.startsWith(SET_PRE)) {
             return method.getParameterCount() == 1 && void.class.equals(method.getReturnType());
         }
         return false;
+    }
+
+    public static boolean isWrapForm(Class<?> warp, Class<?> base) {
+        try {
+            Object type = warp.getField("TYPE").get(null);
+            return base.equals(type);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return false;
+        }
+    }
+
+    private static String toUpperFirstLetter(String fieldName) {
+        return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+    }
+
+    private static String toLowerFirstLetter(String fieldName) {
+        return fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
     }
 
 }

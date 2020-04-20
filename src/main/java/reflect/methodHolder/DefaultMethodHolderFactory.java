@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultMethodHolderFactory implements MethodHolderFactory {
 
-    private ConcurrentHashMap<Class<?>, MethodHolder> methodHolderCache = new ConcurrentHashMap<>();
+    protected ConcurrentHashMap<Class<?>, MethodHolder> methodHolderCache = new ConcurrentHashMap<>();
 
     @Override
     public MethodHolder getMethodHolder(Class<?> clazz, Class<? extends MethodHolder> methodHolderClass) {

@@ -1,5 +1,6 @@
 package reflect.methodHolder.model;
 
+import reflect.ReflectUtils;
 import reflect.methodHolder.exception.FindNotUniqueMethodException;
 
 import java.lang.reflect.Method;
@@ -59,7 +60,7 @@ public class MetaMethodCollect {
      */
     public boolean add(String methodKey, Method method) {
         if (equalMethodKey(methodKey) && isOwnerMethod(method)) {
-            MetaMethod newMethod = new MetaMethod(method);
+            MetaMethod newMethod = new MetaMethod(method, methodKey);
             Class<?> returnType = newMethod.getReturnType();
             Class<?> declaringClass = method.getDeclaringClass();
             boolean add = true;
@@ -207,19 +208,19 @@ public class MetaMethodCollect {
                 if (argsNum == tarArgCount) {
                     match = true;
                     for (int i = 0; i < tarArgCount; i++) {
-                        // 匹配入参是方法参数类型或者方法参数类型的子类
-                        if (!curArgTypes[i].isAssignableFrom(parameterTypes[i])) {
+                        if (!matchArgType(curArgTypes[i], parameterTypes[i])) {
                             match = false;
                             break;
                         }
                     }
                 } else if (parameterTypes != null &&
                         tarArgCount >= argsNum &&
+                        argsNum != 0 &&
                         curArgTypes[argsNum - 1].isArray()) {
                     // 入参大于方法参数个数并且最后一个参数为数组，则存在不定参数的可能性
                     match = true;
                     for (int i = 0; i < argsNum - 1; i++) {
-                        if (!curArgTypes[i].isAssignableFrom(parameterTypes[i])) {
+                        if (!matchArgType(curArgTypes[i], parameterTypes[i])) {
                             match = false;
                             break;
                         }
@@ -347,6 +348,19 @@ public class MetaMethodCollect {
             }
         }
         return false;
+    }
+
+
+    /**
+     * 匹配参数类型
+     * 匹配入参是方法参数类型或者方法参数类型的子类,或者基础包装类
+     *
+     * @param curArgType    方法入参类型
+     * @param parameterType 参数类型
+     * @return 是否匹配
+     */
+    private boolean matchArgType(Class<?> curArgType, Class<?> parameterType) {
+        return curArgType.isAssignableFrom(parameterType) || (curArgType.isPrimitive() && ReflectUtils.isWrapForm(parameterType, curArgType));
     }
 
 }
