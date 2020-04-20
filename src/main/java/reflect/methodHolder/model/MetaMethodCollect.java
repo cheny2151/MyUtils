@@ -40,6 +40,16 @@ public class MetaMethodCollect {
     }
 
     /**
+     * 添加方法，方法key为方法名
+     *
+     * @param method 方法
+     * @return 结果
+     */
+    public boolean add(Method method) {
+        return add(method.getName(), method);
+    }
+
+    /**
      * 添加方法
      * 相同的方法签名会通过继承关系，方法所属类等选中最优方法
      *
