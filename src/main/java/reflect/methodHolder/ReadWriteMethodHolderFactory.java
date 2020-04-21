@@ -8,6 +8,9 @@ package reflect.methodHolder;
  */
 public class ReadWriteMethodHolderFactory extends DefaultMethodHolderFactory {
 
+    // 全局静态工厂
+    private final static ReadWriteMethodHolderFactory GLOBAL_READ_WRITE_METHOD_HOLDER_FACTORY = new ReadWriteMethodHolderFactory();
+
     public MethodHolder getMethodHolder(Class<?> clazz) {
         return methodHolderCache.computeIfAbsent(clazz, key -> registeredClass(clazz));
     }
