@@ -19,4 +19,13 @@ public class ReadWriteMethodHolderFactory extends DefaultMethodHolderFactory {
         return registeredClass(clazz, ReadWriteMethodHolder.class);
     }
 
+    /**
+     * 获取全局实例
+     *
+     * @return 工厂实例
+     */
+    public static ReadWriteMethodHolderFactory getInstance() {
+        return GLOBAL_READ_WRITE_METHOD_HOLDER_FACTORY;
+    }
+
 }
