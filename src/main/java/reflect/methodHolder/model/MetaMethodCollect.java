@@ -194,33 +194,41 @@ public class MetaMethodCollect {
     private Method exactMethodByArgs(Set<MetaMethod> metaMethods, Class<?>... parameterTypes) {
         Method bestMatch = null;
         String targetSignature = mockSignature(methodKey, parameterTypes);
-        int tarArgCount = parameterTypes == null ? 0 : parameterTypes.length;
+        int paramsCount = parameterTypes == null ? 0 : parameterTypes.length;
         for (MetaMethod metaMethod : metaMethods) {
             if (metaMethod.getSignature().equals(targetSignature)) {
                 // 完全匹配为最匹配,参数个数为0也会在此匹配到
                 bestMatch = metaMethod.getMethod();
                 break;
             } else if (bestMatch == null) {
-                // 只需匹配过一次
+                // 推测匹配只需匹配过一次
                 boolean match = false;
                 int argsNum = metaMethod.getArgsNum();
                 Class<?>[] curArgTypes = metaMethod.getMethod().getParameterTypes();
-                if (argsNum == tarArgCount) {
+                if (argsNum == paramsCount) {
                     match = true;
-                    for (int i = 0; i < tarArgCount; i++) {
+                    // 判断每个方法参数是否是对应入参的类型或其子类
+                    for (int i = 0; i < paramsCount; i++) {
                         if (!matchArgType(curArgTypes[i], parameterTypes[i])) {
                             match = false;
                             break;
                         }
                     }
-                } else if (parameterTypes != null &&
-                        tarArgCount >= argsNum &&
+                }
+                if (!match &&
+                        parameterTypes != null &&
+                        paramsCount >= argsNum &&
                         argsNum != 0 &&
                         curArgTypes[argsNum - 1].isArray()) {
                     // 入参大于方法参数个数并且最后一个参数为数组，则存在不定参数的可能性
                     match = true;
-                    for (int i = 0; i < argsNum - 1; i++) {
-                        if (!matchArgType(curArgTypes[i], parameterTypes[i])) {
+                    int lastArgIndex = argsNum - 1;
+                    Class<?> lastArgType = curArgTypes[lastArgIndex].getComponentType();
+                    /* 1.判断除最后一个方法参数外的参数是否是对应入参的类型或其子类
+                       2.判断最后一个数组参数的成员类型，对应的入参是否是该类型或其子类 */
+                    for (int i = 0; i < paramsCount; i++) {
+                        Class<?> matchClass = i < lastArgIndex ? curArgTypes[i] : lastArgType;
+                        if (!matchArgType(matchClass, parameterTypes[i])) {
                             match = false;
                             break;
                         }
