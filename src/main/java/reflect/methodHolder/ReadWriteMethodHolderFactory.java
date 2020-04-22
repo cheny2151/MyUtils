@@ -11,12 +11,12 @@ public class ReadWriteMethodHolderFactory extends DefaultMethodHolderFactory {
     // 全局静态工厂
     private final static ReadWriteMethodHolderFactory GLOBAL_READ_WRITE_METHOD_HOLDER_FACTORY = new ReadWriteMethodHolderFactory();
 
-    public MethodHolder getMethodHolder(Class<?> clazz) {
-        return methodHolderCache.computeIfAbsent(clazz, key -> registeredClass(clazz));
+    public ReadWriteMethodHolder getMethodHolder(Class<?> clazz) {
+        return (ReadWriteMethodHolder) methodHolderCache.computeIfAbsent(clazz, key -> registeredClass(clazz));
     }
 
-    public MethodHolder registeredClass(Class<?> clazz) {
-        return registeredClass(clazz, ReadWriteMethodHolder.class);
+    public ReadWriteMethodHolder registeredClass(Class<?> clazz) {
+        return (ReadWriteMethodHolder) registeredClass(clazz, ReadWriteMethodHolder.class);
     }
 
     /**
