@@ -1,4 +1,6 @@
-package reflect.methodHolder;
+package reflect.methodHolder.factory;
+
+import reflect.methodHolder.MethodHolder;
 
 /**
  * MethodHolder接口

@@ -1,5 +1,6 @@
-package reflect.methodHolder;
+package reflect.methodHolder.factory;
 
+import reflect.methodHolder.MethodHolder;
 import reflect.methodHolder.exception.MethodHolderReflectException;
 
 import java.lang.reflect.Constructor;

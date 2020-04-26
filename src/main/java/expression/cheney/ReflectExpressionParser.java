@@ -3,8 +3,8 @@ package expression.cheney;
 import expression.cheney.model.FunctionClasses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import reflect.methodHolder.DefaultMethodHolderFactory;
-import reflect.methodHolder.MethodHolderFactory;
+import reflect.methodHolder.factory.DefaultMethodHolderFactory;
+import reflect.methodHolder.factory.MethodHolderFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

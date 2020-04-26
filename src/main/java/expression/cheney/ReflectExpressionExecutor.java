@@ -2,7 +2,7 @@ package expression.cheney;
 
 import expression.cheney.model.FunctionClasses;
 import reflect.methodHolder.MethodHolder;
-import reflect.methodHolder.MethodHolderFactory;
+import reflect.methodHolder.factory.MethodHolderFactory;
 import reflect.methodHolder.StaticMethodHolder;
 import reflect.methodHolder.exception.NoSuchMethodException;
 
