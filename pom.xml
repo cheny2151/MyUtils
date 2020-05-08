@@ -165,6 +165,13 @@
             <version>3.27.0-GA</version>
         </dependency>
 
+        <!-- 查看类/实例内存占用情况 -->
+        <dependency>
+            <groupId>org.openjdk.jol</groupId>
+            <artifactId>jol-core</artifactId>
+            <version>0.10</version>
+        </dependency>
+
     </dependencies>
 
     <build>
