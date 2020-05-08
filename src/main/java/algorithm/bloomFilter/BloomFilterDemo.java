@@ -24,11 +24,11 @@ public class BloomFilterDemo {
     private int expectedInsertions;
 
     public BloomFilterDemo() {
-        this.bloomFilter = BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_8), DEFAULT_EXPECTED_INSERTIONS, 0.0001);
+        this.bloomFilter = BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_8), DEFAULT_EXPECTED_INSERTIONS, 0.00001);
     }
 
     public BloomFilterDemo(int expectedInsertions) {
-        this.bloomFilter = com.google.common.hash.BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_8), expectedInsertions, 0.01);
+        this.bloomFilter = com.google.common.hash.BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_8), expectedInsertions, 0.00001);
     }
 
     public static void main(String[] args) throws NoSuchFieldException, IllegalAccessException {
