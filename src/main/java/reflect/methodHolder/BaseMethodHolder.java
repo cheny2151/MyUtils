@@ -49,6 +49,7 @@ public abstract class BaseMethodHolder implements MethodHolder {
 
     @Override
     public Object invoke(String methodKey, Object obj, Object... args) {
+        // args会包含调用的null,eg:如果调用此方法为invoke(a,b,null,null),则args为[null,null]
         return invoke(null, methodKey, obj, args);
     }
 
@@ -176,6 +177,7 @@ public abstract class BaseMethodHolder implements MethodHolder {
 
     /**
      * 提取出对象数组的类型数组
+     * args包含的null视为Object.class
      *
      * @param args 参数集合
      * @return 参数类型数组
