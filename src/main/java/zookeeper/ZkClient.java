@@ -1,22 +1,20 @@
 package zookeeper;
 
-import jsonUtils.JsonUtils;
-import org.apache.curator.RetryPolicy;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.ACL;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
  * zookeeperAPI封装
  */
+@Slf4j
 public class ZkClient {
 
     private Logger logger = Logger.getLogger(this.getClass());
@@ -34,7 +32,7 @@ public class ZkClient {
                     if (Watcher.Event.KeeperState.SyncConnected.equals(event.getState())) {
                         latch.countDown();
                     }
-                    System.out.println(JsonUtils.toJson(event));
+                    log.info("zk start event:{}", event.toString());
                 });
             } catch (IOException e) {
                 e.printStackTrace();
@@ -101,29 +99,19 @@ public class ZkClient {
     }
 
     @Test
-    public void test() throws KeeperException, InterruptedException {
+    public void test() throws InterruptedException {
+        ZkClient zkClient = new ZkClient();
+        String s = zkClient.createNodeAndParentIfNeed("/test/child", "".getBytes(StandardCharsets.UTF_8), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+        System.out.println(s);
+        Thread.sleep(100000);
     }
 
     @Test
     public void test2() throws KeeperException, InterruptedException {
         for (; ; ) {
-            printNodes("/testNode");
+            printNodes("/test");
             Thread.sleep(3000);
         }
-    }
-
-    @Test
-    public void curator() throws Exception {
-        //1 重试策略：初试时间为1s 重试10次
-        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);
-        CuratorFramework curator = CuratorFrameworkFactory.builder()
-                .connectString(ZookeeperConfig.ZK_CONNECTSTRING)
-                .connectionTimeoutMs(ZookeeperConfig.SESSION_TIMEOUT)
-                .retryPolicy(retryPolicy)
-                .build();
-
-        curator.start();
-        byte[] bytes = curator.getData().forPath("/testNode");
     }
 
 }
