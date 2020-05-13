@@ -26,6 +26,14 @@ public class ZkClient {
         private static CountDownLatch latch;
 
         static {
+            connect();
+        }
+
+        public static void waitForConnection() throws InterruptedException {
+            latch.await();
+        }
+
+        public static void connect() {
             latch = new CountDownLatch(1);
             try {
                 ZOO_KEEPER = new ZooKeeper(ZookeeperConfig.ZK_CONNECTSTRING, ZookeeperConfig.SESSION_TIMEOUT, (event) -> {
@@ -37,10 +45,6 @@ public class ZkClient {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-
-        public static void waitForConnection() throws InterruptedException {
-            latch.await();
         }
 
     }
@@ -85,17 +89,23 @@ public class ZkClient {
     }
 
     public void printNodes(String nodePath) throws KeeperException, InterruptedException {
-        List<String> children = getZK().getChildren(nodePath, true);
-        if (children.size() > 0) {
-            StringBuilder stringBuffer = new StringBuilder();
-            for (String c : children) {
-                stringBuffer.append(c).append(",");
+        try {
+            List<String> children = getZK().getChildren(nodePath, true);
+            if (children.size() > 0) {
+                StringBuilder stringBuffer = new StringBuilder();
+                for (String c : children) {
+                    stringBuffer.append(c).append(",");
+                }
+                String print = stringBuffer.subSequence(0, stringBuffer.length() - 1).toString();
+                System.out.println(print);
+                return;
             }
-            String print = stringBuffer.subSequence(0, stringBuffer.length() - 1).toString();
-            System.out.println(print);
-            return;
+            System.out.println("null");
+        } catch (KeeperException.ConnectionLossException e) {
+            // todo 重试机制
+            ZookeeperHolder.connect();
+            printNodes(nodePath);
         }
-        System.out.println("null");
     }
 
     @Test
