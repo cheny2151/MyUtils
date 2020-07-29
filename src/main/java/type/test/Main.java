@@ -1,9 +1,13 @@
 package type.test;
 
+import com.alibaba.fastjson.JSON;
 import org.junit.Test;
 import type.TypeReference;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author cheney
@@ -13,13 +17,17 @@ public class Main {
 
     @Test
     public void main() {
-        getType(new TestInterface2<Integer,String>(){});
+        getType(new TypeReference<List<Map<String,Object>>>(){});
     }
 
-    private <T> T getType(TypeReference<T> typeReference) {
+    private <T> Type getType(TypeReference<T> typeReference) {
         Type actualType = typeReference.getActualType();
-        System.out.println(actualType);
-        return null;
+        if (actualType instanceof ParameterizedType){
+            ParameterizedType parameterizedType = (ParameterizedType) actualType;
+            System.out.println(parameterizedType.getRawType());
+            System.out.println(JSON.toJSONString(parameterizedType.getActualTypeArguments()));
+        }
+        return actualType;
     }
 
 }
