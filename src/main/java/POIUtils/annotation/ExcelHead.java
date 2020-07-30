@@ -11,7 +11,7 @@ public @interface ExcelHead {
 
     String headTitle() default "";
 
-    String sheetName() default "";
+    String sheetName() default "sheet";
 
     int titleRow() default 0;
 

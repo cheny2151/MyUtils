@@ -322,7 +322,7 @@ public class WorkBookReader {
             }
             titleMap.put(title, cell.getColumnIndex());
         });
-        for (Field field : targetClass.getDeclaredFields()) {
+        for (Field field : ReflectUtils.getAllFields(targetClass, Object.class)) {
             ExcelData annotation = field.getAnnotation(ExcelData.class);
             if (annotation != null) {
                 ExcelData.SwitchType type = annotation.type();
