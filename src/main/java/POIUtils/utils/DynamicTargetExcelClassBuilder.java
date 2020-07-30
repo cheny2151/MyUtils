@@ -72,8 +72,9 @@ public class DynamicTargetExcelClassBuilder {
         CtField field = new CtField(classPool.get(type.getName()), fieldName, cc);
         field.setModifiers(Modifier.PRIVATE);
         cc.addField(field);
-        cc.addMethod(CtNewMethod.setter("set" + fieldName, field));
-        cc.addMethod(CtNewMethod.getter("get" + fieldName, field));
+        String name = toUpperFirstLetter(fieldName);
+        cc.addMethod(CtNewMethod.setter("set" + name, field));
+        cc.addMethod(CtNewMethod.getter("get" + name, field));
         return field;
     }
 
@@ -111,4 +112,7 @@ public class DynamicTargetExcelClassBuilder {
         classFile.addAttribute(classAttr);
     }
 
+    private static String toUpperFirstLetter(String fieldName) {
+        return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+    }
 }
