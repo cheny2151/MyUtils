@@ -2,6 +2,7 @@ package POIUtils.utils;
 
 import POIUtils.annotation.ExcelCell;
 import POIUtils.annotation.ExcelData;
+import POIUtils.annotation.ExcelHead;
 import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
@@ -31,7 +32,12 @@ public class DynamicTargetExcelClassBuilder {
         try {
             CtClass newExportClass = classPool.makeClass(DynamicTargetExcelClassBuilder.class.getName() + "$" + resource);
 
+            // 类上新增注解
+            addAttributeExcelHeadForClass(newExportClass);
+
+            // 新增字段
             addProperty(classPool, newExportClass);
+
             //noinspection unchecked
             resultClass = newExportClass.toClass();
             CLASS_CACHE.put(resource, resultClass);
@@ -91,6 +97,18 @@ public class DynamicTargetExcelClassBuilder {
         Annotation min = new Annotation(ExcelCell.class.getName(), constPool);
         min.addMemberValue("name", new StringMemberValue(titleName, constPool));
         fieldAttr.addAnnotation(min);
+    }
+
+    /**
+     * 为类创建注解--{@link ExcelHead}
+     */
+    private static void addAttributeExcelHeadForClass(CtClass cc) {
+        ClassFile classFile = cc.getClassFile();
+        ConstPool constPool = classFile.getConstPool();
+        AnnotationsAttribute classAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+        Annotation excelHead = new Annotation(ExcelHead.class.getName(), constPool);
+        classAttr.addAnnotation(excelHead);
+        classFile.addAttribute(classAttr);
     }
 
 }
