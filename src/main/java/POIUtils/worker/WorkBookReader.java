@@ -61,14 +61,9 @@ public class WorkBookReader {
             } else {
                 workbook = new HSSFWorkbook(inputStream);
             }
-            Sheet sheet;
+            Sheet sheet = getSheet(workbook, excelInfo.getSheetName());
             //数据出现行数,从0开始算
             int titleRowNum = excelInfo.getTitleRow();
-            if (excelInfo.getSheetName() == null) {
-                sheet = workbook.getSheetAt(0);
-            } else {
-                sheet = workbook.getSheet(excelInfo.getSheetName());
-            }
             int startRowNumber = titleRowNum + 1;
             // 分析excel列表title
             Row titleRow = sheet.getRow(titleRowNum);
@@ -104,23 +99,20 @@ public class WorkBookReader {
      * @param targetClass 目标类型
      */
     private <T> ReadResult<T> read(Workbook workbook, Class<T> targetClass) throws IllegalAccessException, InvocationTargetException {
-        Sheet sheet;
         //数据出现行数,从0开始算
         ExcelHead excelHead = targetClass.getAnnotation(ExcelHead.class);
         int titleRowNum = 1;
         int lastRowNum;
+        String sheetName = null;
         if (excelHead != null) {
             titleRowNum = excelHead.titleRow();
-            if ("".equals(excelHead.sheetName())) {
-                sheet = workbook.getSheetAt(0);
-            } else {
-                sheet = workbook.getSheet(excelHead.sheetName());
-            }
+            sheetName = excelHead.sheetName();
             lastRowNum = excelHead.endRow();
         } else {
-            sheet = workbook.getSheetAt(0);
             lastRowNum = -1;
         }
+        Sheet sheet = getSheet(workbook, sheetName);
+
         int startRowNumber = titleRowNum + 1;
         // 分析excel列表映射字段信息
         Row titleRow = sheet.getRow(titleRowNum);
@@ -264,6 +256,15 @@ public class WorkBookReader {
             readProperty.writerUnknownTypeValue(t, value);
         }
         return t;
+    }
+
+    private Sheet getSheet(Workbook workbook, String sheetName) {
+        if (sheetName == null || "".equals(sheetName)) {
+            return workbook.getSheetAt(0);
+        } else {
+            Sheet sheet = workbook.getSheet(sheetName);
+            return sheet != null ? sheet : getSheet(workbook, null);
+        }
     }
 
     /**
