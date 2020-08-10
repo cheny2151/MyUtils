@@ -1,8 +1,10 @@
 package scan;
 
 import lombok.extern.slf4j.Slf4j;
+import scan.filter.ScanFilter;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,16 @@ public class PathScan {
     // 为root的路径
     private final static String[] ROOT_PATH = new String[]{SEPARATE_CHARACTER, EMPTY_PATH};
 
+    // 过滤器
+    private ScanFilter scanFilter;
+
+    public PathScan() {
+    }
+
+    public PathScan(ScanFilter scanFilter) {
+        this.scanFilter = scanFilter;
+    }
+
     /**
      * 扫描项目中指定包名的所有类
      * 例如 expression.cheney
@@ -40,18 +52,19 @@ public class PathScan {
      * @param scanPath 包路径,以'.'为分隔符
      * @return 扫描到的Class
      */
-    public static List<Class<?>> scanClass(String scanPath) {
+    public List<Class<?>> scanClass(String scanPath) throws ScanException {
         scanPath = SEPARATE_CHARACTER.equals(scanPath) ? EMPTY_PATH : scanPath;
         String resourcePath = scanPath.replaceAll("\\.", "/");
 
         URL resource = PathScan.class.getClassLoader().getResource(resourcePath);
         if (resource == null) {
-            throw new IllegalArgumentException("目录\"" + scanPath + "\"不存在");
+            throw new ScanException("目录\"" + scanPath + "\"不存在");
         }
 
         ArrayList<Class<?>> results = new ArrayList<>();
         if ("file".equals(resource.getProtocol())) {
             String file = resource.getFile();
+            scanPath = scanPath.replace("/", ".");
             scanClassInFile(scanPath, new File(file), results, new boolean[]{true});
         }
 
@@ -64,12 +77,12 @@ public class PathScan {
      * @param resource url资源
      * @return 扫描到的Class
      */
-    public static List<Class<?>> scanClass(URL resource) {
+    public List<Class<?>> scanClass(URL resource) throws ScanException {
         ArrayList<Class<?>> result = new ArrayList<>();
         if ("file".equals(resource.getProtocol())) {
             String file = resource.getFile();
             if (!file.contains(TARGET_CLASSES)) {
-                throw new IllegalArgumentException("Resource is not a class path");
+                throw new ScanException("Resource is not a class path");
             }
             String[] classPaths = file.split(TARGET_CLASSES);
             String scanPath = classPaths.length == 1 ? EMPTY_PATH : classPaths[1].replace("/", ".");
@@ -87,12 +100,12 @@ public class PathScan {
      * @param result     扫描结果集
      * @param first      是否首次调用
      */
-    private static void scanClassInFile(String parentPath, File file, ArrayList<Class<?>> result, boolean[] first) {
+    private void scanClassInFile(String parentPath, File file, List<Class<?>> result, boolean[] first) {
         if (file.isFile()) {
             String className = file.getName().substring(0, file.getName().length() - CLASS_END_LEN);
             String fullClassName = parentPath + className;
             try {
-                result.add(Class.forName(fullClassName));
+                filterClass(fullClassName, result);
             } catch (ClassNotFoundException e) {
                 log.error("can not find class name:{}", fullClassName);
             }
@@ -118,7 +131,7 @@ public class PathScan {
      * @param first      是否首次调用
      * @return 下一个包路径
      */
-    private static String getNextScanPath(String parentPath, File directory, boolean[] first) {
+    private String getNextScanPath(String parentPath, File directory, boolean[] first) {
         if (first[0]) {
             // 首次进入
             first[0] = false;
@@ -129,6 +142,33 @@ public class PathScan {
         } else {
             return parentPath + directory.getName() + SEPARATE_CHARACTER;
         }
+    }
+
+    /**
+     * 过滤有效类添加到result中
+     *
+     * @param fullClassName 类全名
+     * @param result        扫描结果集合
+     * @throws ClassNotFoundException
+     */
+    private void filterClass(String fullClassName, List<Class<?>> result) throws ClassNotFoundException {
+        Class<?> target = Class.forName(fullClassName);
+        if (scanFilter != null) {
+            Class<?> superClass = scanFilter.getSuperClass();
+            if (superClass != null &&
+                    (!superClass.isAssignableFrom(target) ||
+                            superClass.equals(target))) {
+                return;
+            }
+            List<Class<? extends Annotation>> hasAnnotations = scanFilter.getHasAnnotations();
+            if (hasAnnotations != null && !hasAnnotations.isEmpty()) {
+                boolean hasAll = hasAnnotations.stream().allMatch(a -> target.getAnnotation(a) != null);
+                if (!hasAll) {
+                    return;
+                }
+            }
+        }
+        result.add(target);
     }
 
 }

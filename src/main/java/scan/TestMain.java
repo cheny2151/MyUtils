@@ -1,8 +1,17 @@
 package scan;
 
+import DesignPattern.TypeSwitchChain.BaseTypeSwitch;
 import expression.cheney.test.Main;
+import scan.filter.ScanFilter;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -11,30 +20,50 @@ import java.util.List;
  */
 public class TestMain {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ScanException {
         test0();
-        System.out.println("--------------");
+        /*System.out.println("--------------");
         test1();
         System.out.println("--------------");
         test2();
+        test3();*/
     }
 
-    public static void test0() {
-        List<Class<?>> classes = PathScan.scanClass("");
+    public static void test0() throws ScanException {
+        ScanFilter scanFilter = new ScanFilter();
+        scanFilter.setSuperClass(BaseTypeSwitch.class);
+        PathScan pathScan = new PathScan(scanFilter);
+        List<Class<?>> classes = pathScan.scanClass("");
         classes.forEach(clazz -> System.out.println(clazz.getSimpleName()));
     }
 
-    public static void test1() {
-        List<Class<?>> classes = PathScan.scanClass("expression.cheney");
+    public static void test1() throws ScanException {
+        PathScan pathScan = new PathScan();
+        List<Class<?>> classes = pathScan.scanClass("expression.cheney");
         classes.forEach(clazz -> System.out.println(clazz.getSimpleName()));
     }
 
-    public static void test2() {
+    public static void test2() throws ScanException {
+        PathScan pathScan = new PathScan();
         Class<? extends Main> aClass = Main.class;
         URL resource = aClass.getResource("../func");
         System.out.println(resource.getFile());
-        List<Class<?>> classes = PathScan.scanClass(resource);
+        List<Class<?>> classes = pathScan.scanClass(resource);
         classes.forEach(System.out::println);
+    }
+
+    public static void test3() throws IOException {
+        String path = "scan";
+        Enumeration<URL> scan = Thread.currentThread().getContextClassLoader().getResources(path);
+        ArrayList<URL> list = Collections.list(scan);
+        for (URL url : list) {
+            System.out.println("url:" + url);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        }
     }
 
 }
