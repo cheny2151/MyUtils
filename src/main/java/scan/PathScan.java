@@ -78,7 +78,7 @@ public class PathScan {
             String file = resource.getFile();
             scanClassInFile(scanPath, new File(file), results, new boolean[]{true});
         } else if ("jar".equals(protocol)) {
-            scanClassInJar(scanPath, resource, results, new boolean[]{true});
+            scanClassInJar(scanPath, resource, results);
         }
 
         return results;
@@ -160,7 +160,7 @@ public class PathScan {
      * @param result     扫描结果集
      * @param first      是否首次调用
      */
-    private void scanClassInJar(String parentPath, URL url, List<Class<?>> result, boolean[] first)
+    private void scanClassInJar(String parentPath, URL url, List<Class<?>> result)
             throws ScanException {
         url = extractRealJarUrl(url);
         if (url == null || !isJar(url)) {
