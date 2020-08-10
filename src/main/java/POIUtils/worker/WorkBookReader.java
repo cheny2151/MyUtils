@@ -7,6 +7,9 @@ import POIUtils.entity.ExcelReadInfo;
 import POIUtils.entity.ReadProperty;
 import POIUtils.entity.ReadResult;
 import POIUtils.exception.WorkBookReadException;
+import POIUtils.utils.CellDealFunction;
+import POIUtils.utils.CellDealUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -28,6 +31,11 @@ import java.util.stream.Collectors;
  * excel表读取者
  */
 public class WorkBookReader {
+
+    // 解析为Map时预存的行号
+    public final static String ROW_NUM_FIELD_AT_MAP = "_rowNum";
+
+    public final static CellDealFunction DEFAULT_CELL_DEAL_FUNCTION = new CellDealUtils();
 
     /**
      * 文件excel数据流入口
@@ -65,11 +73,13 @@ public class WorkBookReader {
             //数据出现行数,从0开始算
             int titleRowNum = excelInfo.getTitleRow();
             int startRowNumber = titleRowNum + 1;
+            CellDealFunction cellDealFunction = excelInfo.getCellDealFunction() == null ?
+                    DEFAULT_CELL_DEAL_FUNCTION : excelInfo.getCellDealFunction();
             // 分析excel列表title
             Row titleRow = sheet.getRow(titleRowNum);
             Map<Integer, String> titleMap = new HashMap<>();
             titleRow.forEach(cell -> {
-                String title = cell.getStringCellValue();
+                String title = cellDealFunction.dealTitle(cell.getStringCellValue());
                 titleMap.put(cell.getColumnIndex(), title);
             });
             List<Map<String, Object>> results = new ArrayList<>();
@@ -82,7 +92,10 @@ public class WorkBookReader {
                     break;
                 }
                 Map<String, Object> rowData = new HashMap<>();
-                row.forEach(cell -> rowData.put(titleMap.get(cell.getColumnIndex()), getCellValue(cell)));
+                row.forEach(cell -> {
+                    rowData.put(titleMap.get(cell.getColumnIndex()), getCellValue(cell, cellDealFunction));
+                });
+                rowData.put(ROW_NUM_FIELD_AT_MAP, i);
                 results.add(rowData);
                 resultWithRow.put(i, rowData);
             }
@@ -91,6 +104,7 @@ public class WorkBookReader {
             throw new WorkBookReadException("excel解析失败" + e.getMessage(), e);
         }
     }
+
 
     /**
      * 从workbook读取数据
@@ -250,9 +264,9 @@ public class WorkBookReader {
             ReadProperty readProperty = entry.getValue();
             Cell cell = row.getCell(entry.getKey());
             if (cell == null) {
-                return null;
+                continue;
             }
-            Object value = getCellValue(cell);
+            Object value = getCellValue(cell, DEFAULT_CELL_DEAL_FUNCTION);
             readProperty.writerUnknownTypeValue(t, value);
         }
         return t;
@@ -271,14 +285,15 @@ public class WorkBookReader {
      * 获取单元格数据(只处理Number和String)
      * Date属于Number
      *
-     * @param cell 单元格实体
+     * @param cell             单元格实体
+     * @param cellDealFunction 单元格数据处理函数
      * @return 单元格数据
      */
-    private Object getCellValue(Cell cell) {
+    private Object getCellValue(Cell cell, CellDealFunction cellDealFunction) {
         Object value;
         switch (cell.getCellTypeEnum()) {
             case STRING: {
-                value = cell.getStringCellValue();
+                value = cellDealFunction.dealVal(cell.getStringCellValue());
                 break;
             }
             case NUMERIC: {
@@ -318,7 +333,7 @@ public class WorkBookReader {
         Map<String, Integer> titleMap = new HashMap<>();
         titleRow.forEach(cell -> {
             String title = cell.getStringCellValue();
-            if (titleMap.containsKey(title)) {
+            if (StringUtils.isNotBlank(title) && titleMap.containsKey(title)) {
                 throw new WorkBookReadException("duplicate title value:" + title);
             }
             titleMap.put(title, cell.getColumnIndex());
@@ -366,5 +381,6 @@ public class WorkBookReader {
         cellStyle.setFont(font);
         cell.setCellStyle(cellStyle);
     }
+
 
 }
