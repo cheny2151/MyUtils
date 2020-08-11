@@ -18,7 +18,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 /**
- * 扫描包下得所有class
+ * 扫描包下指定的class
  *
  * @author cheney
  * @date 2019/6/26
