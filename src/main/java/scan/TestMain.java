@@ -1,7 +1,6 @@
 package scan;
 
 import DesignPattern.TypeSwitchChain.BaseTypeSwitch;
-import expression.cheney.test.Main;
 import scan.filter.ScanFilter;
 
 import java.io.BufferedReader;
@@ -30,13 +29,13 @@ public class TestMain {
     public static void test0() throws ScanException {
         ScanFilter scanFilter = new ScanFilter();
         scanFilter.setSuperClass(BaseTypeSwitch.class);
-        PathScan pathScan = new PathScan(scanFilter);
+        PathScanner pathScan = new PathScanner(scanFilter);
         List<Class<?>> classes = pathScan.scanClass("DesignPattern");
         classes.forEach(clazz -> System.out.println(clazz.getSimpleName()));
     }
 
     public static void test1() throws ScanException {
-        PathScan pathScan = new PathScan();
+        PathScanner pathScan = new PathScanner();
         List<Class<?>> classes = pathScan.scanClass("expression/cheney/");
         classes.forEach(clazz -> System.out.println(clazz.getSimpleName()));
     }
@@ -44,7 +43,7 @@ public class TestMain {
     public static void test2() throws ScanException {
         ScanFilter scanFilter = new ScanFilter();
         scanFilter.setSuperClass(BaseTypeSwitch.class);
-        PathScan pathScan = new PathScan(scanFilter);
+        PathScanner pathScan = new PathScanner(scanFilter);
         List<Class<?>> classes = pathScan.scanClass("");
         classes.forEach(clazz -> System.out.println(clazz.getSimpleName()));
     }

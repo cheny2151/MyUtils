@@ -24,7 +24,7 @@ import java.util.jar.JarInputStream;
  * @date 2019/6/26
  */
 @Slf4j
-public class PathScan {
+public class PathScanner {
 
     // class文件拓展名
     private final static String CLASS_EXTENSION = ".class";
@@ -44,10 +44,10 @@ public class PathScan {
     // 为root的路径
     public final static String[] ROOT_PATH = new String[]{SEPARATE_CHARACTER, EMPTY_PATH};
 
-    public PathScan() {
+    public PathScanner() {
     }
 
-    public PathScan(ScanFilter scanFilter) {
+    public PathScanner(ScanFilter scanFilter) {
         this.scanFilter = scanFilter;
     }
 
@@ -175,7 +175,7 @@ public class PathScan {
      * @throws ScanException
      */
     private URL getResource(String scanPath, String resourcePath) throws ScanException {
-        URL resource = PathScan.class.getClassLoader().getResource(resourcePath);
+        URL resource = PathScanner.class.getClassLoader().getResource(resourcePath);
         if (resource == null && EMPTY_PATH.equals(resourcePath)) {
             try {
                 resource = getRootUrlForJar();
