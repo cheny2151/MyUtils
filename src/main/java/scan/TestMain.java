@@ -23,8 +23,6 @@ public class TestMain {
         test0();
         System.out.println("--------------");
         test1();
-        System.out.println("--------------");
-//        test2();
     }
 
     public static void test0() throws ScanException {
@@ -39,15 +37,6 @@ public class TestMain {
         PathScan pathScan = new PathScan();
         List<Class<?>> classes = pathScan.scanClass("expression/cheney/");
         classes.forEach(clazz -> System.out.println(clazz.getSimpleName()));
-    }
-
-    public static void test2() throws ScanException {
-        PathScan pathScan = new PathScan();
-        Class<? extends Main> aClass = Main.class;
-        URL resource = aClass.getResource("../func");
-        System.out.println(resource.getFile());
-        List<Class<?>> classes = pathScan.scanClass(resource);
-        classes.forEach(System.out::println);
     }
 
     public static void test3(String path) throws IOException {

@@ -27,8 +27,6 @@ public class PathScan {
 
     private final static String CLASS_EXTENSION = ".class";
 
-    public static final String TARGET_CLASSES = "/target/classes/";
-
     // .class长度
     public static final int CLASS_END_LEN = 6;
 
@@ -83,27 +81,6 @@ public class PathScan {
         }
 
         return results;
-    }
-
-    /**
-     * 扫描项目中指定URL下的所有类
-     *
-     * @param resource url资源
-     * @return 扫描到的Class
-     */
-    public List<Class<?>> scanClass(URL resource) throws ScanException {
-        ArrayList<Class<?>> result = new ArrayList<>();
-        if ("file".equals(resource.getProtocol())) {
-            String file = resource.getFile();
-            if (!file.contains(TARGET_CLASSES)) {
-                throw new ScanException("Resource is not a class path");
-            }
-            String[] classPaths = file.split(TARGET_CLASSES);
-            String scanPath = classPaths.length == 1 ? EMPTY_PATH : classPaths[1].replace("/", ".");
-            scanClassInFile(scanPath, new File(file), result);
-        }
-
-        return result;
     }
 
     /**
