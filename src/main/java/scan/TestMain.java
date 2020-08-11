@@ -23,6 +23,8 @@ public class TestMain {
         test0();
         System.out.println("--------------");
         test1();
+        System.out.println("--------------");
+        test2();
     }
 
     public static void test0() throws ScanException {
@@ -36,6 +38,14 @@ public class TestMain {
     public static void test1() throws ScanException {
         PathScan pathScan = new PathScan();
         List<Class<?>> classes = pathScan.scanClass("expression/cheney/");
+        classes.forEach(clazz -> System.out.println(clazz.getSimpleName()));
+    }
+
+    public static void test2() throws ScanException {
+        ScanFilter scanFilter = new ScanFilter();
+        scanFilter.setSuperClass(BaseTypeSwitch.class);
+        PathScan pathScan = new PathScan(scanFilter);
+        List<Class<?>> classes = pathScan.scanClass("");
         classes.forEach(clazz -> System.out.println(clazz.getSimpleName()));
     }
 

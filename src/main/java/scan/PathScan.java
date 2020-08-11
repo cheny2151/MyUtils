@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -25,6 +26,7 @@ import java.util.jar.JarInputStream;
 @Slf4j
 public class PathScan {
 
+    // class文件拓展名
     private final static String CLASS_EXTENSION = ".class";
 
     // .class长度
@@ -34,13 +36,13 @@ public class PathScan {
     private final static String EMPTY_PATH = "";
 
     // 分隔符
-    public static final String SEPARATE_CHARACTER = ".";
-
-    // 为root的路径
-    private final static String[] ROOT_PATH = new String[]{SEPARATE_CHARACTER, EMPTY_PATH};
+    private final static String SEPARATE_CHARACTER = ".";
 
     // 过滤器
     private ScanFilter scanFilter;
+
+    // 为root的路径
+    public final static String[] ROOT_PATH = new String[]{SEPARATE_CHARACTER, EMPTY_PATH};
 
     public PathScan() {
     }
@@ -58,20 +60,17 @@ public class PathScan {
      * @return 扫描到的Class
      */
     public List<Class<?>> scanClass(String scanPath) throws ScanException {
-        scanPath = SEPARATE_CHARACTER.equals(scanPath) ? EMPTY_PATH : scanPath;
-        String resourcePath = scanPath.replaceAll("\\.", "/");
+        String scanPath0 = SEPARATE_CHARACTER.equals(scanPath) ? EMPTY_PATH : scanPath;
+        String resourcePath = scanPath0.replaceAll("\\.", "/");
 
-        URL resource = PathScan.class.getClassLoader().getResource(resourcePath);
-        if (resource == null) {
-            throw new ScanException("资源'" + scanPath + "'不存在");
-        }
+        URL resource = getResource(scanPath, resourcePath);
 
         String protocol = resource.getProtocol();
         if (log.isDebugEnabled()) {
             log.debug("file protocol:{}", protocol);
         }
 
-        String pathBuilder = extractEffectivePath(scanPath);
+        String pathBuilder = extractEffectivePath(scanPath0);
         ArrayList<Class<?>> results = new ArrayList<>();
         if ("file".equals(protocol)) {
             String file = resource.getFile();
@@ -100,7 +99,7 @@ public class PathScan {
         if (file.isFile() && file.getName().endsWith(CLASS_EXTENSION)) {
             effectiveFiles.add(file);
         }
-        effectiveFiles.addAll(Arrays.asList(getEffectiveChildFiles(file)));
+        effectiveFiles.addAll(getEffectiveChildFiles(file));
         for (File child : effectiveFiles) {
             loadResourcesInFile(parentPath, child, result);
         }
@@ -119,8 +118,8 @@ public class PathScan {
             String ClassFileName = parentPath + file.getName();
             filterClass(ClassFileName, result);
         } else if (file.isDirectory()) {
-            File[] childFiles = getEffectiveChildFiles(file);
-            if (childFiles == null || childFiles.length == 0) {
+            List<File> childFiles = getEffectiveChildFiles(file);
+            if (childFiles.size() == 0) {
                 return;
             }
             String nextScanPath = getNextScanPath(parentPath, file);
@@ -168,6 +167,29 @@ public class PathScan {
     }
 
     /**
+     * 从资源路径中获取URL实例
+     *
+     * @param scanPath     入参扫描
+     * @param resourcePath
+     * @return
+     * @throws ScanException
+     */
+    private URL getResource(String scanPath, String resourcePath) throws ScanException {
+        URL resource = PathScan.class.getClassLoader().getResource(resourcePath);
+        if (resource == null && EMPTY_PATH.equals(resourcePath)) {
+            try {
+                resource = getRootUrlForJar();
+            } catch (MalformedURLException e) {
+                throw new ScanException("获取资源失败", e);
+            }
+        }
+        if (resource == null) {
+            throw new ScanException("资源'" + scanPath + "'不存在");
+        }
+        return resource;
+    }
+
+    /**
      * 提取有效jar包URL
      *
      * @param url 原url
@@ -198,7 +220,7 @@ public class PathScan {
         while ((nextJarEntry = jarInputStream.getNextJarEntry()) != null) {
             if (!nextJarEntry.isDirectory()) {
                 String ClassFileName = nextJarEntry.getName().replaceAll("/", ".");
-                if (ClassFileName.startsWith(parentPath)) {
+                if (ClassFileName.startsWith(parentPath) && ClassFileName.endsWith(CLASS_EXTENSION)) {
                     filterClass(ClassFileName, result);
                 }
             }
@@ -216,8 +238,15 @@ public class PathScan {
         try {
             String fullClassName = ClassFileName.substring(0, ClassFileName.length() - CLASS_END_LEN);
             target = loadClass(fullClassName);
+        } catch (NoClassDefFoundError e) {
+            if (log.isDebugEnabled()) {
+                log.debug("can not find class def,name:{}", ClassFileName);
+            }
+            return;
         } catch (ClassNotFoundException e) {
-            log.error("can not find class name:{}", ClassFileName);
+            if (log.isDebugEnabled()) {
+                log.debug("can not find class,name:{}", ClassFileName);
+            }
             return;
         }
         if (scanFilter != null) {
@@ -244,10 +273,11 @@ public class PathScan {
      * @param cur 当前目录
      * @return
      */
-    private File[] getEffectiveChildFiles(File cur) {
-        return cur.listFiles((childFile) ->
+    private List<File> getEffectiveChildFiles(File cur) {
+        File[] files = cur.listFiles((childFile) ->
                 childFile.isDirectory() || childFile.getName().endsWith(CLASS_EXTENSION)
         );
+        return files == null ? Collections.emptyList() : Arrays.asList(files);
     }
 
     /**
@@ -268,6 +298,16 @@ public class PathScan {
 
     private Class<?> loadClass(String fullClassName) throws ClassNotFoundException {
         return Thread.currentThread().getContextClassLoader().loadClass(fullClassName);
+    }
+
+    /**
+     * 由于jar包内无法获取根目录，参数以jar包的形式创建根目录URL
+     *
+     * @return 根目录URL
+     * @throws MalformedURLException
+     */
+    private URL getRootUrlForJar() throws MalformedURLException {
+        return new URL("jar:file:" + System.getProperty("java.class.path") + "!/");
     }
 
     /**
