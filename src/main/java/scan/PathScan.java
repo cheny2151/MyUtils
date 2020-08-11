@@ -65,7 +65,7 @@ public class PathScan {
 
         URL resource = PathScan.class.getClassLoader().getResource(resourcePath);
         if (resource == null) {
-            throw new ScanException("目录\"" + scanPath + "\"不存在");
+            throw new ScanException("资源'" + scanPath + "'不存在");
         }
 
         String protocol = resource.getProtocol();
