@@ -1,6 +1,7 @@
 package scan;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import scan.filter.ScanFilter;
 
 import java.io.File;
@@ -72,13 +73,13 @@ public class PathScan {
             log.debug("file protocol:{}", protocol);
         }
 
+        String pathBuilder = extractEffectivePath(scanPath);
         ArrayList<Class<?>> results = new ArrayList<>();
-        scanPath = scanPath.replaceAll("/", ".");
         if ("file".equals(protocol)) {
             String file = resource.getFile();
-            scanClassInFile(scanPath, new File(file), results, new boolean[]{true});
+            scanClassInFile(pathBuilder, new File(file), results);
         } else if ("jar".equals(protocol)) {
-            scanClassInJar(scanPath, resource, results);
+            scanClassInJar(pathBuilder, resource, results);
         }
 
         return results;
@@ -99,7 +100,7 @@ public class PathScan {
             }
             String[] classPaths = file.split(TARGET_CLASSES);
             String scanPath = classPaths.length == 1 ? EMPTY_PATH : classPaths[1].replace("/", ".");
-            scanClassInFile(scanPath, new File(file), result, new boolean[]{true});
+            scanClassInFile(scanPath, new File(file), result);
         }
 
         return result;
@@ -108,25 +109,46 @@ public class PathScan {
     /**
      * 从本地File中扫描所有类
      *
-     * @param parentPath 上级目录,以','为分隔符
+     * @param parentPath 上级目录,以'.'为分隔符
      * @param file       文件
      * @param result     扫描结果集
      * @param first      是否首次调用
      */
-    private void scanClassInFile(String parentPath, File file, List<Class<?>> result, boolean[] first) {
+    private void scanClassInFile(String parentPath, File file, List<Class<?>> result) {
+        // 结尾补'.'
+        if (!StringUtils.isEmpty(parentPath)) {
+            parentPath = parentPath + SEPARATE_CHARACTER;
+        }
+        List<File> effectiveFiles = new ArrayList<>();
+        if (file.isFile() && file.getName().endsWith(CLASS_EXTENSION)) {
+            effectiveFiles.add(file);
+        }
+        effectiveFiles.addAll(Arrays.asList(getEffectiveChildFiles(file)));
+        for (File child : effectiveFiles) {
+            loadResourcesInFile(parentPath, child, result);
+        }
+    }
+
+    /**
+     * 从本地File中扫描所有类
+     *
+     * @param parentPath 上级目录,以'.'为分隔符
+     * @param file       文件
+     * @param result     扫描结果集
+     * @param first      是否首次调用
+     */
+    private void loadResourcesInFile(String parentPath, File file, List<Class<?>> result) {
         if (file.isFile()) {
             String ClassFileName = parentPath + file.getName();
             filterClass(ClassFileName, result);
         } else if (file.isDirectory()) {
-            File[] childFiles = file.listFiles((childFile) ->
-                    childFile.isDirectory() || childFile.getName().endsWith(CLASS_EXTENSION)
-            );
+            File[] childFiles = getEffectiveChildFiles(file);
             if (childFiles == null || childFiles.length == 0) {
                 return;
             }
-            String nextScanPath = getNextScanPath(parentPath, file, first);
+            String nextScanPath = getNextScanPath(parentPath, file);
             for (File child : childFiles) {
-                scanClassInFile(nextScanPath, child, result, first);
+                loadResourcesInFile(nextScanPath, child, result);
             }
         }
     }
@@ -134,28 +156,19 @@ public class PathScan {
     /**
      * 获取下个包路径
      *
-     * @param parentPath 上级目录,以','为分隔符
+     * @param parentPath 上级目录,以'.'为分隔符
      * @param directory  扫描的当前目录
      * @param first      是否首次调用
      * @return 下一个包路径
      */
-    private String getNextScanPath(String parentPath, File directory, boolean[] first) {
-        if (first[0]) {
-            // 首次进入
-            first[0] = false;
-            if (EMPTY_PATH.equals(parentPath) || parentPath.endsWith(SEPARATE_CHARACTER)) {
-                return parentPath;
-            }
-            return parentPath + SEPARATE_CHARACTER;
-        } else {
-            return parentPath + directory.getName() + SEPARATE_CHARACTER;
-        }
+    private String getNextScanPath(String parentPath, File directory) {
+        return parentPath + directory.getName() + SEPARATE_CHARACTER;
     }
 
     /**
      * 从本地jar包中扫描所有类
      *
-     * @param parentPath 上级目录,以','为分隔符
+     * @param parentPath 上级目录,以'.'为分隔符
      * @param url        jar包的url资源
      * @param result     扫描结果集
      * @param first      是否首次调用
@@ -197,7 +210,7 @@ public class PathScan {
     /**
      * 从jarInputStream流中提取有效的类并添加到result中
      *
-     * @param parentPath     上级目录,以','为分隔符
+     * @param parentPath     上级目录,以'.'为分隔符
      * @param jarInputStream jar文件流
      * @param result         结果合集
      * @throws IOException
@@ -248,10 +261,37 @@ public class PathScan {
         result.add(target);
     }
 
+    /**
+     * 返回有效的子目录或文件
+     *
+     * @param cur 当前目录
+     * @return
+     */
+    private File[] getEffectiveChildFiles(File cur) {
+        return cur.listFiles((childFile) ->
+                childFile.isDirectory() || childFile.getName().endsWith(CLASS_EXTENSION)
+        );
+    }
+
+    /**
+     * 提取有效路径，若最终结尾存在'.'则删除
+     *
+     * @param scanPath 扫描的路径
+     * @return
+     */
+    private String extractEffectivePath(String scanPath) {
+        StringBuilder pathBuilder = new StringBuilder(scanPath.replaceAll("/", "."));
+        // 剔除最后一个有效'.'之后的path
+        int length = pathBuilder.length();
+        if (length > 0 && SEPARATE_CHARACTER.getBytes()[0] == pathBuilder.charAt(length - 1)) {
+            pathBuilder.setLength(length - 1);
+        }
+        return pathBuilder.toString();
+    }
+
     private Class<?> loadClass(String fullClassName) throws ClassNotFoundException {
         return Thread.currentThread().getContextClassLoader().loadClass(fullClassName);
     }
-
 
     /**
      * jar文件的magic头

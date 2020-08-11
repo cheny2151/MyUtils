@@ -37,7 +37,7 @@ public class TestMain {
 
     public static void test1() throws ScanException {
         PathScan pathScan = new PathScan();
-        List<Class<?>> classes = pathScan.scanClass("expression.cheney");
+        List<Class<?>> classes = pathScan.scanClass("expression/cheney/");
         classes.forEach(clazz -> System.out.println(clazz.getSimpleName()));
     }
 
