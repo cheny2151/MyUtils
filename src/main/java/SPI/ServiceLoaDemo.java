@@ -16,6 +16,7 @@ import java.util.ServiceLoader;
 public class ServiceLoaDemo {
 
     public static void main(String[] args) {
+        // 加载META-INF\services\reflect.methodHolder.factory.MethodHolderFactory文件中配置的类
         ServiceLoader<MethodHolderFactory> services = ServiceLoader.load(MethodHolderFactory.class);
         for (MethodHolderFactory service : services) {
             System.out.println(service.getClass());
