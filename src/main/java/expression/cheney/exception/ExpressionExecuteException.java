@@ -1,4 +1,4 @@
-package expression.cheney;
+package expression.cheney.exception;
 
 /**
  * 表达式执行异常

@@ -1,8 +1,7 @@
 package expression.cheney.func;
 
 import com.alibaba.fastjson.JSON;
-import jsonUtils.JsonUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -47,7 +46,6 @@ public class InternalFunction {
     }
 
     public static Object ifs(Object... objs) {
-        System.out.println(JsonUtils.toJson(objs));
         for (int i = 0; i < objs.length; i++) {
             if ((i & 1) == 0 && (boolean) objs[i]) {
                 return objs[i + 1];

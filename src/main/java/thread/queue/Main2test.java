@@ -3,7 +3,7 @@ package thread.queue;
 import DesignPattern.observer.single.Student;
 import httpClient.HttpClientUtils;
 import jsonUtils.JsonUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 
 import java.math.BigDecimal;

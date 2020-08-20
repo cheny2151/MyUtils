@@ -1,6 +1,10 @@
-package expression.cheney;
+package expression.cheney.parse;
 
+import expression.cheney.executor.ExpressionExecutor;
+import expression.cheney.executor.NullExpressionExecutor;
+import expression.cheney.executor.ReflectExpressionExecutor;
 import expression.cheney.model.FunctionClasses;
+import expression.cheney.model.ParseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import reflect.methodHolder.factory.DefaultMethodHolderFactory;
@@ -10,9 +14,6 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
-
-import static expression.cheney.BaseExpressionParser.ParseResult.FUNC;
-import static expression.cheney.BaseExpressionParser.ParseResult.NULL_VALUE;
 
 /**
  * 反射表达式解析器
@@ -76,10 +77,10 @@ public class ReflectExpressionParser extends BaseExpressionParser {
     public ExpressionExecutor parseExpression(String expression) {
         ParseResult parseResult = parse(expression);
         switch (parseResult.getType()) {
-            case FUNC: {
+            case ParseResult.FUNC: {
                 return new ReflectExpressionExecutor(expression, parseResult, this.methodHolderFactory, this.functionClasses);
             }
-            case NULL_VALUE: {
+            case ParseResult.NULL_VALUE: {
                 // 1.6 新增，处理'null'表达式解析结果
                 return NullExpressionExecutor.getInstance();
             }

@@ -1,10 +1,14 @@
-package expression.cheney;
+package expression.cheney.executor;
 
+import expression.cheney.exception.ExpressionExecuteException;
+import expression.cheney.model.Arg;
 import expression.cheney.model.FunctionClasses;
+import expression.cheney.model.ParseResult;
+import expression.cheney.parse.AviatorExpressionParser;
 import reflect.methodHolder.MethodHolder;
-import reflect.methodHolder.factory.MethodHolderFactory;
 import reflect.methodHolder.StaticMethodHolder;
 import reflect.methodHolder.exception.NoSuchMethodException;
+import reflect.methodHolder.factory.MethodHolderFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -27,8 +31,8 @@ public class ReflectExpressionExecutor extends BaseExpressionExecutor {
      */
     private FunctionClasses functionClasses;
 
-    ReflectExpressionExecutor(String express, BaseExpressionParser.ParseResult parseResult,
-                              MethodHolderFactory methodHolderFactory, FunctionClasses functionClasses) {
+    public ReflectExpressionExecutor(String express, ParseResult parseResult,
+                                     MethodHolderFactory methodHolderFactory, FunctionClasses functionClasses) {
         super(express, parseResult);
         this.methodHolderFactory = methodHolderFactory;
         this.functionClasses = functionClasses;
@@ -51,7 +55,7 @@ public class ReflectExpressionExecutor extends BaseExpressionExecutor {
     }
 
     @Override
-    protected Object executeFunc(String functionName, List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
+    protected Object executeFunc(String functionName, List<Arg> args, Map<String, Object> env) {
         for (FunctionClasses.FunctionClass functionClass : functionClasses) {
             MethodHolder methodHolder = methodHolderFactory.getMethodHolder(functionClass.getFuncClass(), StaticMethodHolder.class);
             if (methodHolder.hasMethod(functionName)) {

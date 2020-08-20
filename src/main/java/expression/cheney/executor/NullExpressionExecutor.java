@@ -1,4 +1,4 @@
-package expression.cheney;
+package expression.cheney.executor;
 
 import java.util.Map;
 

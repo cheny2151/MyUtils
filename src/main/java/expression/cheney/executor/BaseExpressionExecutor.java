@@ -1,15 +1,15 @@
-package expression.cheney;
+package expression.cheney.executor;
 
+import expression.cheney.model.Arg;
+import expression.cheney.model.ParseResult;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static expression.cheney.BaseExpressionParser.Arg.CONSTANT;
-import static expression.cheney.BaseExpressionParser.Arg.FUNC;
 import static expression.cheney.CharConstants.*;
 
 /**
@@ -33,9 +33,9 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
     /**
      * 表达式解析结果
      */
-    protected BaseExpressionParser.ParseResult parseResult;
+    protected ParseResult parseResult;
 
-    BaseExpressionExecutor(String express, BaseExpressionParser.ParseResult parseResult) {
+    BaseExpressionExecutor(String express, ParseResult parseResult) {
         this.express = express;
         this.parseResult = parseResult;
     }
@@ -48,33 +48,33 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
      * @return 参数数组
      */
     @SuppressWarnings("unchecked")
-    protected Object[] loadArgs(List<BaseExpressionParser.Arg> args, Map<String, Object> env) {
+    protected Object[] loadArgs(List<Arg> args, Map<String, Object> env) {
         return CollectionUtils.isEmpty(args) ? null : args.stream().map(arg -> {
             Object value = arg.getValue();
             short type = arg.getType();
             if (value == null) {
                 return null;
-            } else if (type == CONSTANT) {
+            } else if (type == Arg.CONSTANT) {
                 return value;
-            } else if (type == FUNC) {
-                BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) value;
+            } else if (type == Arg.FUNC) {
+                ParseResult parseResult = (ParseResult) value;
                 return executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
-            } else if (type == BaseExpressionParser.Arg.COMBINATION) {
+            } else if (type == Arg.COMBINATION) {
                 // 函数嵌套运算
-                ArrayList<BaseExpressionParser.Arg> funcArgs = (ArrayList<BaseExpressionParser.Arg>) value;
+                ArrayList<Arg> funcArgs = (ArrayList<Arg>) value;
                 String operatorExpression = "";
                 int newEnvIndex = 0;
-                for (BaseExpressionParser.Arg funcArg : funcArgs) {
+                for (Arg funcArg : funcArgs) {
                     Object argValue = funcArg.getValue();
                     short funcArgType = funcArg.getType();
-                    if (funcArgType == FUNC) {
-                        BaseExpressionParser.ParseResult parseResult = (BaseExpressionParser.ParseResult) argValue;
+                    if (funcArgType == Arg.FUNC) {
+                        ParseResult parseResult = (ParseResult) argValue;
                         Object expression = executeFunc(parseResult.getFuncName(), parseResult.getArgs(), env);
                         // 函数执行结果作为env的值，缓存最终形成的表达式解析结果
                         String newEnvKey = NEW_ENV_KEY + newEnvIndex++;
                         env.put(newEnvKey, expression);
                         operatorExpression += newEnvKey;
-                    } else if (funcArgType == CONSTANT) {
+                    } else if (funcArgType == Arg.CONSTANT) {
                         // 常量则加上'
                         operatorExpression += APOSTROPHE_STRING + argValue + APOSTROPHE_STRING;
                     } else {
@@ -136,6 +136,6 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
      * @param env          变量
      * @return 表达式执行结果
      */
-    protected abstract Object executeFunc(String functionName, List<BaseExpressionParser.Arg> args, Map<String, Object> env);
+    protected abstract Object executeFunc(String functionName, List<Arg> args, Map<String, Object> env);
 
 }

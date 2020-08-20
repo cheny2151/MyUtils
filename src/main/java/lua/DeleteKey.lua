@@ -3,7 +3,7 @@
 -- User: Cheney
 -- Date: 2020-08-19
 -- Time: 16:32
--- To change this template use File | Settings | File Templates.
+-- redis批量删除key的lua脚本
 --
 
 local len = 1

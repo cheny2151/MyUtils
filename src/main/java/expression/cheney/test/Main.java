@@ -1,6 +1,9 @@
 package expression.cheney.test;
 
-import expression.cheney.*;
+import expression.cheney.executor.ExpressionExecutor;
+import expression.cheney.parse.AviatorExpressionParser;
+import expression.cheney.parse.ExpressionParser;
+import expression.cheney.parse.ReflectExpressionParser;
 import org.junit.Test;
 
 import java.math.BigDecimal;

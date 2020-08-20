@@ -1,10 +1,12 @@
-package expression.cheney;
+package expression.cheney.parse;
 
+import expression.cheney.exception.ExpressionParseException;
+import expression.cheney.executor.ExpressionExecutor;
 import expression.cheney.func.InternalFunction;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.apache.commons.lang.ArrayUtils;
+import expression.cheney.model.Arg;
+import expression.cheney.model.ParseResult;
+import expression.cheney.model.TestResult;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,87 +46,6 @@ public abstract class BaseExpressionParser implements ExpressionParser {
     @Override
     public abstract ExpressionExecutor parseExpression(String expression);
 
-    /**
-     * 表达式解析结果
-     * 例如: ifs(a>b,c) 则
-     * args字段：a>b与c {@link Arg}
-     * funcName字段：ifs
-     * noFunc字段:当表达式不为函数时，该字段为true
-     */
-    @Data
-    @AllArgsConstructor
-    protected static class ParseResult {
-        /**
-         * 类型枚举值
-         */
-        public final static short FUNC = 1;
-        public final static short ORIGIN = 2;
-        public final static short NULL_VALUE = -1;
-
-        /**
-         * 解析结果为NULL
-         */
-        public final static ParseResult NULL_RESULT = new ParseResult(null, null, NULL_VALUE);
-
-        private String funcName;
-        private List<Arg> args;
-        private short type;
-
-        /**
-         * 原始类型时,funcName作为完整的原始类型表达式
-         *
-         * @param expression 表达式
-         */
-        public static ParseResult origin(String expression) {
-            return new ParseResult(expression, null, ORIGIN);
-        }
-
-        public static ParseResult func(String funcName, List<Arg> args) {
-            return new ParseResult(funcName, args, FUNC);
-        }
-
-        public boolean isFunc() {
-            return FUNC == this.type;
-        }
-    }
-
-    /**
-     * 参数段类实体
-     */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    static class Arg {
-        private final static List<Arg> EMPTY_ARG = new ArrayList<>(0);
-        // 值
-        private Object value;
-        // 类型：0:常量,1:函数,2:运算,3:组合段落
-        private short type;
-        // 类型枚举值
-        public final static short CONSTANT = 0;
-        public final static short FUNC = 1;
-        public final static short ORIGIN = 2;
-        public final static short COMBINATION = 3;
-    }
-
-    /**
-     * 表达式测试结果
-     * 1.7新增
-     */
-    @Data
-    @AllArgsConstructor
-    public static class TestResult {
-        private String errorMsg;
-        private boolean passed;
-
-        public static TestResult success() {
-            return new TestResult("success", true);
-        }
-
-        public static TestResult fail(String expression, Exception e) {
-            return new TestResult("表达式 " + expression + " 测试不通过:" + e.getMessage(), false);
-        }
-    }
 
     /**
      * 表达式测试

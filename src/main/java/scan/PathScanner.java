@@ -1,7 +1,7 @@
 package scan;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import scan.filter.ScanFilter;
 
 import java.io.File;
