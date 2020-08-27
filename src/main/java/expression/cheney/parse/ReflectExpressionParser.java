@@ -6,7 +6,7 @@ import expression.cheney.executor.ReflectExpressionExecutor;
 import expression.cheney.model.FunctionClasses;
 import expression.cheney.model.ParseResult;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
 import reflect.methodHolder.factory.DefaultMethodHolderFactory;
 import reflect.methodHolder.factory.MethodHolderFactory;
 

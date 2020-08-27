@@ -2,7 +2,7 @@ package mq.kafka.producer;
 
 import lombok.extern.slf4j.Slf4j;
 import mq.kafka.utils.KafkaUtils;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
