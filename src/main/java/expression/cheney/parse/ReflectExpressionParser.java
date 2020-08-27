@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * 反射表达式解析器
@@ -70,7 +71,9 @@ public class ReflectExpressionParser extends BaseExpressionParser {
 
     public ReflectExpressionParser(MethodHolderFactory methodHolderFactory, Collection<Class<?>> classes) {
         this.methodHolderFactory = methodHolderFactory;
-        this.functionClasses = new FunctionClasses(classes);
+        FunctionClasses functionClasses = new FunctionClasses(classes);
+        functionClasses.add(INTERNAL_FUNCTION);
+        this.functionClasses = functionClasses;
     }
 
     @Override
@@ -115,12 +118,15 @@ public class ReflectExpressionParser extends BaseExpressionParser {
 
     /**
      * 获取新的ReflectExpressionParser解析器实例
+     *
+     * @param methodHolderFactory 方法持有类工厂
+     * @param classes             内置静态方法对应的类
      */
     public static ReflectExpressionParser getInstance(MethodHolderFactory methodHolderFactory, Collection<Class<?>> classes) {
-        if (methodHolderFactory == null || CollectionUtils.isEmpty(classes)) {
+        if (methodHolderFactory == null) {
             throw new NullPointerException();
         }
-        return new ReflectExpressionParser(methodHolderFactory, classes);
+        return new ReflectExpressionParser(methodHolderFactory, classes == null ? Collections.emptyList() : classes);
     }
 
 }
