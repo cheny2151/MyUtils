@@ -1,5 +1,10 @@
 package DesignPattern.observer.single;
 
+import cache.annotation.CacheEntity;
+import cache.annotation.CacheField;
+import cache.annotation.CacheFilter;
+import cache.annotation.CacheId;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,12 +13,15 @@ import java.util.List;
  * 观察者模式：监听器模式
  * Listener 监听器实现类
  */
+@CacheEntity(tableName = "test",sqlFilter = {@CacheFilter("del_flag = 0"),@CacheFilter("status = 1")})
 public class Student implements HomeWorkListener,Serializable {
 
     private static final long serialVersionUID = -1374954042835581442L;
 
+    @CacheId
     private String id;
 
+    @CacheField
     private String name;
 
     private String sex;
