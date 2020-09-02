@@ -49,9 +49,8 @@ public class EntityQueryerChooser {
      * @return mybatis实体查询器
      */
     private MybatisEntityQueryer testMybatis() {
-        Class<?> sqlSessionFactoryClass;
         try {
-            sqlSessionFactoryClass = Class.forName("org.apache.ibatis.session.SqlSessionFactory");
+            Class.forName("org.apache.ibatis.session.SqlSessionFactory");
         } catch (ClassNotFoundException e) {
             return null;
         }

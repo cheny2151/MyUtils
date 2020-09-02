@@ -1,6 +1,7 @@
 package cache.queryer;
 
 import cache.buffer.model.BufferInfo;
+import com.alibaba.fastjson.JSON;
 import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
@@ -13,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
 import reflect.ReflectUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,11 +33,6 @@ public class MybatisEntityQueryer implements EntityQueryer {
     private final static String QUERY_METHOD_NAME = "query";
 
     /**
-     * mybatis SqlSession实例
-     */
-    private SqlSession sqlSession;
-
-    /**
      * Mapper代理实例
      */
     private Object proxyMapper;
@@ -48,7 +43,6 @@ public class MybatisEntityQueryer implements EntityQueryer {
     private Method queryMethod;
 
     public MybatisEntityQueryer(SqlSession sqlSession) {
-        this.sqlSession = sqlSession;
         Class<?> mapperInterface = createMapperInterface();
         sqlSession.getConfiguration().addMapper(mapperInterface);
         this.proxyMapper = sqlSession.getMapper(mapperInterface);
@@ -70,6 +64,11 @@ public class MybatisEntityQueryer implements EntityQueryer {
         return Collections.emptyList();
     }
 
+    /**
+     * 动态创建查询Mapper接口
+     *
+     * @return Mapper接口
+     */
     private Class<?> createMapperInterface() {
         ClassPool classPool = ClassPool.getDefault();
         ClassClassPath classPath = new ClassClassPath(MybatisEntityQueryer.class);
@@ -83,14 +82,15 @@ public class MybatisEntityQueryer implements EntityQueryer {
             // 添加注解
             ClassFile classFile = cc.getClassFile();
             ConstPool constPool = classFile.getConstPool();
-            AnnotationsAttribute fieldAttr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+            AnnotationsAttribute attribute = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
             Annotation select = new Annotation("org.apache.ibatis.annotations.Select", constPool);
             StringMemberValue sqlVal = new StringMemberValue(getBaseSql(), constPool);
             select.addMemberValue("value", new ArrayMemberValue(sqlVal, constPool));
-            fieldAttr.addAnnotation(select);
+            attribute.addAnnotation(select);
             Annotation resultType = new Annotation("org.apache.ibatis.annotations.ResultType", constPool);
             resultType.addMemberValue("value", new ClassMemberValue(Map.class.getName(), constPool));
-            fieldAttr.addAnnotation(resultType);
+            attribute.addAnnotation(resultType);
+            queryMethod.getMethodInfo().addAttribute(attribute);
             cc.addMethod(queryMethod);
             return cc.toClass();
         } catch (Exception e) {
