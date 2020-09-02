@@ -22,15 +22,17 @@ public class DefaultEntityBufferFactory implements EntityBufferFactory {
         REDIS
     }
 
-    public DefaultEntityBufferFactory() {
+    public DefaultEntityBufferFactory(boolean underline) {
         this.bufferType = BufferType.DEFAULT;
+        this.underline = underline;
     }
 
-    public DefaultEntityBufferFactory(BufferType bufferType) {
+    public DefaultEntityBufferFactory(boolean underline, BufferType bufferType) {
         if (bufferType == null) {
             throw new IllegalArgumentException("bufferType can not be null");
         }
         this.bufferType = bufferType;
+        this.underline = underline;
     }
 
     public <T> EntityBuffer<T> createBuffer(Class<T> clazz) {

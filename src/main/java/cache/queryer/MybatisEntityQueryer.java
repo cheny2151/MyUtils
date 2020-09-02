@@ -51,7 +51,7 @@ public class MybatisEntityQueryer implements EntityQueryer {
         HashMap<String, Object> params = new HashMap<>();
         params.put("fields", bufferInfo.splitFields());
         params.put("tableName", bufferInfo.getTableName());
-        params.put("filters", bufferInfo.getTableName());
+        params.put("filters", bufferInfo.getSqlCondition());
         try {
             List<Map<String, Object>> results = (List<Map<String, Object>>) queryMethod.invoke(proxyMapper, params);
             return results.stream().map(r -> mapToEntity(r, bufferInfo.getEntityClass())).collect(Collectors.toList());

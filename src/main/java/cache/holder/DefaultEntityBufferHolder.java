@@ -36,11 +36,19 @@ public class DefaultEntityBufferHolder implements EntityBufferHolder {
     private EntityQueryer entityQueryer;
 
     public DefaultEntityBufferHolder() {
-        this(new DefaultEntityBufferFactory(), new EntityQueryerChooser().getEntityQueryer());
+        this(false);
+    }
+
+    public DefaultEntityBufferHolder(boolean underline) {
+        this(new DefaultEntityBufferFactory(underline), new EntityQueryerChooser().getEntityQueryer());
     }
 
     public DefaultEntityBufferHolder(EntityQueryer entityQueryer) {
-        this(new DefaultEntityBufferFactory(), entityQueryer);
+        this(false, entityQueryer);
+    }
+
+    public DefaultEntityBufferHolder(boolean underline, EntityQueryer entityQueryer) {
+        this(new DefaultEntityBufferFactory(underline), entityQueryer);
     }
 
     public DefaultEntityBufferHolder(EntityBufferFactory entityBufferFactory, EntityQueryer entityQueryer) {
