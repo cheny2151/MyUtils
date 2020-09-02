@@ -5,6 +5,7 @@ import cache.queryer.JpaEntityQueryer;
 import cache.queryer.MybatisEntityQueryer;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
+import reflect.ReflectUtils;
 import spring.SpringUtils;
 
 import java.util.Collection;
@@ -17,16 +18,12 @@ import java.util.Collection;
  */
 public class EntityQueryerChooser {
 
-    private boolean inSprintEnv;
-
     private Object sqlSession;
 
     public EntityQueryerChooser() {
-        inSprintEnv = SpringUtils.getEnvironment() != null;
     }
 
     public EntityQueryerChooser(Object sqlSession) {
-        this.inSprintEnv = SpringUtils.getEnvironment() != null;
         this.sqlSession = sqlSession;
     }
 
@@ -43,19 +40,21 @@ public class EntityQueryerChooser {
         return null;
     }
 
+    private boolean isInSprintEnv() {
+        return ReflectUtils.isPresent("org.springframework.context.ApplicationContextAware", null);
+    }
+
     /**
      * 测试是否为mybatis环境
      *
      * @return mybatis实体查询器
      */
     private MybatisEntityQueryer testMybatis() {
-        try {
-            Class.forName("org.apache.ibatis.session.SqlSessionFactory");
-        } catch (ClassNotFoundException e) {
+        if (!ReflectUtils.isPresent("org.apache.ibatis.session.SqlSessionFactory", null)) {
             return null;
         }
         // spring environment
-        if (inSprintEnv) {
+        if (isInSprintEnv()) {
             Collection<?> sqlSessionFactoryInSpringEnv = SpringUtils.getBeansOfType(SqlSessionTemplate.class);
             if (sqlSessionFactoryInSpringEnv.size() > 0) {
                 SqlSession sqlSession = (SqlSession) sqlSessionFactoryInSpringEnv.iterator().next();
