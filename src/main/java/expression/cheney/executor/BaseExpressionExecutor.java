@@ -21,9 +21,14 @@ import static expression.cheney.CharConstants.*;
 public abstract class BaseExpressionExecutor implements ExpressionExecutor {
 
     /**
+     * 指向环境值变量名
+     */
+    public final static String ENV_REF = "$env";
+
+    /**
      * 系统创建的环境值key
      */
-    public static final String NEW_ENV_KEY = "_ENV_KEY";
+    private static final String NEW_ENV_KEY = "_ENV_KEY";
 
     /**
      * 表达式
@@ -91,6 +96,8 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                 } else if (CONTAINS_OPERATOR_PATTERN.matcher(valueStr).find()) {
                     // 结合Aviator,将含运算符的arg丢给Aviator执行
                     return executeOperation(valueStr, env, true);
+                } else if (ENV_REF.equals(valueStr)) {
+                    return env;
                 }
                 return castToBasic(valueStr);
             }

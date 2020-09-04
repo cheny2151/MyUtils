@@ -171,7 +171,7 @@ public class Main {
     public void test13() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor2 =
-                expressionParser.parseExpression("to_number(服务费)+to_number(团长佣金)");
+                expressionParser.parseExpression("output($env)");
         HashMap<String, Object> env2 = new HashMap<>();
         env2.put("服务费", "1");
         env2.put("团长佣金", "2");
