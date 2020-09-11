@@ -6,9 +6,11 @@ import expression.cheney.parse.ExpressionParser;
 import expression.cheney.parse.ReflectExpressionParser;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -171,7 +173,7 @@ public class Main {
     public void test13() {
         ExpressionParser expressionParser = ReflectExpressionParser.getInstance();
         ExpressionExecutor expressionExecutor2 =
-                expressionParser.parseExpression("output($env)");
+                expressionParser.parseExpression("to_number2($env)");
         HashMap<String, Object> env2 = new HashMap<>();
         env2.put("服务费", "1");
         env2.put("团长佣金", "2");

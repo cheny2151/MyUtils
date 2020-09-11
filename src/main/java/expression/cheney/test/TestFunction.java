@@ -24,7 +24,7 @@ public class TestFunction {
         return new BigDecimal(value.toString()).abs();
     }
 
-    public static BigDecimal to_number(Object object) {
+    public static BigDecimal to_number2(Object object) {
         if (object == null) {
             throw new NullPointerException();
         }
