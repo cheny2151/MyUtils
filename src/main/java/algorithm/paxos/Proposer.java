@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -18,6 +19,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Proposer {
 
     private String proposerId;
+
+    /**
+     * 初始编号
+     */
+    private Long initNo;
 
     /**
      * 提案编号
@@ -48,6 +54,8 @@ public class Proposer {
             }
         }
         this.proposerId = proposerIdStr.toString();
+        this.initNo = Long.valueOf(DateTimeFormatter.ofPattern("MMddHHmmssSS").format(LocalDateTime.now()));
+        responseProposers = new ArrayList<>();
     }
 
     public Proposer(Long no, int value) {
@@ -56,10 +64,12 @@ public class Proposer {
     }
 
     public Proposer newProposer() {
-        no = Long.valueOf(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSS").format(LocalDateTime.now()) + proposerId);
+        no = Long.valueOf(initNo++ + "" + proposerId);
         value = RandomUtils.nextInt(1, Integer.MAX_VALUE);
         acceptCount = new AtomicInteger(0);
-        responseProposers = new ArrayList<>();
+        Optional<Proposer> originMax = responseProposers.stream().max(Comparator.comparingLong(Proposer::getNo));
+        responseProposers.clear();
+        originMax.ifPresent(proposer -> responseProposers.add(proposer));
         return this;
     }
 
@@ -71,7 +81,7 @@ public class Proposer {
         }
     }
 
-    public Proposer propose() {
+    public synchronized Proposer propose() {
         if (responseProposers.size() != 0) {
             // 选择第一阶段响应的最大提案编号的值作为提案值
             Proposer proposer = responseProposers.stream().max(Comparator.comparingLong(Proposer::getNo)).get();

@@ -26,6 +26,8 @@ public class PaxosSimulation {
 
     private Proposer proposer;
 
+    private int half;
+
     public void init(int n, int n1) {
         // 初始化提案者
         proposers = new ArrayList<>();
@@ -37,6 +39,7 @@ public class PaxosSimulation {
         for (int i = 0; i < n1; i++) {
             acceptors.add(new Acceptor());
         }
+        this.half = (int) Math.ceil((double) acceptors.size() / 2);
     }
 
     /**
@@ -48,7 +51,6 @@ public class PaxosSimulation {
         if (CollectionUtils.isEmpty(proposers) || CollectionUtils.isEmpty(acceptors)) {
             throw new RuntimeException("未初始化Proposer/Acceptor");
         }
-        int half = (int) Math.ceil((double) acceptors.size() / 2);
         ExecutorService executorService = Executors.newFixedThreadPool(proposers.size());
         ArrayList<Callable<Proposer>> tasks = new ArrayList<>();
         for (Proposer proposer : proposers) {
@@ -63,8 +65,9 @@ public class PaxosSimulation {
                     // 模拟第二阶段 propose请求
                     for (Acceptor acceptor : acceptors) {
                         acceptor.accept(newProposer.propose());
-                        if (newProposer.getAcceptCount().get() >= half) {
-                            setProposer(newProposer, executorService);
+                        if (newProposer.getAcceptCount().get() > half) {
+                            setProposer(newProposer);
+                            executorService.shutdownNow();
                             return newProposer;
                         }
                     }
@@ -83,8 +86,6 @@ public class PaxosSimulation {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        // 模拟learn
-        proposers.forEach(e -> e.learn(proposer));
         return proposer;
     }
 
@@ -92,20 +93,19 @@ public class PaxosSimulation {
         ArrayList<Acceptor> acceptors = new ArrayList<>(this.acceptors);
         int size = this.acceptors.size();
         // 超过一半的数
-        int s = RandomUtils.nextInt((int) Math.ceil((double) size / 2), size);
+        int s = RandomUtils.nextInt(0, half);
         for (int i = 0; i < s; i++) {
             acceptors.remove(RandomUtils.nextInt(0, acceptors.size()));
         }
         return acceptors;
     }
 
-    public synchronized void setProposer(Proposer proposer, ExecutorService executorService) {
+    public synchronized void setProposer(Proposer proposer) {
         if (this.proposer == null) {
-            System.out.println("选举成功,提案：no:" + proposer.getNo() + "，提案值:" + proposer.getValue());
+            System.out.println("第一个选举成功,提案：no:" + proposer.getNo() + "，提案值:" + proposer.getValue());
             this.proposer = proposer;
-            executorService.shutdownNow();
         } else {
-            System.out.println("已有提案选举成功");
+            System.out.println("选举成功,提案：no:" + proposer.getNo() + "，提案值:" + proposer.getValue());
         }
     }
 
