@@ -40,6 +40,11 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
      */
     protected ParseResult parseResult;
 
+    /**
+     * 临时变量index
+     */
+    private int newEnvIndex;
+
     BaseExpressionExecutor(String express, ParseResult parseResult) {
         this.express = express;
         this.parseResult = parseResult;
@@ -67,8 +72,7 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
             } else if (type == Arg.COMBINATION) {
                 // 函数嵌套运算
                 ArrayList<Arg> funcArgs = (ArrayList<Arg>) value;
-                String operatorExpression = "";
-                int newEnvIndex = 0;
+                StringBuilder operatorExpression = new StringBuilder("");
                 for (Arg funcArg : funcArgs) {
                     Object argValue = funcArg.getValue();
                     short funcArgType = funcArg.getType();
@@ -78,16 +82,16 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
                         // 函数执行结果作为env的值，缓存最终形成的表达式解析结果
                         String newEnvKey = NEW_ENV_KEY + newEnvIndex++;
                         env.put(newEnvKey, expression);
-                        operatorExpression += newEnvKey;
+                        operatorExpression.append(newEnvKey);
                     } else if (funcArgType == Arg.CONSTANT) {
                         // 常量则加上'
-                        operatorExpression += APOSTROPHE_STRING + argValue + APOSTROPHE_STRING;
+                        operatorExpression.append(APOSTROPHE_STRING).append(argValue).append(APOSTROPHE_STRING);
                     } else {
                         // 运算符或者原始类型，直接拼接
-                        operatorExpression += argValue;
+                        operatorExpression.append(argValue);
                     }
                 }
-                return executeOperation(operatorExpression, env, true);
+                return executeOperation(operatorExpression.toString(), env, true);
             } else {
                 String valueStr = (String) value;
                 Object envArg = env.get(valueStr);
@@ -123,6 +127,13 @@ public abstract class BaseExpressionExecutor implements ExpressionExecutor {
             }
         }
         return null;
+    }
+
+    /**
+     * 表达式执行前初始化数据
+     */
+    protected void beforeExecute() {
+        this.newEnvIndex = 0;
     }
 
     /**
