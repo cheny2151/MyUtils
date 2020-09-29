@@ -1,7 +1,5 @@
 package algorithm.skiplist;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -95,26 +93,22 @@ public class SkipList<T extends Comparable<T>> {
      */
     public void add(T value) {
         int level = randomLevel();
-        Node<T>[] updates = new Node[level];
+        Node<T> n = new Node<>(value, level);
+        Node<T> cur = head;
+        Node<T> pre = null;
         for (int i = level - 1; i >= 0; i--) {
-            Node<T> cur = head;
             Node<T> next;
             while ((next = cur.getNext()[i]) != null &&
                     next.value.compareTo(value) <= 0) {
                 cur = next;
             }
-            updates[i] = cur;
-        }
-        Node<T> n = new Node<>(value, level);
-        for (int i = updates.length - 1; i >= 0; i--) {
             // 新节点插入到update之后，originNext之前
-            Node<T> update = updates[i];
-            Node<T> originNext = update.getNext()[i];
+            pre = cur;
+            Node<T> originNext = pre.getNext()[i];
             n.setNext(originNext, i);
-            update.setNext(n, i);
+            pre.setNext(n, i);
         }
         // 更新pre,tail
-        Node<T> pre = updates[0];
         n.setPre(pre);
         Node<T> next = n.getNext()[0];
         if (next == null) {
@@ -214,13 +208,26 @@ public class SkipList<T extends Comparable<T>> {
 
     public static void main(String[] args) {
 
+        long l = System.currentTimeMillis();
         SkipList<Integer> skipList = new SkipList<>();
         for (int i = 0; i < 30000; i++) {
             skipList.add(i);
         }
-        long l = System.currentTimeMillis();
+        System.out.println(System.currentTimeMillis() - l);
+        l = System.currentTimeMillis();
         System.out.println(skipList.contains(28888));
-        System.out.println(System.currentTimeMillis()- l);
+        System.out.println(System.currentTimeMillis() - l);
+
+        /*SkipList<Integer> skipList = new SkipList<>();
+        skipList.add(9);
+        skipList.add(4);
+        skipList.add(5);
+        skipList.add(10);
+        skipList.add(13);
+        skipList.add(2);
+        skipList.add(17);
+        skipList.add(2);
+        System.out.println(skipList.toString());*/
     }
 
 }
