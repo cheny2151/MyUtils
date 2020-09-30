@@ -33,6 +33,7 @@ public class SkipList<T extends Comparable<T>> {
 
         private Node<T>[] next;
 
+        @SuppressWarnings("unchecked")
         Node(T value, int high) {
             this.value = value;
             this.high = high;
@@ -76,10 +77,6 @@ public class SkipList<T extends Comparable<T>> {
         init();
     }
 
-    public SkipList(T[] values) {
-
-    }
-
     private void init() {
         this.size = this.high = 1;
         // 初始化head
@@ -95,7 +92,6 @@ public class SkipList<T extends Comparable<T>> {
         int level = randomLevel();
         Node<T> n = new Node<>(value, level);
         Node<T> cur = head;
-        Node<T> pre = null;
         for (int i = level - 1; i >= 0; i--) {
             Node<T> next;
             while ((next = cur.getNext()[i]) != null &&
@@ -103,13 +99,12 @@ public class SkipList<T extends Comparable<T>> {
                 cur = next;
             }
             // 新节点插入到update之后，originNext之前
-            pre = cur;
-            Node<T> originNext = pre.getNext()[i];
+            Node<T> originNext = cur.getNext()[i];
             n.setNext(originNext, i);
-            pre.setNext(n, i);
+            cur.setNext(n, i);
         }
         // 更新pre,tail
-        n.setPre(pre);
+        n.setPre(cur);
         Node<T> next = n.getNext()[0];
         if (next == null) {
             tail = n;
@@ -219,7 +214,7 @@ public class SkipList<T extends Comparable<T>> {
 
         long l = System.currentTimeMillis();
         SkipList<Integer> skipList = new SkipList<>();
-        for (int i = 0; i < 300000; i++) {
+        for (int i = 0; i < 30000; i++) {
             skipList.add(i);
         }
         System.out.println(System.currentTimeMillis() - l);
