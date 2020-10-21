@@ -221,6 +221,7 @@ public class SaxReader {
         private SheetHandler(SharedStringsTable sst, StylesTable stylesTable) {
             this.sst = sst;
             this.currentRow = 0;
+            this.currentCol = 0;
             this.stylesTable = stylesTable;
             this.cacheAll = reader == null;
             data = new ArrayList<>();
