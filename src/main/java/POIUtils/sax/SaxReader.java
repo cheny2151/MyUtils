@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 /**
  * SAX实现excel读
+ * 注意行号列号都从0开始算起
  *
  * @author cheney
  * @date 2020-10-19
@@ -238,8 +239,8 @@ public class SaxReader {
                 matcher.find();
                 String colStr = matcher.group(1);
                 String rowStr = matcher.group(2);
-                // column num
-                int col = AlphabetUtils.toDec(colStr);
+                // column num(从0开始算)
+                int col = AlphabetUtils.toDec(colStr) - 1;
                 // 补充空列
                 for (int nullCol = currentCol + 1; nullCol < col; nullCol++) {
                     data.add(null);
@@ -250,8 +251,8 @@ public class SaxReader {
                     sheetCount.maxCol = col;
                     sheetCount.maxColReference = reference;
                 }
-                // row num
-                int row = Integer.parseInt(rowStr);
+                // row num(从0开始算)
+                int row = Integer.parseInt(rowStr) - 1;
                 if (currentRow != row) {
                     currentRow = row;
                 }
@@ -383,7 +384,7 @@ public class SaxReader {
     public static void main(String[] args) throws Exception {
         long l = System.currentTimeMillis();
         SaxReader saxReader = new SaxReader((row, data) -> System.out.println(data));
-        saxReader.processSheet(new File("D:\\test.xlsx"), 1);
+        saxReader.processSheet(new File("D:\\test.xlsx"), 0);
         System.out.println(System.currentTimeMillis() - l);
         System.out.println(saxReader.getFirstSheetCount());
     }
