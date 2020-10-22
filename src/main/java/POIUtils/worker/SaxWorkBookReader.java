@@ -4,15 +4,13 @@ import POIUtils.entity.SaxReadInfo;
 import POIUtils.sax.SaxReader;
 import POIUtils.utils.CellDealFunction;
 import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -64,23 +62,25 @@ public class SaxWorkBookReader {
 
     /**
      * 回写Map类型数据
-     *
-     * @param readResult 读取的Map类型数据结果实体
      */
-    public Workbook writeBack() {
+    public void writeBackIfNeed(OutputStream outputStream) throws IOException {
         Workbook workbook = createBookBySource(saxReadResult.getSource());
         Sheet sheet = workbook.getSheetAt(saxReadInfo.getSheetNum());
         int titleCount = saxReadResult.getTitleCount();
         int titleRowNum = saxReadResult.getTitleRowNum();
         // 负责回写的字段
         List<String> writeBackKeys = saxReadInfo.getWriteBackKeys();
-        HSSFColor.HSSFColorPredefined color = saxReadInfo.getWriteBackColumnColor();
         Map<Integer, Map<String, String>> dataIndexMap = saxReadResult.getWriteBackData();
+        if (CollectionUtils.isEmpty(writeBackKeys)
+                || dataIndexMap.size() == 0) {
+            return;
+        }
+        HSSFColor.HSSFColorPredefined color = saxReadInfo.getWriteBackColumnColor();
         // 写入标题,数据
         WorkBookReader.writeSheet(workbook, sheet, dataIndexMap, writeBackKeys, color,
                 // titleCount是原有列最大值，回写时从+1列开始
                 titleRowNum, titleCount + 1);
-        return workbook;
+        workbook.write(outputStream);
     }
 
     /**
@@ -154,8 +154,7 @@ public class SaxWorkBookReader {
             data1.put("标题test", "test");
             raxReadResult.addWriteBackData(rowNum, data1);
         });
-        Workbook workbook = saxWorkBookReader.writeBack();
-        workbook.write(new FileOutputStream(file));
+        saxWorkBookReader.writeBackIfNeed(new FileOutputStream(file));
         System.out.println(System.currentTimeMillis() - l);
     }
 }
