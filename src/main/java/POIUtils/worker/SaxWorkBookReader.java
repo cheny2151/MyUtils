@@ -62,8 +62,11 @@ public class SaxWorkBookReader {
 
     /**
      * 回写Map类型数据
+     *
+     * @param outputStream 回写流
+     * @return 是否进行了回写
      */
-    public void writeBackIfNeed(OutputStream outputStream) throws IOException {
+    public boolean writeBackIfNeed(OutputStream outputStream) throws IOException {
         Workbook workbook = createBookBySource(saxReadResult.getSource());
         Sheet sheet = workbook.getSheetAt(saxReadInfo.getSheetNum());
         int titleCount = saxReadResult.getTitleCount();
@@ -73,7 +76,7 @@ public class SaxWorkBookReader {
         Map<Integer, Map<String, String>> dataIndexMap = saxReadResult.getWriteBackData();
         if (CollectionUtils.isEmpty(writeBackKeys)
                 || dataIndexMap.size() == 0) {
-            return;
+            return false;
         }
         HSSFColor.HSSFColorPredefined color = saxReadInfo.getWriteBackColumnColor();
         // 写入标题,数据
@@ -81,6 +84,7 @@ public class SaxWorkBookReader {
                 // titleCount是原有列最大值，回写时从+1列开始
                 titleRowNum, titleCount + 1);
         workbook.write(outputStream);
+        return true;
     }
 
     /**
