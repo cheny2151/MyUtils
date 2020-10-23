@@ -273,7 +273,6 @@ public class SaxReader {
                 if (c > 1) {
                     // c大于1，说明存在空单元格
                     for (int i = 0; i < c - 1; i++) {
-                        System.out.println("add null2");
                         data.add(null);
                     }
                 }
