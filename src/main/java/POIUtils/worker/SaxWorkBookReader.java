@@ -50,7 +50,10 @@ public class SaxWorkBookReader {
         saxReader.setReader(rowDataReader);
         // 执行读取
         if (excel instanceof InputStream) {
-            saxReader.processSheet((InputStream) excel, saxReadInfo.getSheetNum());
+            ByteArrayOutputStream sourceStream = copyInputStream((InputStream) excel);
+            saxReader.processSheet(new ByteArrayInputStream(sourceStream.toByteArray()),
+                    saxReadInfo.getSheetNum());
+            excel = sourceStream;
         } else {
             saxReader.processSheet((File) excel, saxReadInfo.getSheetNum());
         }
@@ -118,8 +121,9 @@ public class SaxWorkBookReader {
     @SneakyThrows
     private Workbook createBookBySource(Object source) {
         Workbook workbook;
-        InputStream excel = !(source instanceof InputStream) ?
-                new FileInputStream((File) source) : (InputStream) source;
+        InputStream excel = !(source instanceof ByteArrayOutputStream) ?
+                new FileInputStream((File) source) :
+                new ByteArrayInputStream(((ByteArrayOutputStream) source).toByteArray());
         try {
             workbook = new XSSFWorkbook(excel);
         } catch (Exception e) {
@@ -129,14 +133,22 @@ public class SaxWorkBookReader {
     }
 
     /**
-     * 设置字体颜色
+     * 复制input流，提供复用
+     *
+     * @param inputStream 输入流
+     * @return 输出流
+     * @throws IOException
      */
-    private void setFontColor(Workbook workbook, HSSFColor.HSSFColorPredefined color, Cell cell) {
-        CellStyle cellStyle = workbook.createCellStyle();
-        Font font = workbook.createFont();
-        font.setColor(color.getIndex());
-        cellStyle.setFont(font);
-        cell.setCellStyle(cellStyle);
+    private ByteArrayOutputStream copyInputStream(InputStream inputStream) throws IOException {
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+        ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
+        int cacheLen = 1024;
+        byte[] bytes = new byte[1024];
+        int l;
+        while ((l = bufferedInputStream.read(bytes, 0, cacheLen)) != -1) {
+            arrayOutputStream.write(bytes, 0, l);
+        }
+        return arrayOutputStream;
     }
 
     public interface DataConsumer {
@@ -151,14 +163,14 @@ public class SaxWorkBookReader {
         long l = System.currentTimeMillis();
         SaxReadInfo saxReadInfo = SaxReadInfo.withWriteBack(Collections.singletonList("标题test"), HSSFColor.HSSFColorPredefined.RED);
         SaxWorkBookReader saxWorkBookReader = new SaxWorkBookReader(saxReadInfo);
-        File file = new File("D:\\test2.xlsx");
+        File file = new File("D:\\test3.xlsx");
         saxWorkBookReader.readAndConsume(file, (data, rowNum, raxReadResult) -> {
             System.out.println("行:" + rowNum + "->" + data);
             HashMap<String, String> data1 = new HashMap<>();
             data1.put("标题test", "test");
             raxReadResult.addWriteBackData(rowNum, data1);
         });
-        saxWorkBookReader.writeBackIfNeed(new FileOutputStream(file));
+//        saxWorkBookReader.writeBackIfNeed(new FileOutputStream(file));
         System.out.println(System.currentTimeMillis() - l);
     }
 }

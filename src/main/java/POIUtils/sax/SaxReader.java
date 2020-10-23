@@ -217,13 +217,16 @@ public class SaxReader {
         private List<String> data;
         private List<List<String>> allData;
         private SheetCount sheetCount;
+        // 控制空单元格
+        private int c;
 
         private SheetHandler(SharedStringsTable sst, StylesTable stylesTable) {
             this.sst = sst;
             this.currentRow = 0;
-            this.currentCol = 0;
+            this.currentCol = -1;
             this.stylesTable = stylesTable;
             this.cacheAll = reader == null;
+            this.c = 0;
             data = new ArrayList<>();
             if (this.cacheAll) {
                 SaxReader.this.allData = this.allData = new ArrayList<>();
@@ -234,6 +237,7 @@ public class SaxReader {
                                  Attributes attributes) {
             // c => cell
             if (name.equals("c")) {
+                c++;
                 // Print the cell reference
                 String reference = attributes.getValue("r");
                 Matcher matcher = rowNumPattern.matcher(reference);
@@ -266,15 +270,25 @@ public class SaxReader {
         public void endElement(String uri, String localName, String name) {
             // v => contents of a cell
             if (name.equals("v")) {
+                if (c > 1) {
+                    // c大于1，说明存在空单元格
+                    for (int i = 0; i < c - 1; i++) {
+                        System.out.println("add null2");
+                        data.add(null);
+                    }
+                }
                 String nextValue = getNextValue();
                 data.add(nextValue);
+                c = 0;
             } else if (name.equals("row")) {
                 sheetCount.maxRow = currentRow;
                 if (cacheAll) {
                     allData.add(data);
                 } else {
-                    SaxReader.this.reader.read(currentRow++, data);
+                    SaxReader.this.reader.read(currentRow, data);
                 }
+                currentRow++;
+                currentCol = -1;
                 data = new ArrayList<>();
             }
         }
@@ -361,7 +375,7 @@ public class SaxReader {
         public void prepareNext(SheetCount count) {
             this.sheetCount = count;
             this.currentRow = 0;
-            this.currentCol = 0;
+            this.currentCol = -1;
             this.data = new ArrayList<>();
         }
     }
