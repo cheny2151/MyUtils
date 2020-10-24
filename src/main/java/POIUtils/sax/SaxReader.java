@@ -317,11 +317,13 @@ public class SaxReader {
                 XSSFCellStyle style = stylesTable.getStyleAt(styleIndex);
                 formatIndex = style.getDataFormat();
                 dataFormatString = style.getDataFormatString();
-                if (dataFormatString.contains("y")) {
+                if (dataFormatString == null) {
+                    dataFormatString = BuiltinFormats.getBuiltinFormat(formatIndex);
+                }
+                if (dataFormatString != null &&
+                        dataFormatString.contains("yy")) {
                     nextType = CellType.DATE;
                     dataFormatString = "yyyy-MM-dd HH:mm:ss";
-                } else {
-                    dataFormatString = BuiltinFormats.getBuiltinFormat(formatIndex);
                 }
             }
             this.formatIndex = formatIndex;
