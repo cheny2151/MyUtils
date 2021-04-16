@@ -41,8 +41,7 @@ public abstract class TypeReference<T> {
                 Optional<Map.Entry<TypeVariable, Type>> actualType =
                         typeMap.entrySet().stream().filter(entry -> entry.getKey().equals(typeParameter)).findFirst();
                 if (actualType.isPresent()) {
-                    this.actualType = actualType.get().getValue();
-                    return this.actualType;
+                    return actualType.get().getValue();
                 }
             }
         } else if (genericSuperclass instanceof Class) {
