@@ -8,15 +8,15 @@ import com.alibaba.fastjson.JSON;
  * @author cheney
  * @date 2020-03-06
  */
-public class MaxHeap<T extends Comparable<T>> extends BaseHeap<T> {
+public class MinHeap<T extends Comparable<T>> extends BaseHeap<T> {
 
-    public MaxHeap(T[] array) {
+    public MinHeap(T[] array) {
         this(array, array.length);
     }
 
-    public MaxHeap(T[] array, int size) {
+    public MinHeap(T[] array, int size) {
         super(array, size);
-        heapSort.sortDesc();
+        heapSort.sortAsc();
     }
 
     public boolean push(T val) {
@@ -30,7 +30,7 @@ public class MaxHeap<T extends Comparable<T>> extends BaseHeap<T> {
     public boolean pushAndSort(T val) {
         if (check(val)) {
             heapSort.getArray()[0] = val;
-            heapSort.sortDesc();
+            heapSort.sortAsc();
         }
         return false;
     }
@@ -38,16 +38,16 @@ public class MaxHeap<T extends Comparable<T>> extends BaseHeap<T> {
     private boolean check(T val) {
         T[] sortArray = heapSort.getArray();
         T max = sortArray[0];
-        return val.compareTo(max) < 0;
+        return val.compareTo(max) > 0;
     }
 
     public static void main(String[] args) {
         Integer[] integers = {2, 7, 9, 21, 13, 17, 3, 10};
-        MaxHeap<Integer> heap = new MaxHeap<>(integers, 7);
+        MinHeap<Integer> heap = new MinHeap<>(integers, 7);
         System.out.println(JSON.toJSONString(heap.getResult()));
         heap.pushAndSort(-1);
         System.out.println(JSON.toJSONString(heap.getResult()));
-        heap.pushAndSort(8);
+        heap.pushAndSort(88);
         System.out.println(JSON.toJSONString(heap.getResult()));
     }
 

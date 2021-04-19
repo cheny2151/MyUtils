@@ -25,5 +25,11 @@ public abstract class BaseHeap<T extends Comparable<T>> {
         heapSort.sortDesc();
     }
 
+    public T[] getResult() {
+        return heapSort.getArray();
+    }
+
     abstract boolean push(T newVal);
+
+    abstract boolean pushAndSort(T newVal);
 }
