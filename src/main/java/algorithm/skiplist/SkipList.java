@@ -12,7 +12,10 @@ import java.util.Random;
  */
 public class SkipList<T extends Comparable<T>> {
 
-    private static final int DEFAULT_MAX_HIGH = 32;
+    /**
+     * 默认层数
+     */
+    protected static final int DEFAULT_MAX_HIGH = 32;
 
     /**
      * 第0层头节点
@@ -30,7 +33,7 @@ public class SkipList<T extends Comparable<T>> {
 
     private final int maxHigh;
 
-    private static class Node<T extends Comparable<T>> {
+    protected static class Node<T extends Comparable<T>> {
 
         private final int high;
 
@@ -127,6 +130,9 @@ public class SkipList<T extends Comparable<T>> {
      * @param value 新增值
      */
     public void add(T value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value can not be null");
+        }
         int level = randomLevel();
         Node<T> n = new Node<>(value, level);
         Node<T> cur = this.head;
@@ -135,6 +141,11 @@ public class SkipList<T extends Comparable<T>> {
             while ((next = cur.getNext()[i]) != null &&
                     next.value.compareTo(value) <= 0) {
                 cur = next;
+            }
+            if (cur.value != null && cur.value.compareTo(value) == 0
+                    && replaceWhileExists()) {
+                cur.value = value;
+                return;
             }
             // 新节点插入到update之后，originNext之前
             Node<T> originNext = cur.getNext()[i];
@@ -156,8 +167,17 @@ public class SkipList<T extends Comparable<T>> {
         size++;
     }
 
-    public void remove(T t) {
+    public T exists(T t) {
+        Node<T> node = getNode(t);
+        return node == null ? null : node.getValue();
+    }
 
+    public boolean remove(T value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value can not be null");
+        }
+        // todo
+       return false;
     }
 
     /**
@@ -167,7 +187,7 @@ public class SkipList<T extends Comparable<T>> {
      * @return 是否存在
      */
     public boolean contains(T target) {
-        return get(target) != null;
+        return getNode(target) != null;
     }
 
     /**
@@ -185,7 +205,10 @@ public class SkipList<T extends Comparable<T>> {
      * @param target 查找的数据
      * @return 数据节点
      */
-    private Node<T> get(T target) {
+    protected Node<T> getNode(T target) {
+        if (target == null) {
+            return null;
+        }
         int curLevel = high - 1;
         Node<T> cur = head;
         while (curLevel >= 0) {
@@ -203,6 +226,15 @@ public class SkipList<T extends Comparable<T>> {
             curLevel--;
         }
         return null;
+    }
+
+    /**
+     * 存在时是否替换
+     *
+     * @return 默认返回false
+     */
+    protected boolean replaceWhileExists() {
+        return false;
     }
 
     /**
@@ -277,7 +309,10 @@ public class SkipList<T extends Comparable<T>> {
         }
         System.out.println(skipList.toString());
 
-        System.out.println(skipList.get(99));
+        System.out.println(skipList.remove(100));
+
+        System.out.println(skipList.toString());
+
     }
 
 }
