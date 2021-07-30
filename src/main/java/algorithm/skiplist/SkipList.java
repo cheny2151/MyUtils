@@ -1,13 +1,18 @@
 package algorithm.skiplist;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.Random;
 
 /**
+ * 数据结构：跳表
+ *
  * @author cheney
  */
 public class SkipList<T extends Comparable<T>> {
 
-    private static int MAX_HIGH = 32;
+    private static final int DEFAULT_MAX_HIGH = 32;
 
     /**
      * 第0层头节点
@@ -22,6 +27,8 @@ public class SkipList<T extends Comparable<T>> {
     private int size;
 
     private int high;
+
+    private final int maxHigh;
 
     private static class Node<T extends Comparable<T>> {
 
@@ -71,16 +78,47 @@ public class SkipList<T extends Comparable<T>> {
         public int getHigh() {
             return high;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Node<?> node = (Node<?>) o;
+
+            return new EqualsBuilder().append(high, node.high).append(value, node.value).isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder(17, 37).append(high).append(value).toHashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "Node{" +
+                    "value=" + value +
+                    '}';
+        }
     }
 
     public SkipList() {
+        this(DEFAULT_MAX_HIGH);
+    }
+
+    public SkipList(int maxHigh) {
+        if (maxHigh <= 1) {
+            throw new IllegalArgumentException("illegal arg max high,must gt 1");
+        }
+        this.maxHigh = maxHigh;
         init();
     }
 
     private void init() {
         this.size = this.high = 1;
         // 初始化head
-        this.head = new Node<>(null, MAX_HIGH);
+        this.head = new Node<>(null, this.maxHigh);
     }
 
     /**
@@ -91,7 +129,7 @@ public class SkipList<T extends Comparable<T>> {
     public void add(T value) {
         int level = randomLevel();
         Node<T> n = new Node<>(value, level);
-        Node<T> cur = head;
+        Node<T> cur = this.head;
         for (int i = level - 1; i >= 0; i--) {
             Node<T> next;
             while ((next = cur.getNext()[i]) != null &&
@@ -107,12 +145,12 @@ public class SkipList<T extends Comparable<T>> {
         n.setPre(cur);
         Node<T> next = n.getNext()[0];
         if (next == null) {
-            tail = n;
+            this.tail = n;
         } else {
             next.setPre(n);
         }
         // 更新high,size
-        if (level > high) {
+        if (level > this.high) {
             this.high = level;
         }
         size++;
@@ -137,12 +175,12 @@ public class SkipList<T extends Comparable<T>> {
      *
      * @return 跳表长度
      */
-    public int size(){
+    public int size() {
         return size;
     }
 
     /**
-     * 通过调表查询数据
+     * 通过跳表查询数据
      *
      * @param target 查找的数据
      * @return 数据节点
@@ -157,7 +195,7 @@ public class SkipList<T extends Comparable<T>> {
                 if (compare < 0) {
                     cur = next;
                 } else if (compare == 0) {
-                    return cur;
+                    return next;
                 } else {
                     break;
                 }
@@ -176,7 +214,8 @@ public class SkipList<T extends Comparable<T>> {
     private int randomLevel() {
         Random random = new Random();
         int level = 1;
-        for (int i = 1; i < MAX_HIGH; i++) {
+        int maxHigh = this.maxHigh;
+        for (int i = 1; i < maxHigh; i++) {
             if ((random.nextInt(2) & 1) == 1) {
                 level++;
             }
@@ -212,7 +251,7 @@ public class SkipList<T extends Comparable<T>> {
 
     public static void main(String[] args) {
 
-        long l = System.currentTimeMillis();
+        /*long l = System.currentTimeMillis();
         SkipList<Integer> skipList = new SkipList<>();
         for (int i = 0; i < 30000; i++) {
             skipList.add(i);
@@ -222,9 +261,9 @@ public class SkipList<T extends Comparable<T>> {
         for (int i = 10000; i < 40000; i++) {
             skipList.contains(i);
         }
-        System.out.println(System.currentTimeMillis() - l);
+        System.out.println(System.currentTimeMillis() - l);*/
 
-        /*SkipList<Integer> skipList = new SkipList<>();
+        SkipList<Integer> skipList = new SkipList<>();
         skipList.add(9);
         skipList.add(4);
         skipList.add(5);
@@ -233,7 +272,12 @@ public class SkipList<T extends Comparable<T>> {
         skipList.add(2);
         skipList.add(17);
         skipList.add(2);
-        System.out.println(skipList.toString());*/
+        for (int i = 100; i < 200; i++) {
+            skipList.add(i);
+        }
+        System.out.println(skipList.toString());
+
+        System.out.println(skipList.get(99));
     }
 
 }
