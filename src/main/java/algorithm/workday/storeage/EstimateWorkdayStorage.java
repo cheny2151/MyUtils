@@ -78,10 +78,6 @@ public class EstimateWorkdayStorage extends SkipListWorkdayStorage {
         LocalDate localDate = LocalDate.parse(String.valueOf(date), DateTimeFormatter.BASIC_ISO_DATE);
         LocalDate offsetLocalDate = localDate.plusDays(offset);
         int year = offsetLocalDate.getYear();
-        boolean isWeekend = isWeekend(offsetLocalDate);
-        if (localDate.getYear() == year && !isWeekend) {
-            throw new WorkdayCountException("工作日估算异常");
-        }
         if (localDate.getYear() == year) {
             if (offset > 0) {
                 this.initYearEstimateDate(year + 1);
