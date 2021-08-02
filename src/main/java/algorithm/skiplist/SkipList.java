@@ -401,7 +401,7 @@ public class SkipList<T extends Comparable<T>> {
         }
         System.out.println(skipList.toString());
 
-        System.out.println(skipList.offset(99,-5));
+        System.out.println(skipList.offset(99, -5));
 //        System.out.println(skipList.toString());
 
     }
