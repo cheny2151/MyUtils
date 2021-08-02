@@ -82,6 +82,12 @@ public class SkipList<T extends Comparable<T>> {
             return high;
         }
 
+        public void clear() {
+            this.value = null;
+            this.next = null;
+            this.pre = null;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -167,17 +173,39 @@ public class SkipList<T extends Comparable<T>> {
         size++;
     }
 
-    public T exists(T t) {
-        Node<T> node = getNode(t);
+    public T exists(T target) {
+        Node<T> node = getNode(target);
         return node == null ? null : node.getValue();
     }
 
-    public boolean remove(T value) {
-        if (value == null) {
+    public boolean remove(T target) {
+        if (target == null) {
             throw new IllegalArgumentException("value can not be null");
         }
-        // todo
-       return false;
+        boolean flag = false;
+        int curLevel = high - 1;
+        Node<T> cur = head;
+        while (curLevel >= 0) {
+            Node<T> next;
+            while ((next = cur.getNext()[curLevel]) != null) {
+                int compare = next.value.compareTo(target);
+                if (compare < 0) {
+                    cur = next;
+                } else if (compare == 0) {
+                    // remove next
+                    Node<T> delNext = next.getNext()[curLevel];
+                    if (delNext != null && delNext.pre == next) {
+                        delNext.setPre(cur);
+                    }
+                    cur.setNext(delNext, curLevel);
+                    flag = true;
+                } else {
+                    break;
+                }
+            }
+            curLevel--;
+        }
+        return flag;
     }
 
     /**
@@ -310,7 +338,6 @@ public class SkipList<T extends Comparable<T>> {
         System.out.println(skipList.toString());
 
         System.out.println(skipList.remove(100));
-
         System.out.println(skipList.toString());
 
     }
