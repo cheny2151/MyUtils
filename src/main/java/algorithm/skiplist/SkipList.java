@@ -125,7 +125,7 @@ public class SkipList<T extends Comparable<T>> {
     }
 
     private void init() {
-        this.size = this.high = 1;
+        this.size = this.high = 0;
         // 初始化head
         this.head = new Node<>(null, this.maxHigh);
     }
@@ -205,7 +205,12 @@ public class SkipList<T extends Comparable<T>> {
         return getNode(target) != null;
     }
 
-
+    /**
+     * 删除所有与目标数据相同的节点
+     *
+     * @param target 删除的数据值
+     * @return 是否执行删除
+     */
     public boolean remove(T target) {
         if (target == null) {
             throw new IllegalArgumentException("value can not be null");
@@ -234,6 +239,33 @@ public class SkipList<T extends Comparable<T>> {
             curLevel--;
         }
         return flag;
+    }
+
+    /**
+     * 查找与目标数据相同的节点，然后找出其偏移量为offset的数据
+     *
+     * @param target 删除的数据值
+     * @return 是否执行删除
+     */
+    public T offset(T target, int offset) {
+        Node<T> targetOrPreNode = getTargetOrPreNode(target);
+        if (targetOrPreNode == null) {
+            return null;
+        }
+        int curOffset = offset;
+        Node<T> offsetNode = targetOrPreNode;
+        while (curOffset != 0 && offsetNode != null) {
+            if (curOffset > 0) {
+                offsetNode = offsetNode.getNext()[0];
+                curOffset--;
+            } else {
+                if (curOffset != -1) {
+                    offsetNode = offsetNode.pre;
+                }
+                curOffset++;
+            }
+        }
+        return offsetNode == null ? null : offsetNode.value;
     }
 
     /**
@@ -369,7 +401,7 @@ public class SkipList<T extends Comparable<T>> {
         }
         System.out.println(skipList.toString());
 
-        System.out.println(skipList.getNode(99));
+        System.out.println(skipList.offset(99,-5));
 //        System.out.println(skipList.toString());
 
     }
