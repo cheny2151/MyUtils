@@ -22,7 +22,7 @@ public class SkipMap<K extends Comparable<K>, V> extends SkipList<SkipEntry<K, V
         super.add(keyEntry);
     }
 
-    public V get(K key) {
+    public V getByKey(K key) {
         if (key == null) {
             return null;
         }
@@ -36,8 +36,23 @@ public class SkipMap<K extends Comparable<K>, V> extends SkipList<SkipEntry<K, V
         }
     }
 
+    public V getTargetOrPreByKey(K key) {
+        if (key == null) {
+            return null;
+        }
+        SkipEntry<K, V> keyEntry = new SkipEntry<>(key, null);
+        SkipList.Node<SkipEntry<K, V>> target = super.getTargetOrPreNode(keyEntry);
+        if (target != null) {
+            SkipEntry<K, V> entry = target.getValue();
+            return entry.getEntry();
+        } else {
+            return null;
+        }
+    }
+
     @Override
     protected boolean replaceWhileExists() {
         return true;
     }
+
 }

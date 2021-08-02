@@ -173,10 +173,38 @@ public class SkipList<T extends Comparable<T>> {
         size++;
     }
 
-    public T exists(T target) {
+    /**
+     * 通过调表查询与入参值相等的数据
+     *
+     * @param target 查找的数据
+     * @return 是否存在
+     */
+    public T get(T target) {
         Node<T> node = getNode(target);
         return node == null ? null : node.getValue();
     }
+
+    /**
+     * 通过调表查询与入参值相等的数据，不存在时返回其上一个数据
+     *
+     * @param target 查找的数据
+     * @return 是否存在
+     */
+    public T getTargetOrPre(T target) {
+        Node<T> node = getTargetOrPreNode(target);
+        return node == null ? null : node.getValue();
+    }
+
+    /**
+     * 通过调表查询是否存在数据
+     *
+     * @param target 查找的数据
+     * @return 是否存在
+     */
+    public boolean contains(T target) {
+        return getNode(target) != null;
+    }
+
 
     public boolean remove(T target) {
         if (target == null) {
@@ -209,16 +237,6 @@ public class SkipList<T extends Comparable<T>> {
     }
 
     /**
-     * 通过调表查询是否存在数据
-     *
-     * @param target 查找的数据
-     * @return 是否存在
-     */
-    public boolean contains(T target) {
-        return getNode(target) != null;
-    }
-
-    /**
      * 返回跳表长度
      *
      * @return 跳表长度
@@ -234,6 +252,20 @@ public class SkipList<T extends Comparable<T>> {
      * @return 数据节点
      */
     protected Node<T> getNode(T target) {
+        Node<T> targetOrPreNode = getTargetOrPreNode(target);
+        if (targetOrPreNode == null || targetOrPreNode.value.compareTo(target) != 0) {
+            return null;
+        }
+        return targetOrPreNode;
+    }
+
+    /**
+     * 通过跳表查询数据,不存在时返回其上一个节点
+     *
+     * @param target 查找的数据
+     * @return 数据节点
+     */
+    protected Node<T> getTargetOrPreNode(T target) {
         if (target == null) {
             return null;
         }
@@ -253,7 +285,7 @@ public class SkipList<T extends Comparable<T>> {
             }
             curLevel--;
         }
-        return null;
+        return cur;
     }
 
     /**
@@ -337,8 +369,8 @@ public class SkipList<T extends Comparable<T>> {
         }
         System.out.println(skipList.toString());
 
-        System.out.println(skipList.remove(100));
-        System.out.println(skipList.toString());
+        System.out.println(skipList.getNode(99));
+//        System.out.println(skipList.toString());
 
     }
 
