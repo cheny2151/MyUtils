@@ -2,7 +2,7 @@ package mq.pulsar;
 
 import org.apache.pulsar.client.api.*;
 
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static mq.pulsar.PulsarProducer.*;
 
@@ -21,6 +21,9 @@ public class PulsarConsumer {
                 .topic(TOPIC)
                 .subscriptionName(subscription)
                 .subscriptionType(SubscriptionType.Shared)
+                .negativeAckRedeliveryDelay(5,TimeUnit.SECONDS)
+                .enableRetry(true)
+                .deadLetterPolicy(DeadLetterPolicy.builder().maxRedeliverCount(2).build())
                 // 如果要限制接收器队列大小
                 .receiverQueueSize(10)
                 .subscribe();
@@ -29,7 +32,8 @@ public class PulsarConsumer {
             Message<String> message = consumer.receive();
             System.out.printf("id:%s; value:%s%n; topicName:%s; key:%s; properties: %s",
                     message.getMessageId(), message.getValue(), message.getTopicName(), message.getKey(), message.getProperties());
-            consumer.acknowledge(message.getMessageId());
+            consumer.reconsumeLater(message, 5, TimeUnit.SECONDS);
+//            consumer.negativeAcknowledge(message);
         }
     }
 

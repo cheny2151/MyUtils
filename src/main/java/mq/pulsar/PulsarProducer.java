@@ -26,8 +26,19 @@ public class PulsarProducer {
                 .accessMode(ProducerAccessMode.Shared)
                 .topic(TOPIC).create();
         HashMap<String, Object> val = new HashMap<>();
-        val.put("hello", "word");
-        producer.newMessage().property("test", "111").value(JSON.toJSONString(val)).send();
+        val.put("hello", "word3");
+        producer.newMessage().property("test", "111").value("{\n" +
+                "  \"requestId\": \"00001111\",\n" +
+                "  \"appId\":\"sc-post\",\n" +
+                "  \"type\": [\"spuKeyword\",\"phone\"],\n" +
+                "  \"region\": \"VN\",\n" +
+                "  \"content\": \"M+1 0988888888\",\n" +
+                "  \"merchantId\": \"123123\",\n" +
+                "  \"salesId\": \"888\",\n" +
+                "  \"keywordMethod\": 2,\n" +
+                "  \"payload\": 2\n" +
+                "}").send();
+
         producer.close();
         client.close();
     }
