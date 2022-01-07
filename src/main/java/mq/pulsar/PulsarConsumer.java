@@ -22,18 +22,20 @@ public class PulsarConsumer {
                 .subscriptionName(subscription)
                 .subscriptionType(SubscriptionType.Shared)
                 .negativeAckRedeliveryDelay(5,TimeUnit.SECONDS)
-                .enableRetry(true)
-                .deadLetterPolicy(DeadLetterPolicy.builder().maxRedeliverCount(2).build())
+//                .enableRetry(true)
+                .deadLetterPolicy(DeadLetterPolicy.builder().maxRedeliverCount(3).build())
                 // 如果要限制接收器队列大小
-                .receiverQueueSize(10)
+                .receiverQueueSize(2)
                 .subscribe();
 
         while (true) {
             Message<String> message = consumer.receive();
             System.out.printf("id:%s; value:%s%n; topicName:%s; key:%s; properties: %s",
                     message.getMessageId(), message.getValue(), message.getTopicName(), message.getKey(), message.getProperties());
-            consumer.reconsumeLater(message, 5, TimeUnit.SECONDS);
+//            consumer.reconsumeLater(message, 10, TimeUnit.SECONDS);
+//            consumer.reconsumeLaterCumulative(message, 5, TimeUnit.SECONDS);
 //            consumer.negativeAcknowledge(message);
+            consumer.acknowledge(message);
         }
     }
 
