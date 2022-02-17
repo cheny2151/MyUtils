@@ -1,5 +1,6 @@
 package mq.pulsar;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.pulsar.client.api.*;
 
 import java.util.concurrent.TimeUnit;
@@ -18,7 +19,7 @@ public class PulsarConsumer {
                 .build();
 
         Consumer<String> consumer = client.newConsumer(Schema.STRING)
-                .topic(TOPIC)
+                .topic(TOPIC_RESP)
                 .subscriptionName(subscription)
                 .subscriptionType(SubscriptionType.Shared)
                 .negativeAckRedeliveryDelay(5,TimeUnit.SECONDS)
@@ -30,11 +31,12 @@ public class PulsarConsumer {
 
         while (true) {
             Message<String> message = consumer.receive();
-            System.out.printf("id:%s; value:%s%n; topicName:%s; key:%s; properties: %s",
+            System.out.printf("id:%s; value:%s%n; topicName:%s; key:%s; properties: %s \n",
                     message.getMessageId(), message.getValue(), message.getTopicName(), message.getKey(), message.getProperties());
 //            consumer.reconsumeLater(message, 10, TimeUnit.SECONDS);
 //            consumer.reconsumeLaterCumulative(message, 5, TimeUnit.SECONDS);
 //            consumer.negativeAcknowledge(message);
+            System.out.println(JSON.parseObject(message.getValue()));
             consumer.acknowledge(message);
         }
     }
