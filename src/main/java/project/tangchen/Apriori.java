@@ -2,6 +2,7 @@ package project.tangchen;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Apriori {
     public Map<Integer, Map<Set<String>, Integer>> allFrequentMap = new HashMap<>();
@@ -10,135 +11,6 @@ public class Apriori {
     double minSupport;
     double confidence;
 
-    private List<String> filters = Arrays.asList("5-hydroxytryptophan",
-            "acerola",
-            "acesulfame k",
-            "acetyl dl methionine (n  acetyl.)",
-            "agave",
-            "algae oil",
-            "aloe vera",
-            "alpha lipoic acid",
-            "anchovy",
-            "angelica",
-            "artichoke",
-            "ashwagandha",
-            "ashwagandha extract",
-            "asparagus",
-            "astaxanthin",
-            "astragalus",
-            "bacopa",
-            "beetroot",
-            "beta-carotene",
-            "bifidobacterium bifidum",
-            "bifidobacterium breve",
-            "bifidobacterium lactis",
-            "bifidobacterium longum",
-            "bilberry",
-            "black pepper",
-            "black pepper extract",
-            "blackcurrant",
-            "blueberry",
-            "broccoli",
-            "caffeine",
-            "caffeine anhydrous",
-            "carnitine(l-)",
-            "cbd(cannabidiol)",
-            "chamomile",
-            "chicory root",
-            "chlorella",
-            "choline",
-            "choline bitartrate",
-            "chromium picolinate",
-            "citicoline",
-            "citrus bioflavonoids",
-            "coconut",
-            "cod",
-            "cod liver oil",
-            "coenzyme q10",
-            "collagen hydrolysate",
-            "cranberry",
-            "cranberry extract",
-            "curcumin",
-            "docosahexaenoic acid(dha)",
-            "dong quai",
-            "eicosapentaenoic acid(epa)",
-            "eleutherococcus",
-            "eleutherococcus extract",
-            "evening primrose",
-            "evening primrose oil",
-            "fennel",
-            "fish oil",
-            "gamma aminobutyric acid",
-            "ginger",
-            "ginger extract",
-            "ginkgo biloba",
-            "ginkgo biloba extract",
-            "ginkgo extract",
-            "ginseng",
-            "ginseng extract",
-            "glutamine",
-            "goji",
-            "gotu kola",
-            "gotu kola extract",
-            "grape seed extract",
-            "green tea extract",
-            "guarana",
-            "guarana extract",
-            "hemp",
-            "hemp extract",
-            "hops",
-            "hyaluronic acid",
-            "inulin",
-            "krill",
-            "lactobacillus acidophilus",
-            "lactobacillus casei",
-            "lactobacillus plantarum",
-            "lactobacillus rhamnosus",
-            "lecithin",
-            "lemon balm",
-            "lion's mane mushroom",
-            "liver",
-            "l-theanine",
-            "maca",
-            "maca extract",
-            "mackerel",
-            "matcha tea",
-            "medium chain triglycerides",
-            "medium chain triglycerides oil",
-            "melatonin",
-            "microalgae",
-            "mono-and diglycerides",
-            "moringa",
-            "nettle",
-            "oat",
-            "oligofructose",
-            "omega-3",
-            "pepper extract",
-            "phosphatidylcholine",
-            "phosphatidylserine",
-            "pyrroloquinoline quinone",
-            "raspberry",
-            "reishi mushroom",
-            "rhodiola rosea",
-            "rhodiola rosea extract",
-            "rosemary",
-            "rosemary extract",
-            "saffron",
-            "sage",
-            "schizochytrium",
-            "soy lecithin",
-            "spirulina",
-            "stevia",
-            "streptococcus thermophilus",
-            "sunflower lecithin",
-            "sunflower oil",
-            "taigaroot extract",
-            "taurine",
-            "tea extract",
-            "turmeric",
-            "turmeric extract",
-            "valerian");
-
     public Apriori(List<Set<String>> data, double minSupport, double confidence) {
         this.data = data;
         this.minSupport = minSupport;
@@ -146,19 +18,24 @@ public class Apriori {
         List<Set<String>> itemSet = createItemSet(data);
         List<Set<String>> sc = null;
         int k = 0;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             System.out.println("K \t:" + (++k));
-            System.out.println("itemSet:" + itemSet);
             Map<Set<String>, Integer> frequent = frequentSet(itemSet, this.data);
-            frequent = frequent.entrySet().stream().filter(e -> e.getValue() > 1)
-                    .filter(e -> filters.containsAll(e.getKey()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            allFrequentMap.put(i, frequent);
-            System.out.println("frequent:" + frequent);
+            Stream<Map.Entry<Set<String>, Integer>> stream = frequent.entrySet().stream();
+            if (i != 0) {
+                frequent = stream.filter(e -> e.getValue() > 2)
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                allFrequentMap.put(i, frequent);
+            } else {
+                frequent = stream.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                allFrequentMap.put(i, frequent);
+                frequent = frequent.entrySet().stream().filter(e -> e.getValue() > 2)
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            }
             sc = scan(frequent, this.minSupport);
-            System.out.println("scan" + sc);
-            if (i < 4) {
+            if (i < 2) {
                 itemSet = candidateSet(sc);
+                System.out.println(k + " size:" + itemSet.size());
             }
         }
         associationRules(sc);
@@ -229,7 +106,7 @@ public class Apriori {
     public List<Set<String>> scan(Map<Set<String>, Integer> frequent, double minSupport) {
         List<Set<String>> list = new ArrayList<Set<String>>();
         for (Set<String> key : frequent.keySet()) {
-            if (frequent.get(key) >= 2) {
+            if (frequent.get(key) > 2) {
                 list.add(key);
                 allFrequentSet.add(key);
             }
