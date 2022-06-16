@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "protobuf";
+option java_outer_classname = "TestEntityProto";
+option objc_class_prefix = "RTG";
+
+//package helloworld;
+
+// The request message containing the user's name.
+message TestEntity1 {
+  string name = 1;
+  int32 id = 2;
+  TestEntity2 entity2 = 3;
+}
+
+// The response message containing the greetings
+message TestEntity2 {
+  string message = 1;
+  string type = 2;
+}
